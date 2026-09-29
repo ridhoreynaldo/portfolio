@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import Modal from "@/components/Modal";
 import Forbidden from "@/components/Forbidden";
+import ChipInput from "@/components/admin/ChipInput";
 import { api, useAdminData } from "@/components/admin/useAdminData";
 import type { Project } from "@/db/schema";
 
@@ -11,8 +12,13 @@ const EMPTY = {
   title: "",
   slug: "",
   description: "",
+  detailDescription: "",
   imageUrl: "",
-  tags: "",
+  tags: [] as string[],
+  techStack: [] as string[],
+  tagIcons: {} as Record<string, string>,
+  totalUsers: "",
+  concurrentUsers: "",
   demoUrl: "",
   repoUrl: "",
   isFeatured: false,
@@ -54,8 +60,13 @@ export default function ProjectsPage() {
       title: p.title,
       slug: p.slug,
       description: p.description,
+      detailDescription: p.detailDescription ?? "",
       imageUrl: p.imageUrl ?? "",
-      tags: p.tags.join(", "),
+      tags: [...(p.tags ?? [])],
+      techStack: [...(p.techStack ?? [])],
+      tagIcons: { ...(p.tagIcons ?? {}) },
+      totalUsers: p.totalUsers ?? "",
+      concurrentUsers: p.concurrentUsers ?? "",
       demoUrl: p.demoUrl ?? "",
       repoUrl: p.repoUrl ?? "",
       isFeatured: p.isFeatured,
@@ -76,7 +87,13 @@ export default function ProjectsPage() {
     setSaving(true);
     setFormError("");
     try {
-      const payload = { ...form, sortOrder: Number(form.sortOrder) };
+      // Bersihkan tagIcons: hanya untuk tag yang masih ada & URL tidak kosong
+      const tagIcons: Record<string, string> = {};
+      for (const t of form.tags) {
+        const url = (form.tagIcons[t] || "").trim();
+        if (url) tagIcons[t] = url;
+      }
+      const payload = { ...form, tagIcons, sortOrder: Number(form.sortOrder) };
       if (editing) {
         await api(`/api/admin/projects/${editing.id}`, { method: "PUT", body: JSON.stringify(payload) });
       } else {
@@ -185,12 +202,52 @@ export default function ProjectsPage() {
               <textarea className="input-dark min-h-[110px]" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required />
             </div>
             <div className="md:col-span-2">
+              <label className="label">Deskripsi Detail <span className="font-normal text-slate-500">(opsional, tampil di modal)</span></label>
+              <textarea className="input-dark min-h-[140px]" value={form.detailDescription} onChange={(e) => setForm({ ...form, detailDescription: e.target.value })} placeholder="Cerita lengkap proyek: latar belakang, tantangan, solusi..." />
+            </div>
+            <div className="md:col-span-2">
               <label className="label">URL Gambar</label>
               <input className="input-dark" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} placeholder="https://..." />
             </div>
             <div className="md:col-span-2">
-              <label className="label">Tag (pisahkan koma)</label>
-              <input className="input-dark" value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} placeholder="Next.js, PostgreSQL, Docker" />
+              <ChipInput
+                label="Tag"
+                values={form.tags}
+                onChange={(tags) => setForm({ ...form, tags })}
+                placeholder="Ketik tag lalu Enter, mis. Next.js"
+              />
+              {form.tags.length > 0 && (
+                <div className="mt-3 space-y-2 rounded-xl border border-white/10 bg-white/[0.02] p-3">
+                  <p className="text-xs text-slate-500">URL icon custom per tag <span className="text-slate-600">(opsional — kosongkan untuk pakai icon otomatis)</span></p>
+                  {form.tags.map((t) => (
+                    <div key={t} className="flex items-center gap-2">
+                      <span className="w-32 shrink-0 truncate rounded-full border border-cyan-300/20 bg-cyan-400/10 px-2.5 py-1 text-xs text-cyan-200">{t}</span>
+                      <input
+                        className="input-dark !py-1.5 text-xs"
+                        value={form.tagIcons[t] || ""}
+                        onChange={(e) => setForm({ ...form, tagIcons: { ...form.tagIcons, [t]: e.target.value } })}
+                        placeholder="https://.../icon.png"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="md:col-span-2">
+              <ChipInput
+                label="Tech Stack"
+                values={form.techStack}
+                onChange={(techStack) => setForm({ ...form, techStack })}
+                placeholder="Ketik lalu Enter, mis. PostgreSQL"
+              />
+            </div>
+            <div>
+              <label className="label">Total Pengguna <span className="font-normal text-slate-500">(opsional)</span></label>
+              <input className="input-dark" value={form.totalUsers} onChange={(e) => setForm({ ...form, totalUsers: e.target.value })} placeholder="mis. 10.000+" />
+            </div>
+            <div>
+              <label className="label">Pengguna Bersamaan <span className="font-normal text-slate-500">(opsional)</span></label>
+              <input className="input-dark" value={form.concurrentUsers} onChange={(e) => setForm({ ...form, concurrentUsers: e.target.value })} placeholder="mis. 500" />
             </div>
             <div>
               <label className="label">URL Demo</label>

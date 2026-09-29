@@ -9,6 +9,24 @@ type Ctx = { params: Promise<{ id: string }> };
 
 const PERM = "experiences.manage";
 
+const VALID_ICONS = new Set([
+  "briefcase",
+  "code",
+  "server",
+  "database",
+  "cloud",
+  "smartphone",
+  "globe",
+  "wrench",
+  "rocket",
+  "users",
+]);
+
+function parseIcon(input: unknown): string | null {
+  const v = String(input ?? "").trim().toLowerCase();
+  return VALID_ICONS.has(v) ? v : null;
+}
+
 export async function PUT(req: NextRequest, { params }: Ctx) {
   try {
     await requirePermission(PERM);
@@ -22,6 +40,7 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
       endDate,
       isCurrent,
       description,
+      icon,
       sortOrder,
     } = body;
     if (!company || !position || !description) {
@@ -40,6 +59,7 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
         endDate: endDate || null,
         isCurrent: isCurrent === true,
         description: String(description),
+        icon: parseIcon(icon),
         sortOrder: Number(sortOrder ?? 0),
         updatedAt: new Date(),
       })

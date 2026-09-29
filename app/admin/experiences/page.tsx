@@ -15,8 +15,22 @@ const EMPTY = {
   endDate: "",
   isCurrent: false,
   description: "",
+  icon: "briefcase",
   sortOrder: 0,
 };
+
+const ICON_OPTIONS = [
+  { value: "briefcase", label: "Koper (umum)" },
+  { value: "code", label: "Kode (developer)" },
+  { value: "server", label: "Server (backend/infra)" },
+  { value: "database", label: "Database" },
+  { value: "cloud", label: "Awan (cloud/devops)" },
+  { value: "smartphone", label: "HP (mobile)" },
+  { value: "globe", label: "Globe (web)" },
+  { value: "wrench", label: "Kunci (teknisi/support)" },
+  { value: "rocket", label: "Roket (startup)" },
+  { value: "users", label: "Orang (tim/lead)" },
+];
 
 function periodLabel(e: Experience): string {
   const start = e.startDate || "?";
@@ -51,6 +65,7 @@ export default function ExperiencesPage() {
       endDate: e.endDate ?? "",
       isCurrent: e.isCurrent,
       description: e.description,
+      icon: e.icon ?? "briefcase",
       sortOrder: e.sortOrder,
     });
     setFormError("");
@@ -195,6 +210,14 @@ export default function ExperiencesPage() {
             <div className="md:col-span-2">
               <label className="label">Deskripsi Pekerjaan</label>
               <textarea className="input-dark min-h-[110px]" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Ceritakan tanggung jawab dan pencapaian..." required />
+            </div>
+            <div>
+              <label className="label">Icon</label>
+              <select className="input-dark" value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })}>
+                {ICON_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
             </div>
             {formError && <p className="text-sm text-red-300 md:col-span-2">{formError}</p>}
             <div className="flex justify-end gap-3 md:col-span-2">

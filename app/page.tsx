@@ -1,6 +1,8 @@
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { experiences, projects, siteSettings } from "@/db/schema";
+import ProjectGrid from "@/components/ProjectGrid";
+import ExpIcon from "@/components/ExpIcon";
 import {
   ArrowRight,
   Briefcase,
@@ -11,7 +13,6 @@ import {
   Phone,
   Rocket,
   Sparkles,
-  ExternalLink,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -29,71 +30,6 @@ async function getSettings(): Promise<Record<string, string>> {
   } catch {
     return {};
   }
-}
-
-function ProjectCard({ p }: { p: typeof projects.$inferSelect }) {
-  return (
-    <article className="glass group overflow-hidden rounded-2xl transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-400/40 hover:shadow-[0_20px_60px_-15px_rgba(124,58,237,0.45)]">
-      <div className="relative h-44 overflow-hidden bg-gradient-to-br from-violet-900/40 via-[#0d0d1f] to-cyan-900/30">
-        {p.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={p.imageUrl}
-            alt={p.title}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-            loading="lazy"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <FolderKanban className="h-12 w-12 text-violet-300/40" />
-          </div>
-        )}
-        {p.isFeatured && (
-          <span className="absolute left-3 top-3 rounded-full bg-fuchsia-500/20 px-3 py-1 text-xs font-semibold text-fuchsia-200 backdrop-blur">
-            Unggulan
-          </span>
-        )}
-      </div>
-      <div className="p-5">
-        <h3 className="font-display text-lg font-bold text-white">{p.title}</h3>
-        <p className="mt-2 line-clamp-3 text-sm text-slate-300/80">{p.description}</p>
-        {p.tags.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {p.tags.map((t) => (
-              <span
-                key={t}
-                className="rounded-full border border-cyan-300/20 bg-cyan-400/10 px-2.5 py-0.5 text-xs text-cyan-200"
-              >
-                {t}
-              </span>
-            ))}
-          </div>
-        )}
-        <div className="mt-4 flex gap-3">
-          {p.demoUrl && (
-            <a
-              href={p.demoUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-violet-300 hover:text-violet-200"
-            >
-              <ExternalLink className="h-4 w-4" /> Demo
-            </a>
-          )}
-          {p.repoUrl && (
-            <a
-              href={p.repoUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-300 hover:text-white"
-            >
-              <Github className="h-4 w-4" /> Kode
-            </a>
-          )}
-        </div>
-      </div>
-    </article>
-  );
 }
 
 export default async function HomePage() {
@@ -140,8 +76,16 @@ export default async function HomePage() {
       {/* Navbar */}
       <header className="glass sticky top-0 z-40 border-x-0 border-t-0">
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <a href="#" className="font-display text-xl font-bold">
-            <span className="text-gradient">{siteName}</span>
+          <a href="#" className="flex items-center gap-2.5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo.png"
+              alt="Logo"
+              className="h-9 w-9 rounded-xl shadow-[0_0_16px_rgba(139,92,246,0.5)]"
+            />
+            <span className="font-display text-xl font-bold">
+              <span className="text-gradient">{siteName}</span>
+            </span>
           </a>
           <div className="hidden items-center gap-7 text-sm text-slate-300 md:flex">
             <a href="#proyek" className="transition hover:text-white">Proyek</a>
@@ -197,11 +141,7 @@ export default async function HomePage() {
               Proyek <span className="text-gradient">Unggulan</span>
             </h2>
           </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {featured.map((p) => (
-              <ProjectCard key={p.id} p={p} />
-            ))}
-          </div>
+          <ProjectGrid projects={featured} />
         </section>
       )}
 
@@ -218,11 +158,7 @@ export default async function HomePage() {
             Belum ada proyek yang dipublikasikan.
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {rest.map((p) => (
-              <ProjectCard key={p.id} p={p} />
-            ))}
-          </div>
+          <ProjectGrid projects={rest} />
         )}
       </section>
 
@@ -240,7 +176,9 @@ export default async function HomePage() {
           <div className="relative space-y-6 before:absolute before:bottom-2 before:left-[19px] before:top-2 before:w-px before:bg-gradient-to-b before:from-violet-500/60 before:via-cyan-400/30 before:to-transparent md:before:left-[23px]">
             {expList.map((e) => (
               <div key={e.id} className="relative pl-12 md:pl-14">
-                <span className="absolute left-[11px] top-6 h-4 w-4 rounded-full border-2 border-violet-400 bg-[#0d0d1f] shadow-[0_0_12px_rgba(139,92,246,0.7)] md:left-[15px]" />
+                <span className="absolute left-[7px] top-5 flex h-8 w-8 items-center justify-center rounded-full border-2 border-violet-400 bg-[#0d0d1f] shadow-[0_0_12px_rgba(139,92,246,0.7)] md:left-[11px]">
+                  <ExpIcon icon={e.icon} className="h-4 w-4 text-violet-300" />
+                </span>
                 <article className="glass rounded-2xl p-6 text-left">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <h3 className="font-display text-lg font-bold text-white">

@@ -22,6 +22,18 @@ function parseTags(input: unknown): string[] {
   return [];
 }
 
+function parseIconMap(input: unknown): Record<string, string> {
+  if (input && typeof input === "object" && !Array.isArray(input)) {
+    const out: Record<string, string> = {};
+    for (const [k, v] of Object.entries(input as Record<string, unknown>)) {
+      const url = String(v ?? "").trim();
+      if (k.trim() && url) out[k.trim()] = url;
+    }
+    return out;
+  }
+  return {};
+}
+
 export async function GET() {
   try {
     await requirePermission("projects.manage");
@@ -36,7 +48,7 @@ export async function POST(req: NextRequest) {
   try {
     await requirePermission("projects.manage");
     const body = await req.json();
-    const { title, slug, description, imageUrl, tags, demoUrl, repoUrl, isFeatured, isPublished, sortOrder } = body;
+    const { title, slug, description, detailDescription, imageUrl, tags, techStack, tagIcons, totalUsers, concurrentUsers, demoUrl, repoUrl, isFeatured, isPublished, sortOrder } = body;
     if (!title || !description) {
       return NextResponse.json(
         { error: "Judul dan deskripsi wajib diisi" },
@@ -49,8 +61,13 @@ export async function POST(req: NextRequest) {
         title: String(title),
         slug: slug ? String(slug) : slugify(String(title)),
         description: String(description),
+        detailDescription: detailDescription ? String(detailDescription) : null,
         imageUrl: imageUrl || null,
         tags: parseTags(tags),
+        techStack: parseTags(techStack),
+        tagIcons: parseIconMap(tagIcons),
+        totalUsers: totalUsers ? String(totalUsers).slice(0, 64) : null,
+        concurrentUsers: concurrentUsers ? String(concurrentUsers).slice(0, 64) : null,
         demoUrl: demoUrl || null,
         repoUrl: repoUrl || null,
         isFeatured: isFeatured === true,

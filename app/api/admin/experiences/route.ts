@@ -7,6 +7,24 @@ import { apiError } from "@/lib/api";
 
 const PERM = "experiences.manage";
 
+const VALID_ICONS = new Set([
+  "briefcase",
+  "code",
+  "server",
+  "database",
+  "cloud",
+  "smartphone",
+  "globe",
+  "wrench",
+  "rocket",
+  "users",
+]);
+
+function parseIcon(input: unknown): string | null {
+  const v = String(input ?? "").trim().toLowerCase();
+  return VALID_ICONS.has(v) ? v : null;
+}
+
 export async function GET() {
   try {
     await requirePermission(PERM);
@@ -32,6 +50,7 @@ export async function POST(req: NextRequest) {
       endDate,
       isCurrent,
       description,
+      icon,
       sortOrder,
     } = body;
     if (!company || !position || !description) {
@@ -50,6 +69,7 @@ export async function POST(req: NextRequest) {
         endDate: endDate || null,
         isCurrent: isCurrent === true,
         description: String(description),
+        icon: parseIcon(icon),
         sortOrder: Number(sortOrder ?? 0),
       })
       .returning();

@@ -15,6 +15,20 @@
       "when": 1790673217469,
       "tag": "0001_bent_diamondback",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790676719269,
+      "tag": "0002_ambiguous_caretaker",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790676749577,
+      "tag": "0003_young_morlun",
+      "breakpoints": true
     }
   ]
 }

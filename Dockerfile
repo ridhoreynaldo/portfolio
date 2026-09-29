@@ -17,7 +17,7 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-RUN addgroup -S nodejs && adduser -S node -G nodejs
+RUN getent group nodejs >/dev/null || addgroup -S nodejs; getent passwd node >/dev/null || adduser -S node -G nodejs
 
 # Output standalone Next.js
 COPY --from=builder /app/.next/standalone ./

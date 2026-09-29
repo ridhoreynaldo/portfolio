@@ -8,6 +8,13 @@
       "when": 1790666983160,
       "tag": "0000_late_tattoo",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790673217469,
+      "tag": "0001_bent_diamondback",
+      "breakpoints": true
     }
   ]
 }

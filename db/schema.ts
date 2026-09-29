@@ -118,8 +118,23 @@ export const siteSettings = pgTable("site_settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const experiences = pgTable("experiences", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  company: varchar("company", { length: 255 }).notNull(),
+  position: varchar("position", { length: 255 }).notNull(),
+  location: varchar("location", { length: 255 }),
+  startDate: varchar("start_date", { length: 64 }).notNull(),
+  endDate: varchar("end_date", { length: 64 }),
+  isCurrent: boolean("is_current").default(false).notNull(),
+  description: text("description").notNull(),
+  sortOrder: integer("sort_order").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export type User = typeof users.$inferSelect;
 export type Role = typeof roles.$inferSelect;
 export type Permission = typeof permissions.$inferSelect;
 export type Menu = typeof menus.$inferSelect;
 export type Project = typeof projects.$inferSelect;
+export type Experience = typeof experiences.$inferSelect;

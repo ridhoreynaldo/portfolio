@@ -21,9 +21,11 @@ const P_USERS = "22222222-2222-2222-2222-222222222222";
 const P_ROLES = "33333333-3333-3333-3333-333333333333";
 const P_PROJECTS = "44444444-4444-4444-4444-444444444444";
 const P_SETTINGS = "55555555-5555-5555-5555-555555555555";
+const P_EXPERIENCES = "66666666-6666-6666-6666-666666666666";
 
 const M_DASH = "d0000000-0000-0000-0000-000000000001";
 const M_PROJECTS = "d0000000-0000-0000-0000-000000000002";
+const M_EXPERIENCES = "d0000000-0000-0000-0000-000000000008";
 const M_SETTINGS = "d0000000-0000-0000-0000-000000000003";
 const M_MASTER = "d0000000-0000-0000-0000-000000000004";
 const M_MENUS = "d0000000-0000-0000-0000-000000000005";
@@ -58,6 +60,7 @@ async function main() {
     [P_ROLES, "roles.manage", "Mengelola peran & hak akses"],
     [P_PROJECTS, "projects.manage", "Mengelola proyek portfolio"],
     [P_SETTINGS, "settings.manage", "Mengelola pengaturan situs"],
+    [P_EXPERIENCES, "experiences.manage", "Mengelola pengalaman kerja"],
   ];
   for (const [id, key, desc] of perms) {
     await q(
@@ -76,7 +79,7 @@ async function main() {
       [R_SUPER, pid]
     );
   }
-  for (const pid of [P_PROJECTS, P_SETTINGS]) {
+  for (const pid of [P_PROJECTS, P_SETTINGS, P_EXPERIENCES]) {
     await q(
       `INSERT INTO role_permissions (role_id, permission_id) VALUES ($1,$2)
        ON CONFLICT DO NOTHING`,
@@ -105,8 +108,9 @@ async function main() {
     // id, parentId, label, icon, path, sortOrder
     [M_DASH, null, "Dashboard", "LayoutDashboard", "/admin", 0],
     [M_PROJECTS, null, "Proyek", "FolderKanban", "/admin/projects", 1],
-    [M_SETTINGS, null, "Pengaturan", "Settings", "/admin/settings", 2],
-    [M_MASTER, null, "Master Data", "Database", "#", 3],
+    [M_EXPERIENCES, null, "Pengalaman", "Briefcase", "/admin/experiences", 2],
+    [M_SETTINGS, null, "Pengaturan", "Settings", "/admin/settings", 3],
+    [M_MASTER, null, "Master Data", "Database", "#", 4],
     [M_MENUS, M_MASTER, "Menu Dinamis", "ListTree", "/admin/menus", 0],
     [M_USERS, M_MASTER, "Pengguna", "Users", "/admin/users", 1],
     [M_ROLES, M_MASTER, "Peran & Akses", "ShieldCheck", "/admin/roles", 2],
@@ -129,7 +133,7 @@ async function main() {
       [R_SUPER, mid]
     );
   }
-  for (const mid of [M_DASH, M_PROJECTS, M_SETTINGS]) {
+  for (const mid of [M_DASH, M_PROJECTS, M_EXPERIENCES, M_SETTINGS]) {
     await q(
       `INSERT INTO role_menus (role_id, menu_id) VALUES ($1,$2)
        ON CONFLICT DO NOTHING`,
@@ -158,6 +162,9 @@ async function main() {
     ["email", "halo@example.com"],
     ["github_url", "https://github.com/"],
     ["linkedin_url", "https://linkedin.com/"],
+    ["contact_email", "ridhofailed@gmail.com"],
+    ["contact_phone", "0895601217009"],
+    ["contact_linkedin", "https://www.linkedin.com/in/ridhoreynaldo/"],
   ];
   for (const [key, value] of settings) {
     await q(

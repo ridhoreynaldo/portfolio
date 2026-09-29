@@ -1,18 +1,26 @@
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { projects, siteSettings } from "@/db/schema";
+import { experiences, projects, siteSettings } from "@/db/schema";
 import {
   ArrowRight,
+  Briefcase,
   FolderKanban,
   Github,
   Linkedin,
   Mail,
+  Phone,
   Rocket,
   Sparkles,
   ExternalLink,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
+
+function waLink(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  const intl = digits.startsWith("0") ? "62" + digits.slice(1) : digits;
+  return `https://wa.me/${intl}`;
+}
 
 async function getSettings(): Promise<Record<string, string>> {
   try {
@@ -99,12 +107,14 @@ export default async function HomePage() {
   const aboutText =
     s.about_text ||
     "Saya seorang pengembang perangkat lunak yang berfokus pada aplikasi web. Saya senang mengubah ide menjadi produk yang cepat, aman, dan mudah digunakan.";
-  const email = s.email || "halo@example.com";
+  const email = s.contact_email || s.email || "halo@example.com";
+  const phone = s.contact_phone || "";
   const githubUrl = s.github_url || "#";
-  const linkedinUrl = s.linkedin_url || "#";
+  const linkedinUrl = s.contact_linkedin || s.linkedin_url || "#";
 
   let featured: (typeof projects.$inferSelect)[] = [];
   let rest: (typeof projects.$inferSelect)[] = [];
+  let expList: (typeof experiences.$inferSelect)[] = [];
   try {
     const all = await db
       .select()
@@ -115,6 +125,14 @@ export default async function HomePage() {
     rest = all.filter((p) => !p.isFeatured);
   } catch {
     // DB belum siap — tampilkan halaman tanpa proyek
+  }
+  try {
+    expList = await db
+      .select()
+      .from(experiences)
+      .orderBy(asc(experiences.sortOrder));
+  } catch {
+    // DB belum siap / tabel belum ada — tampilkan halaman tanpa pengalaman
   }
 
   return (
@@ -127,6 +145,7 @@ export default async function HomePage() {
           </a>
           <div className="hidden items-center gap-7 text-sm text-slate-300 md:flex">
             <a href="#proyek" className="transition hover:text-white">Proyek</a>
+            <a href="#pengalaman" className="transition hover:text-white">Pengalaman</a>
             <a href="#tentang" className="transition hover:text-white">Tentang</a>
             <a href="#kontak" className="transition hover:text-white">Kontak</a>
           </div>
@@ -209,6 +228,49 @@ export default async function HomePage() {
 
       <hr className="hr-glow mx-auto max-w-6xl" />
 
+      {/* Pengalaman kerja */}
+      {expList.length > 0 && (
+        <section id="pengalaman" className="mx-auto max-w-4xl px-5 py-16">
+          <div className="mb-10 flex items-center justify-center gap-3">
+            <Briefcase className="h-6 w-6 text-violet-300" />
+            <h2 className="font-display text-3xl font-bold">
+              Pengalaman <span className="text-gradient">Kerja</span>
+            </h2>
+          </div>
+          <div className="relative space-y-6 before:absolute before:bottom-2 before:left-[19px] before:top-2 before:w-px before:bg-gradient-to-b before:from-violet-500/60 before:via-cyan-400/30 before:to-transparent md:before:left-[23px]">
+            {expList.map((e) => (
+              <div key={e.id} className="relative pl-12 md:pl-14">
+                <span className="absolute left-[11px] top-6 h-4 w-4 rounded-full border-2 border-violet-400 bg-[#0d0d1f] shadow-[0_0_12px_rgba(139,92,246,0.7)] md:left-[15px]" />
+                <article className="glass rounded-2xl p-6 text-left">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="font-display text-lg font-bold text-white">
+                      {e.position}
+                    </h3>
+                    {e.isCurrent && (
+                      <span className="rounded-full bg-emerald-400/15 px-3 py-1 text-xs font-semibold text-emerald-300">
+                        Saat ini
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 text-sm font-medium text-violet-300">
+                    {e.company}
+                    {e.location && <span className="text-slate-400"> · {e.location}</span>}
+                  </p>
+                  <p className="mt-1 text-xs uppercase tracking-wider text-slate-500">
+                    {e.startDate} — {e.isCurrent ? "Sekarang" : e.endDate || "?"}
+                  </p>
+                  <p className="mt-3 text-sm leading-relaxed text-slate-300/85">
+                    {e.description}
+                  </p>
+                </article>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <hr className="hr-glow mx-auto max-w-6xl" />
+
       {/* Tentang */}
       <section id="tentang" className="mx-auto max-w-4xl px-5 py-16 text-center">
         <h2 className="font-display text-3xl font-bold">
@@ -231,6 +293,11 @@ export default async function HomePage() {
           <a href={`mailto:${email}`} className="btn-primary">
             <Mail className="h-4 w-4" /> {email}
           </a>
+          {phone && (
+            <a href={waLink(phone)} target="_blank" rel="noreferrer" className="btn-ghost">
+              <Phone className="h-4 w-4" /> {phone}
+            </a>
+          )}
           <a href={githubUrl} target="_blank" rel="noreferrer" className="btn-ghost">
             <Github className="h-4 w-4" /> GitHub
           </a>

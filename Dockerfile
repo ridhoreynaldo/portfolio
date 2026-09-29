@@ -22,6 +22,7 @@ RUN getent group nodejs >/dev/null || addgroup -S nodejs; getent passwd node >/d
 # Output standalone Next.js
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
 
 # Kebutuhan migrasi + seed saat runtime (drizzle-kit ada di dependencies)
 COPY --from=builder /app/drizzle ./drizzle

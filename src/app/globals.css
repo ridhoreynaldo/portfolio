@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  --bg-deep: #05060f;
+  --violet-neon: #8b5cf6;
+  --cyan-neon: #22d3ee;
+  --fuchsia-neon: #f472b6;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--bg-deep);
+  color: #e8eaf2;
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+/* Panel kaca */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Teks gradien violet → cyan → fuchsia */
+.text-gradient {
+  background: linear-gradient(92deg, #a78bfa 0%, #22d3ee 50%, #f472b6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hr-glow {
+  height: 1px;
+  border: 0;
+  background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.6), rgba(34, 211, 238, 0.6), transparent);
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0a18; }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #7c3aed, #0891b2); border-radius: 8px; }
+::selection { background: rgba(139, 92, 246, 0.45); color: #fff; }
+
+/* Form */
+.input-dark {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.65rem;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.875rem;
+  color: #e8eaf2;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input-dark:focus { border-color: rgba(139, 92, 246, 0.7); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18); }
+.input-dark::placeholder { color: rgba(232, 234, 242, 0.35); }
+.input-dark:disabled { opacity: 0.6; }
+select.input-dark option { background: #0d0d1f; }
+.label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(232, 234, 242, 0.6);
+}
+
+/* Tombol */
+.btn-primary, .btn-ghost, .btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s, filter 0.2s, background 0.2s, border-color 0.2s;
+}
+.btn-primary {
+  background: linear-gradient(92deg, #7c3aed, #0891b2);
+  color: #fff;
+  box-shadow: 0 8px 30px -8px rgba(124, 58, 237, 0.55);
+}
+.btn-primary:hover { filter: brightness(1.12); transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #e8eaf2;
+  font-weight: 500;
+}
+.btn-ghost:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.25); }
+.btn-danger {
+  background: rgba(244, 63, 94, 0.08);
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  color: #fda4af;
+  font-weight: 500;
+}
+.btn-danger:hover { background: rgba(244, 63, 94, 0.18); }
+.btn-sm { padding: 0.3rem 0.7rem; font-size: 0.75rem; border-radius: 0.5rem; }

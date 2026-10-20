@@ -1,0 +1,26 @@
+# Dev lokal: hanya database. Aplikasi dijalankan dengan `npm run dev`.
+#   docker compose -f docker-compose.dev.yml up -d
+# .env dev:
+#   DATABASE_URL=postgres://portfolio:dev@127.0.0.1:6432/portfolio
+#   DATABASE_URL_DIRECT=postgres://portfolio:dev@127.0.0.1:5432/portfolio
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment: { POSTGRES_USER: portfolio, POSTGRES_PASSWORD: dev, POSTGRES_DB: portfolio }
+    ports: ["127.0.0.1:5432:5432"]
+    volumes: [pgdata-dev:/var/lib/postgresql/data]
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    depends_on: [postgres]
+    environment:
+      DB_HOST: postgres
+      DB_USER: portfolio
+      DB_PASSWORD: dev
+      DB_NAME: portfolio
+      LISTEN_PORT: "6432"
+      POOL_MODE: transaction
+      AUTH_TYPE: scram-sha-256
+      IGNORE_STARTUP_PARAMETERS: extra_float_digits,options
+    ports: ["127.0.0.1:6432:6432"]
+volumes:
+  pgdata-dev:

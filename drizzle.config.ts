@@ -1,18 +1,8 @@
 import { defineConfig } from "drizzle-kit";
 
-const {
-  PGHOST = "localhost",
-  PGPORT = "5432",
-  PGUSER = "postgres",
-  PGPASSWORD = "",
-  PGDATABASE = "postgres",
-} = process.env;
-
 export default defineConfig({
   dialect: "postgresql",
-  schema: "./db/schema.ts",
+  schema: "./src/modules/*/schema.ts",
   out: "./drizzle",
-  dbCredentials: {
-    url: `postgresql://${PGUSER}:${encodeURIComponent(PGPASSWORD)}@${PGHOST}:${PGPORT}/${PGDATABASE}`,
-  },
+  dbCredentials: { url: process.env.DATABASE_URL_DIRECT ?? process.env.DATABASE_URL ?? "" },
 });

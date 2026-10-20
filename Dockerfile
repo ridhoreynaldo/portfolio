@@ -1,40 +1,39 @@
-# ---------- deps ----------
-FROM node:20-alpine AS deps
+# syntax=docker/dockerfile:1.7
+# Satu Dockerfile, dua target: migrate (one-shot: migrasi + seed) | web (Next.js standalone)
+
+FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci
 
-# ---------- builder ----------
-FROM node:20-alpine AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+FROM deps AS build
 COPY . .
-RUN npx drizzle-kit generate
-RUN npm run build
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN npm run build && npm run build:migrate
 
-# ---------- runner ----------
-FROM node:20-alpine AS runner
-WORKDIR /app
+FROM deps AS prod-deps
+RUN npm prune --omit=dev
+
+# ---------- migrate ----------
+FROM node:22-bookworm-slim AS migrate
 ENV NODE_ENV=production
+WORKDIR /app
+COPY --from=prod-deps /app/node_modules ./node_modules
+COPY --from=build /app/dist/migrate.mjs ./dist/migrate.mjs
+COPY drizzle ./drizzle
+COPY package.json ./
+USER node
+CMD ["node", "dist/migrate.mjs"]
 
-RUN getent group nodejs >/dev/null || addgroup -S nodejs; getent passwd node >/dev/null || adduser -S node -G nodejs
-
-# Output standalone Next.js
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
-
-# Kebutuhan migrasi + seed saat runtime (drizzle-kit ada di dependencies)
-COPY --from=builder /app/drizzle ./drizzle
-COPY --from=builder /app/drizzle.config.ts ./
-COPY --from=builder /app/db ./db
-COPY --from=builder /app/scripts ./scripts
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/node_modules ./node_modules
-
-RUN chmod +x ./scripts/entrypoint.sh && chown -R node:nodejs /app
-
+# ---------- web ----------
+FROM node:22-bookworm-slim AS web
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0
+WORKDIR /app
+COPY --from=build /app/.next/standalone ./
+COPY --from=build /app/.next/static ./.next/static
+COPY --from=build /app/public ./public
 USER node
 EXPOSE 3000
-ENV PORT=3000 HOSTNAME=0.0.0.0
-ENTRYPOINT ["/app/scripts/entrypoint.sh"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+CMD ["node", "server.js"]

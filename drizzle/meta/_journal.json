@@ -29,6 +29,13 @@
       "when": 1790676749577,
       "tag": "0003_young_morlun",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792469919883,
+      "tag": "0004_profile_rbac_granular",
+      "breakpoints": true
     }
   ]
 }

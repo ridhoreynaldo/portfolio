@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
+const config: NextConfig = {
   output: "standalone",
+  poweredByHeader: false,
+  serverExternalPackages: ["postgres"],
 };
 
-export default nextConfig;
+export default config;

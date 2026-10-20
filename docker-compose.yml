@@ -1,0 +1,39 @@
+# PRODUKSI — menempel ke infra bersama repo `devops` (https://github.com/ridhoreynaldo/devops):
+# Postgres+PgBouncer dan nginx gateway. Tidak ada DB/port di sini; nginx mem-proxy ke `portfolio_web:3000`
+# lewat network `global-gateway-net`. Lokasi di server: /opt/devops/04-apps/portfolio
+#
+#   docker compose up -d --build          (atau: make deploy A=portfolio dari /opt/devops)
+
+x-logging: &logging
+  driver: json-file
+  options: { max-size: "10m", max-file: "3" }
+
+x-app: &app
+  env_file: .env
+  networks: [global-gateway-net]
+  logging: *logging
+  security_opt: ["no-new-privileges:true"]
+
+services:
+  migrate:
+    <<: *app
+    build: { context: ., target: migrate }
+    image: portfolio-migrate
+    container_name: portfolio_migrate
+    restart: "no"
+
+  web:
+    <<: *app
+    build: { context: ., target: web }
+    image: portfolio-web
+    container_name: portfolio_web        # ← dirujuk vhost nginx di devops
+    restart: unless-stopped
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    deploy:
+      resources:
+        limits: { memory: 512M, cpus: "1.0" }
+
+networks:
+  global-gateway-net:
+    external: true

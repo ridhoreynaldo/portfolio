@@ -36,6 +36,13 @@
       "when": 1792469919883,
       "tag": "0004_profile_rbac_granular",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793032593985,
+      "tag": "0005_services_billing",
+      "breakpoints": true
     }
   ]
 }

@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Award, Briefcase, Database, FolderKanban, KeyRound, LayoutDashboard, ListTree, Settings, ShieldCheck, Sparkles, UserCircle, Users,
+  Award, Briefcase, CreditCard, Database, FolderKanban, Handshake, KeyRound, LayoutDashboard, ListTree, Package, QrCode, Receipt, Settings,
+  ShieldCheck, ShoppingCart, Sparkles, UserCircle, Users, Wallet,
   type LucideIcon,
 } from "lucide-react";
 
 /** Ikon yang boleh dipilih di /admin/menus. Tambahkan di sini bila perlu ikon baru. */
 export const ADMIN_ICONS = {
   LayoutDashboard, FolderKanban, Briefcase, Award, Sparkles, UserCircle, Settings, Database, ListTree, Users, ShieldCheck, KeyRound,
+  Wallet, Package, ShoppingCart, Receipt, Handshake, QrCode, CreditCard,
 } satisfies Record<string, LucideIcon>;
 export const ADMIN_ICON_NAMES = Object.keys(ADMIN_ICONS) as (keyof typeof ADMIN_ICONS)[];
 

@@ -9,7 +9,7 @@ import type { PublicProject } from "@/modules/portfolio/service";
 
 function TagBadge({ tag, small, iconUrl }: { tag: string; small?: boolean; iconUrl?: string | null }) {
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border border-cyan-300/20 bg-cyan-400/10 text-cyan-200 ${small ? "px-2.5 py-0.5 text-xs" : "px-3 py-1 text-xs font-medium"}`}>
+    <span className={`chip ${small ? "" : "!px-3 !py-1"}`}>
       <TechIcon name={tag} iconUrl={iconUrl} className="h-3.5 w-3.5 shrink-0" />
       {tag}
     </span>
@@ -25,7 +25,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
   }, [onClose]);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={onClose} role="dialog" aria-modal="true" aria-label={title}>
-      <div className="glass max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="hud max-h-[90vh] w-full max-w-3xl overflow-y-auto p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="mb-5 flex items-center justify-between gap-4">
           <h3 className="font-display text-xl font-bold text-white">{title}</h3>
           <button onClick={onClose} className="rounded-lg p-1.5 text-slate-400 transition hover:bg-white/10 hover:text-white" aria-label="Tutup"><X className="h-5 w-5" /></button>
@@ -76,18 +76,18 @@ function ProjectCard({ p, onOpen }: { p: PublicProject; onOpen: () => void }) {
       tabIndex={0}
       role="button"
       aria-label={`Lihat detail ${p.title}`}
-      className="glass group cursor-pointer overflow-hidden rounded-2xl transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-400/40 hover:shadow-[0_20px_60px_-15px_rgba(124,58,237,0.45)] focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+      className="hud group cursor-pointer overflow-hidden transition-all duration-300 hover:-translate-y-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
     >
-      <div className="relative h-44 overflow-hidden bg-gradient-to-br from-violet-900/40 via-[#0d0d1f] to-cyan-900/30">
+      <div className="relative h-44 overflow-hidden bg-gradient-to-br from-violet-900/50 via-[#070b1f] to-cyan-900/30">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         {img ? <img src={img} alt={p.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" /> : <div className="flex h-full items-center justify-center"><FolderKanban className="h-12 w-12 text-violet-300/40" /></div>}
-        {p.isFeatured && <span className="absolute left-3 top-3 rounded-full bg-fuchsia-500/20 px-3 py-1 text-xs font-semibold text-fuchsia-200 backdrop-blur">Unggulan</span>}
+        {p.isFeatured && <span className="chip chip-magenta absolute left-3 top-3 backdrop-blur">★ unggulan</span>}
       </div>
       <div className="p-5">
         <h3 className="font-display text-lg font-bold text-white">{p.title}</h3>
         <p className="mt-2 line-clamp-3 text-sm text-slate-300/80">{p.description}</p>
         {p.tags.length > 0 && <div className="mt-3 flex flex-wrap gap-1.5">{p.tags.map((t) => <TagBadge key={t} tag={t} small iconUrl={p.tagIcons[t]} />)}</div>}
-        <p className="mt-4 inline-flex items-center gap-1.5 text-xs text-slate-500 transition group-hover:text-violet-300"><MousePointerClick className="h-3.5 w-3.5" /> Klik untuk detail</p>
+        <p className="hud-label mt-4 inline-flex items-center gap-1.5 !text-[10px] !text-slate-500 transition group-hover:!text-cyan-300"><MousePointerClick className="h-3.5 w-3.5" /> klik untuk detail</p>
       </div>
     </article>
   );

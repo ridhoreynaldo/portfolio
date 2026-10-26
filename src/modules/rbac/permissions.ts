@@ -24,7 +24,17 @@ export const PERMISSIONS: PermissionDef[] = [
   ...crud("user", "Pengguna"),
   ...crud("role", "Role & hak akses"),
   ...crud("menu", "Menu"),
+  // ── Layanan & pembayaran ──
+  ...crud("package", "Paket layanan"),
+  ...crud("order", "Order pelanggan"),
+  ...crud("invoice", "Tagihan"),
+  ...crud("customer", "Pelanggan"),
+  { key: "payment.read", description: "Pengaturan pembayaran (QRIS/bank): read", module: "payment" },
+  { key: "payment.update", description: "Pengaturan pembayaran (QRIS/bank): update", module: "payment" },
 ];
+
+/** Role pelanggan (portal /portal): login tanpa permission admin. */
+export const CUSTOMER_ROLE = "customer";
 
 export const PERMISSION_KEYS = new Set(PERMISSIONS.map((p) => p.key));
 

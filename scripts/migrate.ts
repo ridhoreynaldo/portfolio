@@ -7,7 +7,8 @@
  *  2. role sistem super_admin (+ role admin default bila belum ada)
  *  3. super admin pertama dari SEED_ADMIN_* bila belum ada user ber-role sistem
  *  4. menu admin (perbaiki path/permission dari versi lama, tambah menu baru) & menu PUBLIC
- *  5. baris profil (id=1)
+ *  5. baris profil (id=1) + pengaturan pembayaran (id=1)
+ *  6. role `customer` (pelanggan portal) dan konten awal (scripts/seed-content.ts — tidak menimpa data yang ada)
  */
 import { and, eq, inArray, isNull, notInArray, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -15,9 +16,10 @@ import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 import * as schema from "@/shared/db/schema";
 import { hashPassword } from "@/modules/auth/password";
-import { LEGACY_PERMISSION_MAP, PERMISSIONS, SUPER_ROLE } from "@/modules/rbac/permissions";
+import { CUSTOMER_ROLE, LEGACY_PERMISSION_MAP, PERMISSIONS, SUPER_ROLE } from "@/modules/rbac/permissions";
+import { seedContent } from "./seed-content";
 
-const { users, userRoles, roles, permissions, rolePermissions, menus, profile } = schema;
+const { users, userRoles, roles, permissions, rolePermissions, menus, profile, paymentSettings } = schema;
 
 const url = process.env.DATABASE_URL_DIRECT ?? process.env.DATABASE_URL;
 if (!url) throw new Error("DATABASE_URL_DIRECT / DATABASE_URL belum diset");
@@ -28,6 +30,7 @@ const log = (m: string) => console.log(`[migrate] ${m}`);
 // UUID tetap (sama dengan seed versi lama) agar idempotent lintas versi
 const R_SUPER = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
 const R_ADMIN = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
+const R_CUSTOMER = "cccccccc-cccc-cccc-cccc-cccccccccccc";
 const M = (n: string) => `d0000000-0000-0000-0000-0000000000${n}`;
 
 async function syncPermissions() {
@@ -73,6 +76,13 @@ async function ensureRoles() {
     await db.insert(rolePermissions).values(contentPerms.map((p) => ({ roleId: created[0]!.id, permissionId: p.id }))).onConflictDoNothing();
     log("role admin dibuat dengan permission konten");
   }
+  // role pelanggan: tanpa permission admin; dipakai /register dan /admin/customers
+  const cust = await db
+    .insert(roles)
+    .values({ id: R_CUSTOMER, name: CUSTOMER_ROLE, description: "Pelanggan portal layanan (order & tagihan) — tanpa akses panel admin" })
+    .onConflictDoNothing()
+    .returning({ id: roles.id });
+  if (cust.length) log("role customer dibuat");
 }
 
 async function ensureSuperAdmin() {
@@ -115,6 +125,12 @@ async function ensureMenus() {
     { id: M("05"), parentId: M("04"), label: "Menu Dinamis", icon: "ListTree", path: "/admin/menus", permissionKey: "menu.read", sortOrder: 0 },
     { id: M("06"), parentId: M("04"), label: "Pengguna", icon: "Users", path: "/admin/users", permissionKey: "user.read", sortOrder: 1 },
     { id: M("07"), parentId: M("04"), label: "Role & Akses", icon: "ShieldCheck", path: "/admin/roles", permissionKey: "role.read", sortOrder: 2 },
+    { id: M("0c"), parentId: null, label: "Layanan & Pembayaran", icon: "Wallet", path: "#", permissionKey: null, sortOrder: 6 },
+    { id: M("0d"), parentId: M("0c"), label: "Paket Layanan", icon: "Package", path: "/admin/packages", permissionKey: "package.read", sortOrder: 0 },
+    { id: M("0e"), parentId: M("0c"), label: "Order", icon: "ShoppingCart", path: "/admin/orders", permissionKey: "order.read", sortOrder: 1 },
+    { id: M("0f"), parentId: M("0c"), label: "Tagihan", icon: "Receipt", path: "/admin/invoices", permissionKey: "invoice.read", sortOrder: 2 },
+    { id: M("10"), parentId: M("0c"), label: "Pelanggan", icon: "Handshake", path: "/admin/customers", permissionKey: "customer.read", sortOrder: 3 },
+    { id: M("11"), parentId: M("0c"), label: "Pembayaran & QRIS", icon: "QrCode", path: "/admin/payment", permissionKey: "payment.read", sortOrder: 4 },
     { id: M("0b"), parentId: null, label: "Akun Saya", icon: "KeyRound", path: "/admin/account", permissionKey: null, sortOrder: 9 },
   ];
   // Baru → insert; sudah ada → hanya path & permission yang disamakan (label/ikon/urutan kustomisasi admin dipertahankan)
@@ -135,6 +151,7 @@ async function ensureMenus() {
 
 async function ensureProfile() {
   await db.insert(profile).values({ id: 1 }).onConflictDoNothing();
+  await db.insert(paymentSettings).values({ id: 1 }).onConflictDoNothing();
 }
 
 async function main() {
@@ -145,6 +162,7 @@ async function main() {
   await ensureSuperAdmin();
   await ensureMenus();
   await ensureProfile();
+  await seedContent(db, log);
   log("seed selesai");
 }
 

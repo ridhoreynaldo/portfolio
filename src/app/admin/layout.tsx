@@ -3,7 +3,7 @@ import { LogOut } from "lucide-react";
 import { readFlash } from "@/shared/action";
 import { Badge, Flash } from "@/shared/ui";
 import { logoutAction } from "@/modules/auth/actions";
-import { requireUser } from "@/modules/auth/guards";
+import { requireStaff } from "@/modules/auth/guards";
 import { adminMenuTree } from "@/modules/menus/repository";
 import { Sidebar } from "./sidebar";
 
@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Admin" };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const user = await requireUser();
+  const user = await requireStaff(); // pelanggan (tanpa permission) → /portal
   const [tree, flash] = await Promise.all([adminMenuTree(user), readFlash()]);
 
   return (

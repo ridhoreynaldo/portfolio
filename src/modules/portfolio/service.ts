@@ -4,6 +4,7 @@ import { asc, desc, eq } from "drizzle-orm";
 import { db } from "@/shared/db";
 import { publicMenus } from "@/modules/menus/repository";
 import { certifications, experiences, profile, projects, skills } from "@/modules/content/schema";
+import { servicePackages } from "@/modules/billing/schema";
 
 export const PORTFOLIO_TAG = "portfolio";
 
@@ -12,7 +13,7 @@ export const PORTFOLIO_TAG = "portfolio";
  * Dihitung ulang hanya saat konten berubah (revalidatePortfolio) atau maksimal tiap 1 jam.
  */
 async function load() {
-  const [prof, menus, exps, certs, sks, projs] = await Promise.all([
+  const [prof, menus, exps, certs, sks, projs, pkgs] = await Promise.all([
     db().select().from(profile).where(eq(profile.id, 1)).limit(1),
     publicMenus(),
     db()
@@ -37,6 +38,14 @@ async function load() {
       .from(projects)
       .where(eq(projects.isPublished, true))
       .orderBy(desc(projects.isFeatured), asc(projects.sortOrder), desc(projects.createdAt)),
+    db()
+      .select({
+        id: servicePackages.id, name: servicePackages.name, slug: servicePackages.slug, category: servicePackages.category, description: servicePackages.description,
+        features: servicePackages.features, price: servicePackages.price, billingCycle: servicePackages.billingCycle, unit: servicePackages.unit, isFeatured: servicePackages.isFeatured,
+      })
+      .from(servicePackages)
+      .where(eq(servicePackages.isActive, true))
+      .orderBy(desc(servicePackages.isFeatured), asc(servicePackages.sortOrder), asc(servicePackages.name)),
   ]);
   const p = prof[0];
   return {
@@ -46,6 +55,7 @@ async function load() {
     certifications: certs,
     skills: sks,
     projects: projs,
+    packages: pkgs,
   };
 }
 

@@ -2,7 +2,7 @@
 
 Portofolio pribadi (tema **galactic × cyberpunk**) + **portal jasa & pembayaran** (order, tagihan bulanan, QRIS) + panel admin dengan RBAC granular. **Next.js 16 · React 19 · Drizzle ORM · PostgreSQL (via PgBouncer) · Tailwind 4 · TypeScript** — stack dan struktur yang sama dengan [`wa-gateway`](https://github.com/ridhoreynaldo/wa-gateway), tanpa Redis.
 
-Repo ini adalah **aplikasi**. Infra (Postgres/PgBouncer, nginx, SSL, backup) ada di repo [`devops`](https://github.com/ridhoreynaldo/devops); aplikasi di-deploy ke `devops/04-apps/portfolio`.
+Produksi: dipasang **native (tanpa Docker)** di VPS yang sama dengan aplikasi lain — `/opt/portfolio`, systemd, nginx + Cloudflare Origin CA, PostgreSQL lewat PgBouncer global. Skrip ada di `deploy/`. (Dockerfile/compose tetap ada untuk opsi deploy via repo `devops`, tidak dipakai.)
 
 - Deploy: [`docs/DEPLOY.md`](docs/DEPLOY.md)
 - Arsitektur & keputusan teknis: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
@@ -35,4 +35,4 @@ Ubah skema: edit `src/modules/*/schema.ts` → `npm run db:generate` → review 
 |---|---|
 | `npm run typecheck` | cek tipe |
 | `npm run build` / `build:migrate` | build web / bundle skrip migrasi |
-| `docker compose up -d --build` | produksi di server devops |
+| `bash deploy/deploy.sh` | rilis ke VPS (server menarik commit dari GitHub) |

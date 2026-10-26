@@ -1,0 +1,54 @@
+# Portfolio ridhoreynaldo.com - web (Next.js standalone). Dipasang oleh deploy/release.sh.
+# Hanya mendengarkan 127.0.0.1:3200; dari luar lewat nginx (sites-available/ridhoreynaldo.com) + Cloudflare.
+#   kode   : /opt/portfolio/current -> releases/<id>   (diganti atomik)
+#   config : /etc/portfolio/app.env                    (root:portfolio 0640, berisi DATABASE_URL)
+#   data   : PostgreSQL (lewat PgBouncer) — termasuk file QRIS/bukti bayar (bytea), tanpa folder upload
+[Unit]
+Description=Portfolio ridhoreynaldo.com (Next.js)
+After=network-online.target postgresql.service pgbouncer.service
+Wants=network-online.target
+ConditionPathExists=/opt/portfolio/current/.next/standalone/server.js
+
+[Service]
+Type=simple
+User=portfolio
+Group=portfolio
+EnvironmentFile=/etc/portfolio/app.env
+Environment=PORT=3200
+Environment=HOSTNAME=127.0.0.1
+Environment=NODE_OPTIONS=--max-old-space-size=768
+WorkingDirectory=/opt/portfolio/current/.next/standalone
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=20
+KillSignal=SIGTERM
+LimitNOFILE=65536
+MemoryMax=1G
+TasksMax=512
+UMask=0027
+
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/portfolio/releases
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectHostname=yes
+ProtectClock=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectProc=invisible
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

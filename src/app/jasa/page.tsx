@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Code2, ExternalLink, Headset, LayoutDashboard, LogIn, Mail, MessageCircle, Package, Phone, Server, UserRound } from "lucide-react";
+import { ArrowRight, Code2, ExternalLink, Headset, Mail, MessageCircle, Package, Phone, Server, UserRound } from "lucide-react";
 import { PORTFOLIO_URL, PriceTierTable, ServiceFooter, ServiceHeader, serviceBrandOf } from "@/components/service-shell";
-import { getCurrentUser, homeFor } from "@/modules/auth/session";
+import { getCurrentUser } from "@/modules/auth/session";
 import { CYCLE, fmtIDR, tierRange } from "@/modules/billing/labels";
 import { getPortfolio } from "@/modules/portfolio/service";
 import { waLink } from "@/shared/url";
@@ -61,7 +61,6 @@ export default async function JasaPage() {
     "Pembuatan Aplikasi": "Satu paket, scope mengikuti kebutuhan Anda: sistem informasi, dashboard, API, integrasi WhatsApp/pembayaran, sampai machine learning.",
     Sewa: "Langganan bulanan atau tahunan. Biaya mengikuti skala pemakaian; harga pasti dikonfirmasi lewat WhatsApp.",
   };
-  const isStaffUser = !!user && homeFor(user) === "/admin";
 
   return (
     <div className="svc">
@@ -71,8 +70,8 @@ export default async function JasaPage() {
         {/* ── Hero ── */}
         <section className="relative overflow-hidden">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(900px_380px_at_20%_-10%,rgba(184,146,58,0.16),transparent_60%),radial-gradient(700px_320px_at_90%_10%,rgba(20,33,61,0.10),transparent_60%)]" />
-          <div className="relative mx-auto grid max-w-6xl gap-12 px-5 pb-16 pt-14 md:grid-cols-[1.15fr_0.85fr] md:pb-24 md:pt-20">
-            <div>
+          <div className="relative mx-auto max-w-6xl px-5 pb-16 pt-14 md:pb-24 md:pt-20">
+            <div className="max-w-3xl">
               <p className="eyebrow">Aplikasi custom · sewa server · WhatsApp gateway</p>
               <h1 className="font-serif mt-4 text-4xl font-semibold leading-[1.1] text-[var(--navy)] md:text-6xl">
                 {brand.name}
@@ -87,40 +86,13 @@ export default async function JasaPage() {
                 <a href="#paket" className="btn-ghost"><Package className="h-4 w-4" /> Lihat Paket</a>
                 <Link href={PORTFOLIO_URL} className="btn-ghost" title="Siapa di balik Kodeva: pengalaman, sertifikasi & proyek"><UserRound className="h-4 w-4" /> Profil & Portofolio</Link>
               </div>
-              <ul className="mt-10 grid grid-cols-3 gap-4 border-t border-[var(--rule)] pt-6 text-sm">
+              <ul className="mt-10 grid max-w-xl grid-cols-3 gap-4 border-t border-[var(--rule)] pt-6 text-sm">
                 {[["Respons", "< 24 jam"], ["Pembayaran", "QRIS & transfer"], ["Garansi", "Perbaikan bug"]].map(([k, v]) => (
                   <li key={k}><p className="font-serif text-lg font-semibold text-[var(--navy)]">{v}</p><p className="text-xs text-[var(--ink-3)]">{k}</p></li>
                 ))}
               </ul>
             </div>
 
-            {/* Panel dashboard pelanggan */}
-            <aside id="masuk" className="card h-fit scroll-mt-24 p-7 md:p-8">
-              {user ? (
-                <>
-                  <p className="eyebrow">{isStaffUser ? "Masuk sebagai admin" : "Akun pelanggan"}</p>
-                  <h2 className="font-serif mt-2 text-2xl font-semibold text-[var(--navy)]">Halo, {user.name}</h2>
-                  <p className="mt-2 text-sm text-[var(--ink-2)]">Anda sudah masuk. {isStaffUser ? "Kelola paket, order, pelanggan, dan tagihan." : "Lihat langganan, tagihan, dan bayar via QRIS."}</p>
-                  <Link href={homeFor(user)} className="btn-primary mt-6 w-full"><LayoutDashboard className="h-4 w-4" /> Buka Dashboard</Link>
-                  <a href="#paket" className="btn-ghost mt-2 w-full">Sewa / pesan paket</a>
-                </>
-              ) : (
-                <>
-                  <p className="eyebrow">Dashboard pelanggan</p>
-                  <h2 className="font-serif mt-2 text-2xl font-semibold text-[var(--navy)]">Sudah jadi pelanggan?</h2>
-                  <p className="mt-2 text-sm text-[var(--ink-2)]">Login untuk melihat langganan, tagihan, dan membayar via QRIS dari satu dashboard.</p>
-                  <ul className="mt-5 space-y-2 text-sm text-[var(--ink-2)]">
-                    <li className="check">Status langganan, sisa masa aktif & kuota</li>
-                    <li className="check">Tagihan bulanan & cetak invoice</li>
-                    <li className="check">Bayar QRIS, unggah bukti, verifikasi 1×24 jam</li>
-                  </ul>
-                  <Link href="/login" className="btn-primary mt-6 w-full"><LogIn className="h-4 w-4" /> Login</Link>
-                  <p className="mt-4 text-center text-sm text-[var(--ink-3)]">
-                    Belum punya akun? <Link href="/register" className="font-semibold text-[var(--navy)] hover:underline">Daftar gratis</Link>
-                  </p>
-                </>
-              )}
-            </aside>
           </div>
         </section>
 

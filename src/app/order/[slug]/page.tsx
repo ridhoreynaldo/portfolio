@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Send } from "lucide-react";
-import { ServiceFooter, ServiceHeader, serviceBrandOf } from "@/components/service-shell";
+import { PriceTierTable, ServiceFooter, ServiceHeader, serviceBrandOf } from "@/components/service-shell";
 import { requireUser } from "@/modules/auth/guards";
 import { placeOrderAction } from "@/modules/billing/customer-actions";
-import { CYCLE, fmtIDR } from "@/modules/billing/labels";
+import { CYCLE, fmtIDR, tierRange } from "@/modules/billing/labels";
 import { getPackageBySlug } from "@/modules/billing/repository";
 import { getPortfolio } from "@/modules/portfolio/service";
 import { readFlash } from "@/shared/action";
@@ -45,7 +45,7 @@ export default async function OrderFormPage({ params }: { params: Promise<{ slug
             )}
             <div>
               <label className="label" htmlFor="notes">Ceritakan kebutuhan Anda</label>
-              <textarea id="notes" name="notes" rows={7} maxLength={3000} className="input-dark" placeholder={"Tujuan aplikasi/layanan, fitur utama, tenggat waktu, referensi, dan cara terbaik menghubungi Anda (WhatsApp/email)."} />
+              <textarea id="notes" name="notes" rows={7} maxLength={3000} className="input-dark" placeholder={pkg.priceTiers.length > 0 ? "Perkiraan jumlah pengguna / volume pesan per bulan, tujuan aplikasi, tenggat waktu, dan cara terbaik menghubungi Anda (WhatsApp/email)." : "Tujuan aplikasi/layanan, fitur utama, tenggat waktu, referensi, dan cara terbaik menghubungi Anda (WhatsApp/email)."} />
             </div>
             <p className="text-xs text-[var(--ink-3)]">Setelah dikirim, pesanan berstatus <b>menunggu konfirmasi</b>. Saya akan menghubungi Anda sebelum tagihan dibuat.</p>
             <button className="btn-primary">Kirim pesanan <Send className="h-4 w-4" /></button>
@@ -54,7 +54,14 @@ export default async function OrderFormPage({ params }: { params: Promise<{ slug
             <p className="eyebrow">{pkg.category}</p>
             <h2 className="font-serif mt-2 text-xl font-semibold text-[var(--navy)]">{pkg.name}</h2>
             <p className="mt-2 text-sm text-[var(--ink-2)]">{pkg.description}</p>
-            {profile?.showServicePrices ? (
+            {pkg.priceTiers.length > 0 ? (
+              <>
+                <p className="font-serif mt-5 text-xl font-semibold text-[var(--navy)]">{tierRange(pkg.priceTiers)}</p>
+                <p className="mb-3 text-xs text-[var(--ink-3)]">{CYCLE[pkg.billingCycle]}{pkg.unit && ` / ${pkg.unit}`} · tergantung skala pemakaian</p>
+                <PriceTierTable tiers={pkg.priceTiers} cycle={CYCLE[pkg.billingCycle]} unit={pkg.unit} compact />
+                <p className="mt-2 text-xs text-[var(--ink-3)]">Harga pasti dikonfirmasi setelah kebutuhan Anda jelas.</p>
+              </>
+            ) : profile?.showServicePrices ? (
               <>
                 <p className="font-serif mt-5 text-2xl font-semibold text-[var(--navy)]">{pkg.price > 0 ? fmtIDR(pkg.price) : "Hubungi"}</p>
                 <p className="text-xs text-[var(--ink-3)]">{pkg.price > 0 ? CYCLE[pkg.billingCycle] : "harga mengikuti scope"}{pkg.unit && ` / ${pkg.unit}`}</p>

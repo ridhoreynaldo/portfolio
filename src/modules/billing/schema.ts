@@ -13,6 +13,9 @@ export type OrderStatus = (typeof orderStatus.enumValues)[number];
 export type InvoiceStatus = (typeof invoiceStatus.enumValues)[number];
 
 /** Katalog jasa: konsultasi, pembuatan aplikasi, sewa (server/aplikasi), maintenance. */
+/** Satu baris tabel harga bertingkat, mis. { label: "≤ 5.000 pengguna", price: 2500000 }. */
+export type PriceTier = { label: string; price: number };
+
 export const servicePackages = pgTable("service_packages", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 128 }).notNull(),
@@ -23,6 +26,8 @@ export const servicePackages = pgTable("service_packages", {
   features: jsonb("features").$type<string[]>().default([]).notNull(),
   /** Rupiah, bulat. 0 = "hubungi kami". */
   price: integer("price").default(0).notNull(),
+  /** Harga bertingkat (mis. per jumlah pengguna). Kosong = pakai `price`. price 0 pada tier = "hubungi". */
+  priceTiers: jsonb("price_tiers").$type<PriceTier[]>().default([]).notNull(),
   billingCycle: billingCycle("billing_cycle").default("once").notNull(),
   /** Teks satuan untuk sewa, mis. "bulan", "unit". */
   unit: varchar("unit", { length: 32 }).default("").notNull(),

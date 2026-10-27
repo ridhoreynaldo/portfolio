@@ -3,7 +3,7 @@ import { Badge, Card, PageTitle, Table, td, th } from "@/shared/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
 import { deletePackageAction, savePackageAction } from "@/modules/billing/actions";
-import { CYCLE, PACKAGE_CATEGORIES, fmtIDR } from "@/modules/billing/labels";
+import { CYCLE, PACKAGE_CATEGORIES, fmtIDR, tierRange } from "@/modules/billing/labels";
 import { listPackages } from "@/modules/billing/repository";
 import { billingCycle } from "@/modules/billing/schema";
 
@@ -16,7 +16,7 @@ export default async function PackagesPage({ searchParams }: { searchParams: Pro
 
   return (
     <>
-      <PageTitle sub="Katalog jasa yang tampil di halaman publik (#layanan) dan /order. Harga 0 = “Hubungi”.">Paket Layanan</PageTitle>
+      <PageTitle sub="Katalog jasa yang tampil di /jasa dan /order. Harga 0 = “Hubungi”. Harga bertingkat (bila diisi) tampil sebagai tabel estimasi; harga pasti tetap lewat WhatsApp.">Paket Layanan</PageTitle>
       {canWrite && (
         <Card title={p ? `Edit: ${p.name}` : "Tambah paket"} right={p && <Link href="/admin/packages" className="btn-ghost btn-sm">Batal</Link>}>
           <form action={savePackageAction} className="space-y-4" key={p?.id ?? "new"}>
@@ -36,6 +36,11 @@ export default async function PackagesPage({ searchParams }: { searchParams: Pro
               <div><label className="label">Satuan (untuk jumlah)</label><input name="unit" maxLength={32} defaultValue={p?.unit} placeholder="bulan / nomor / sesi (kosong = 1 unit)" className="input-dark" /></div>
               <div className="sm:col-span-2 lg:col-span-3"><label className="label">Deskripsi</label><textarea name="description" rows={2} maxLength={2000} defaultValue={p?.description} className="input-dark" /></div>
               <div className="sm:col-span-2 lg:col-span-3"><label className="label">Fitur (satu per baris)</label><textarea name="features" rows={4} defaultValue={p?.features.join("\n")} className="input-dark" /></div>
+              <div className="sm:col-span-2 lg:col-span-3">
+                <label className="label">Harga bertingkat (opsional, satu per baris: <code>label | harga</code>)</label>
+                <textarea name="priceTiers" rows={5} defaultValue={p?.priceTiers.map((t) => `${t.label} | ${t.price}`).join("\n")} placeholder={"≤ 100 pengguna | 350000\n≤ 5.000 pengguna | 2500000\n> 5.000 pengguna | 0"} className="input-dark font-mono text-xs" />
+                <p className="mt-1 text-xs text-slate-500">Harga 0 pada satu tingkat berarti “hubungi”. Kolom Harga (Rp) di atas tetap dipakai sebagai harga dasar tagihan otomatis.</p>
+              </div>
               <div><label className="label">Urutan</label><input name="sortOrder" type="number" min={0} defaultValue={p?.sortOrder ?? 0} className="input-dark" /></div>
               <label className="flex items-center gap-2 pt-6 text-sm text-slate-300"><input type="checkbox" name="isActive" defaultChecked={p?.isActive ?? true} className="accent-cyan-400" /> Aktif (tampil & bisa dipesan)</label>
               <label className="flex items-center gap-2 pt-6 text-sm text-slate-300"><input type="checkbox" name="isFeatured" defaultChecked={p?.isFeatured ?? false} className="accent-cyan-400" /> Unggulan</label>
@@ -52,7 +57,10 @@ export default async function PackagesPage({ searchParams }: { searchParams: Pro
               <tr key={r.id} className={`hover:bg-white/5 ${r.isActive ? "" : "opacity-50"}`}>
                 <td className={td}><div className="font-medium text-white">{r.name}</div><div className="text-xs text-slate-500">/order/{r.slug}</div></td>
                 <td className={td}>{r.category}</td>
-                <td className={td}>{r.price > 0 ? fmtIDR(r.price) : "Hubungi"}<div className="text-xs text-slate-500">{CYCLE[r.billingCycle]}{r.unit && ` / ${r.unit}`}</div></td>
+                <td className={td}>
+                  {r.priceTiers.length > 0 ? tierRange(r.priceTiers) : r.price > 0 ? fmtIDR(r.price) : "Hubungi"}
+                  <div className="text-xs text-slate-500">{CYCLE[r.billingCycle]}{r.unit && ` / ${r.unit}`}{r.priceTiers.length > 0 && ` · ${r.priceTiers.length} tingkat`}</div>
+                </td>
                 <td className={td}><div className="flex gap-1">{r.isActive ? <Badge tone="emerald">aktif</Badge> : <Badge>nonaktif</Badge>}{r.isFeatured && <Badge tone="violet">unggulan</Badge>}</div></td>
                 <td className={`${td} text-right`}>
                   <div className="flex justify-end gap-2">

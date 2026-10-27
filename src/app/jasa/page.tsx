@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, BrainCircuit, Code2, GraduationCap, Headset, LayoutDashboard, Mail, MessageCircle, MessagesSquare, Phone, QrCode, Server, ShieldCheck, Wrench } from "lucide-react";
-import { ServiceFooter, ServiceHeader, serviceBrandOf } from "@/components/service-shell";
+import { PriceTierTable, ServiceFooter, ServiceHeader, serviceBrandOf } from "@/components/service-shell";
 import { LoginForm } from "@/app/login/login-form";
 import { getCurrentUser, homeFor } from "@/modules/auth/session";
-import { CYCLE, fmtIDR } from "@/modules/billing/labels";
+import { CYCLE, fmtIDR, tierRange } from "@/modules/billing/labels";
 import { getPaymentSettings } from "@/modules/billing/repository";
 import { getPortfolio } from "@/modules/portfolio/service";
 import { waLink } from "@/shared/url";
@@ -67,7 +67,7 @@ export default async function JasaPage({ searchParams }: { searchParams: Promise
   const wa = p?.phone ? waLink(p.phone) : null;
   const showPrices = p?.showServicePrices ?? false;
   const waAsk = (pkgName: string) => (p?.phone ? waLink(p.phone, `Halo, saya tertarik dengan paket "${pkgName}" di ${brand.name}. Boleh minta penawaran harganya?`) : null);
-  const faq = showPrices ? FAQ : [["Berapa biayanya?", "Harga menyesuaikan kebutuhan dan scope pekerjaan. Hubungi saya lewat WhatsApp, ceritakan kebutuhan Anda, dan saya kirim penawaran yang jelas sebelum pengerjaan dimulai."] as const, ...FAQ.slice(1)];
+  const faq = showPrices ? FAQ : [["Berapa biayanya?", "Harga menyesuaikan kebutuhan dan scope pekerjaan. Untuk sewa server dan WhatsApp gateway tersedia tabel estimasi berdasarkan jumlah pengguna dan volume pesan. Hubungi saya lewat WhatsApp, ceritakan kebutuhan Anda, dan saya kirim penawaran pasti sebelum pengerjaan dimulai."] as const, ...FAQ.slice(1)];
   const groups = Object.entries(packages.reduce<Record<string, typeof packages>>((acc, s) => ((acc[s.category] ??= []).push(s), acc), {}));
   const hasBank = !!(pay?.bankName && pay.bankAccount);
   const portalLabel = user && homeFor(user) === "/admin" ? "Panel Admin" : "Portal Pelanggan";
@@ -181,7 +181,19 @@ export default async function JasaPage({ searchParams }: { searchParams: Promise
                         <ul className="mt-4 space-y-2 text-sm text-[var(--ink-2)]">{s.features.map((f) => <li key={f} className="check">{f}</li>)}</ul>
                       )}
                       <div className="mt-auto border-t border-[var(--rule)] pt-5">
-                        {showPrices ? (
+                        {s.priceTiers.length > 0 ? (
+                          <>
+                            <p className="font-serif text-xl font-semibold text-[var(--navy)]">{tierRange(s.priceTiers)}</p>
+                            <p className="mb-3 text-xs text-[var(--ink-3)]">{CYCLE[s.billingCycle]}{s.unit && ` / ${s.unit}`} · tergantung skala pemakaian</p>
+                            <PriceTierTable tiers={s.priceTiers} cycle={CYCLE[s.billingCycle]} unit={s.unit} compact />
+                            {waAsk(s.name) ? (
+                              <a href={waAsk(s.name)!} target="_blank" rel="noreferrer" className={`${s.isFeatured ? "btn-gold" : "btn-primary"} btn-sm mt-4 w-full`}><MessageCircle className="h-3.5 w-3.5" /> Tanya harga pasti via WhatsApp</a>
+                            ) : (
+                              <Link href={`/order/${s.slug}`} className="btn-primary btn-sm mt-4 w-full">Pesan paket ini <ArrowRight className="h-3.5 w-3.5" /></Link>
+                            )}
+                            <Link href={`/order/${s.slug}`} className="mt-3 block text-center text-xs text-[var(--ink-3)] hover:text-[var(--navy)] hover:underline">atau pesan lewat portal</Link>
+                          </>
+                        ) : showPrices ? (
                           <>
                             <p className="font-serif text-2xl font-semibold text-[var(--navy)]">{s.price > 0 ? fmtIDR(s.price) : "Hubungi"}</p>
                             <p className="text-xs text-[var(--ink-3)]">{s.price > 0 ? CYCLE[s.billingCycle] : "harga mengikuti scope"}{s.unit && ` / ${s.unit}`}</p>

@@ -72,7 +72,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
                 </select>
               </div>
               <div><label className="label">Periode (YYYY-MM, kosong = sekali)</label><input name="period" type="month" defaultValue={preset.period} className="input-dark" /></div>
-              <div className="sm:col-span-2"><label className="label">Judul tagihan *</label><input name="title" required minLength={2} maxLength={255} defaultValue={preset.title} placeholder="Sewa Hosting — Oktober 2026" className="input-dark" /></div>
+              <div className="sm:col-span-2"><label className="label">Judul tagihan *</label><input name="title" required minLength={2} maxLength={255} defaultValue={preset.title} placeholder="Sewa Server — Oktober 2026" className="input-dark" /></div>
               <div><label className="label">Nominal (Rp) *</label><input name="amount" type="number" min={1} step={1000} required defaultValue={preset.amount} className="input-dark" /></div>
               <div><label className="label">Jatuh tempo *</label><input name="dueDate" type="date" required defaultValue={preset.dueDate} className="input-dark" /></div>
               <div className="sm:col-span-2"><label className="label">Catatan (tampil ke pelanggan)</label><input name="note" maxLength={2000} defaultValue={preset.note} className="input-dark" /></div>

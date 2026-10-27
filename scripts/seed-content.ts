@@ -8,6 +8,7 @@
 import { eq, sql } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import * as schema from "@/shared/db/schema";
+import type { PriceTier } from "@/modules/billing/schema";
 
 type Db = PostgresJsDatabase<typeof schema>;
 const { profile, experiences, certifications, skills, projects, servicePackages, menus } = schema;
@@ -133,6 +134,23 @@ const PROJECTS: (typeof projects.$inferInsert)[] = [
   },
 ];
 
+/** Estimasi sewa server per bulan per aplikasi, berdasarkan jumlah pengguna aktif. */
+const SERVER_TIERS: PriceTier[] = [
+  { label: "≤ 100 pengguna", price: 350_000 },
+  { label: "≤ 500 pengguna", price: 750_000 },
+  { label: "≤ 1.000 pengguna", price: 1_250_000 },
+  { label: "≤ 5.000 pengguna", price: 2_500_000 },
+  { label: "> 5.000 pengguna / high-availability", price: 0 },
+];
+/** Estimasi WhatsApp gateway per bulan per nomor, berdasarkan pengguna & volume pesan. */
+const WA_TIERS: PriceTier[] = [
+  { label: "≤ 100 pengguna · ≤ 1.000 pesan/bulan", price: 350_000 },
+  { label: "≤ 500 pengguna · ≤ 5.000 pesan/bulan", price: 750_000 },
+  { label: "≤ 2.000 pengguna · ≤ 20.000 pesan/bulan", price: 1_500_000 },
+  { label: "≤ 5.000 pengguna · ≤ 50.000 pesan/bulan", price: 3_000_000 },
+  { label: "> 5.000 pengguna / multi-nomor", price: 0 },
+];
+
 const PACKAGES: (typeof servicePackages.$inferInsert)[] = [
   { name: "Konsultasi Teknis (1 sesi)", slug: "konsultasi-teknis", category: "Konsultasi", price: 150_000, billingCycle: "once", unit: "sesi", isFeatured: false, sortOrder: 0,
     description: "Sesi konsultasi 60 menit via Google Meet/WhatsApp: arsitektur aplikasi, database, deployment, atau machine learning.",
@@ -149,12 +167,14 @@ const PACKAGES: (typeof servicePackages.$inferInsert)[] = [
   { name: "Mentoring Tugas Akhir (CS / ML)", slug: "mentoring-tugas-akhir", category: "Mentoring", price: 500_000, billingCycle: "monthly", unit: "", isFeatured: false, sortOrder: 4,
     description: "Pendampingan bulanan menyelesaikan skripsi/tugas akhir bidang Computer Science dan algoritma Machine Learning.",
     features: ["4 sesi bimbingan per bulan", "Review kode & bab metodologi", "Simulasi sidang"] },
-  { name: "Sewa Hosting + Maintenance Aplikasi", slug: "sewa-hosting-maintenance", category: "Sewa", price: 250_000, billingCycle: "monthly", unit: "aplikasi", isFeatured: true, sortOrder: 5,
-    description: "Aplikasi Anda berjalan di server terkelola: Docker, nginx + SSL, backup database harian, monitoring, dan pembaruan keamanan.",
-    features: ["Server terkelola + SSL", "Backup DB harian", "Monitoring uptime", "Perbaikan bug minor"] },
+  { name: "Sewa Server + Maintenance Aplikasi", slug: "sewa-server-maintenance", category: "Sewa", price: 2_500_000, billingCycle: "monthly", unit: "aplikasi", isFeatured: true, sortOrder: 5,
+    description: "Aplikasi Anda berjalan di cloud server terkelola: nginx + SSL, backup database harian, monitoring, dan pembaruan keamanan. Biaya mengikuti jumlah pengguna aplikasi.",
+    features: ["Cloud server terkelola + SSL", "Backup DB harian", "Monitoring uptime", "Perbaikan bug minor", "Kapasitas server naik sesuai tingkat pengguna"],
+    priceTiers: SERVER_TIERS },
   { name: "Sewa WhatsApp Gateway", slug: "sewa-whatsapp-gateway", category: "Sewa", price: 350_000, billingCycle: "monthly", unit: "nomor", isFeatured: false, sortOrder: 6,
-    description: "API pengiriman pesan WhatsApp untuk notifikasi/OTP aplikasi Anda, lengkap dengan dashboard & log.",
-    features: ["REST API + API key", "Antrian & retry otomatis", "Dashboard log pengiriman", "Dukungan integrasi"] },
+    description: "API pengiriman pesan WhatsApp untuk notifikasi/OTP aplikasi Anda, lengkap dengan dashboard & log. Biaya mengikuti jumlah pengguna dan volume pesan per bulan.",
+    features: ["REST API + API key", "Antrian & retry otomatis", "Dashboard log pengiriman", "Dukungan integrasi"],
+    priceTiers: WA_TIERS },
   { name: "Maintenance & Support Bulanan", slug: "maintenance-support", category: "Maintenance", price: 300_000, billingCycle: "monthly", unit: "", isFeatured: false, sortOrder: 7,
     description: "Pemeliharaan aplikasi yang sudah berjalan: perbaikan bug, update dependensi, dan dukungan prioritas via WhatsApp.",
     features: ["Respon < 24 jam", "Update keamanan rutin", "Laporan bulanan"] },
@@ -179,6 +199,19 @@ export async function seedContent(db: Db, log: (m: string) => void) {
   if ((await count(certifications)) === 0) { await db.insert(certifications).values(CERTIFICATIONS); log(`sertifikasi: ${CERTIFICATIONS.length} baris`); }
   if ((await count(skills)) === 0) { await db.insert(skills).values(SKILLS); log(`skill: ${SKILLS.length} baris`); }
   if ((await count(servicePackages)) === 0) { await db.insert(servicePackages).values(PACKAGES); log(`paket layanan: ${PACKAGES.length} baris`); }
+  else {
+    // Paket sewa versi lama (harga flat, kata "hosting") → nama baru + harga bertingkat; hanya bila belum diubah admin
+    const srv = PACKAGES.find((x) => x.slug === "sewa-server-maintenance")!;
+    const r1 = await db.update(servicePackages)
+      .set({ name: srv.name, slug: srv.slug, description: srv.description, features: srv.features, price: srv.price, priceTiers: srv.priceTiers, updatedAt: new Date() })
+      .where(sql`${servicePackages.slug} = 'sewa-hosting-maintenance' and ${servicePackages.price} = 250000`).returning({ id: servicePackages.id });
+    if (r1.length) log("paket sewa hosting → Sewa Server + Maintenance Aplikasi (harga bertingkat)");
+    const wag = PACKAGES.find((x) => x.slug === "sewa-whatsapp-gateway")!;
+    const r2 = await db.update(servicePackages)
+      .set({ description: wag.description, priceTiers: wag.priceTiers, updatedAt: new Date() })
+      .where(sql`${servicePackages.slug} = 'sewa-whatsapp-gateway' and ${servicePackages.price} = 350000 and ${servicePackages.priceTiers} = '[]'::jsonb`).returning({ id: servicePackages.id });
+    if (r2.length) log("paket WhatsApp gateway: harga bertingkat ditambahkan");
+  }
 
   const added = await db.insert(projects).values(PROJECTS).onConflictDoNothing({ target: projects.slug }).returning({ slug: projects.slug });
   if (added.length) log(`project baru: ${added.map((a) => a.slug).join(", ")}`);

@@ -30,6 +30,13 @@ const lines = (s: unknown) =>
     .filter(Boolean)
     .slice(0, 20);
 
+/** Textarea harga bertingkat: satu baris "label | harga" (harga kosong/0 = "hubungi"). */
+const tiers = (s: unknown) =>
+  lines(s).map((row) => {
+    const [label = "", raw = ""] = row.split("|").map((x) => x.trim());
+    return { label: label.slice(0, 64), price: Math.max(0, Math.min(1_000_000_000, Math.round(Number(raw.replace(/[^\d]/g, "")) || 0))) };
+  }).filter((t) => t.label);
+
 // ── Paket layanan ─────────────────────────────────────────────────────────────
 const packageInput = z.object({
   name: z.string().trim().min(2).max(128),
@@ -54,7 +61,7 @@ export const savePackageAction = action(async (form: FormData) => {
   });
   if (id && !(await getPackage(id))) throw notFound();
   const slug = await uniquePackageSlug(slugify(d.slug || d.name), id);
-  const values = { ...d, slug, features: lines(form.get("features")) };
+  const values = { ...d, slug, features: lines(form.get("features")), priceTiers: tiers(form.get("priceTiers")) };
   if (id) await updatePackage(id, values);
   else await insertPackage(values);
   revalidatePath("/admin/packages");

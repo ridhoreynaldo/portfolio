@@ -41,7 +41,7 @@ async function load() {
     db()
       .select({
         id: servicePackages.id, name: servicePackages.name, slug: servicePackages.slug, category: servicePackages.category, description: servicePackages.description,
-        features: servicePackages.features, price: servicePackages.price, billingCycle: servicePackages.billingCycle, unit: servicePackages.unit, isFeatured: servicePackages.isFeatured,
+        features: servicePackages.features, price: servicePackages.price, priceTiers: servicePackages.priceTiers, billingCycle: servicePackages.billingCycle, unit: servicePackages.unit, isFeatured: servicePackages.isFeatured,
       })
       .from(servicePackages)
       .where(eq(servicePackages.isActive, true))

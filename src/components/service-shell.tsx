@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { LogIn, UserRound } from "lucide-react";
 import type { AuthUser } from "@/modules/auth/session";
+import { fmtIDR } from "@/modules/billing/labels";
+import type { PriceTier } from "@/modules/billing/schema";
 
 /** Logo brand jasa (SVG di public/). */
 export const SERVICE_LOGO = "/service-logo.svg";
@@ -80,6 +82,27 @@ export function ServiceBrandMark({ brand, title, sub }: { brand: ServiceBrand; t
       <p className="text-[11px] text-[var(--ink-3)]">oleh <Link href="/" className="hover:underline">{brand.owner}</Link></p>
       <h1 className="font-serif mt-5 text-2xl font-semibold text-[var(--ink)]">{title}</h1>
       <p className="mt-1 text-sm text-[var(--ink-3)]">{sub}</p>
+    </div>
+  );
+}
+
+
+/** Tabel harga bertingkat paket (estimasi per tingkat; harga pasti lewat WhatsApp). */
+export function PriceTierTable({ tiers, cycle, unit, compact }: { tiers: PriceTier[]; cycle: string; unit?: string; compact?: boolean }) {
+  if (!tiers.length) return null;
+  return (
+    <div className={`overflow-hidden rounded-xl border border-[var(--rule)] ${compact ? "text-xs" : "text-sm"}`}>
+      <table className="w-full">
+        <tbody className="divide-y divide-[var(--rule)]">
+          {tiers.map((t, i) => (
+            <tr key={`${t.label}-${i}`} className={i % 2 ? "bg-white/60" : "bg-[#f7f9ff]"}>
+              <td className="px-3 py-2 text-[var(--ink-2)]">{t.label}</td>
+              <td className="whitespace-nowrap px-3 py-2 text-right font-semibold text-[var(--navy)]">{t.price > 0 ? fmtIDR(t.price) : "Hubungi"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="border-t border-[var(--rule)] bg-white/60 px-3 py-1.5 text-[11px] text-[var(--ink-3)]">{cycle}{unit && ` / ${unit}`} · estimasi, harga pasti menyesuaikan kebutuhan</p>
     </div>
   );
 }

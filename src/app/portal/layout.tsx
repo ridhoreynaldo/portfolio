@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { LayoutDashboard, LogOut, Receipt, Server, UserRound } from "lucide-react";
-import { Starfield } from "@/components/starfield";
-import { SERVICE_BRAND_FALLBACK, SERVICE_LOGO } from "@/components/service-shell";
+import { SERVICE_LOGO, serviceBrandOf, ServiceFooter } from "@/components/service-shell";
 import { getPortfolio } from "@/modules/portfolio/service";
 import { logoutToHomeAction } from "@/modules/auth/actions";
 import { requireUser } from "@/modules/auth/guards";
@@ -10,7 +9,7 @@ import { readFlash } from "@/shared/action";
 import { Flash } from "@/shared/ui";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Portal Pelanggan" };
+export const metadata = { title: "Dashboard Pelanggan" };
 
 const NAV = [
   ["/portal", "Tagihan", Receipt],
@@ -18,43 +17,43 @@ const NAV = [
   ["/portal/account", "Akun", UserRound],
 ] as const;
 
-/** Portal pelanggan: order, tagihan, pembayaran. Staf juga bisa membuka untuk uji coba. */
+/** Dashboard pelanggan Kodeva (tema klasik terang, sama dengan halaman jasa): langganan, tagihan, pembayaran. Staf juga bisa membuka untuk uji coba. */
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser("/portal");
   const [flash, { profile }] = await Promise.all([readFlash(), getPortfolio()]);
-  const brand = profile?.serviceBrand || SERVICE_BRAND_FALLBACK;
+  const brand = serviceBrandOf(profile);
   return (
-    <div className="relative min-h-screen">
-      <Starfield />
-      <div className="relative z-10">
-        <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[rgba(3,6,18,0.72)] backdrop-blur-xl">
-          <nav className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-5 py-3">
-            <Link href="/jasa" className="flex items-center gap-2.5">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={SERVICE_LOGO} alt="" className="h-8 w-8" />
-              <span className="font-display text-sm font-bold tracking-wider text-gradient">{brand}</span>
-              <span className="hidden text-[10px] text-slate-500 sm:inline" style={{ fontFamily: "var(--font-mono)" }}>// portal pelanggan</span>
-            </Link>
-            <ul className="flex items-center gap-1 text-sm">
-              {NAV.map(([href, label, Icon]) => (
-                <li key={href}>
-                  <Link href={href} className="flex items-center gap-1.5 px-3 py-1.5 text-slate-300 transition hover:text-cyan-300"><Icon className="h-4 w-4" />{label}</Link>
-                </li>
-              ))}
-              <li><Link href="/jasa#paket" className="btn-primary btn-sm ml-1">+ Order</Link></li>
-            </ul>
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <span className="hidden sm:inline">{user.name}</span>
-              {isStaff(user) && <Link href="/admin" className="btn-ghost btn-sm"><LayoutDashboard className="h-3.5 w-3.5" /> Admin</Link>}
-              <form action={logoutToHomeAction}><button className="btn-ghost btn-sm"><LogOut className="h-3.5 w-3.5" /> Keluar</button></form>
-            </div>
-          </nav>
-        </header>
-        <main className="mx-auto max-w-5xl px-5 py-10">
-          <Flash flash={flash} />
-          {children}
-        </main>
-      </div>
+    <div className="svc flex min-h-screen flex-col">
+      <header className="sticky top-0 z-40 border-b border-[var(--rule)] bg-[rgba(250,247,241,0.9)] backdrop-blur">
+        <nav className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-3">
+          <Link href="/portal" className="flex items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={SERVICE_LOGO} alt="" className="h-9 w-9" />
+            <span className="leading-tight">
+              <span className="font-serif block text-lg font-semibold tracking-wide text-[var(--navy)]">{brand.name}</span>
+              <span className="block text-[11px] text-[var(--ink-3)]">Dashboard pelanggan</span>
+            </span>
+          </Link>
+          <ul className="order-3 flex w-full items-center gap-1 overflow-x-auto border-t border-[var(--rule)] pt-2 text-sm md:order-none md:w-auto md:border-0 md:pt-0">
+            {NAV.map(([href, label, Icon]) => (
+              <li key={href}>
+                <Link href={href} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium text-[var(--ink-2)] transition hover:bg-white hover:text-[var(--navy)]"><Icon className="h-4 w-4" />{label}</Link>
+              </li>
+            ))}
+            <li><Link href="/jasa#paket" className="btn-primary btn-sm ml-1">+ Sewa / pesan</Link></li>
+          </ul>
+          <div className="flex items-center gap-2 text-xs text-[var(--ink-3)]">
+            <span className="hidden sm:inline">{user.name}</span>
+            {isStaff(user) && <Link href="/admin" className="btn-ghost btn-sm"><LayoutDashboard className="h-3.5 w-3.5" /> Admin</Link>}
+            <form action={logoutToHomeAction}><button className="btn-ghost btn-sm"><LogOut className="h-3.5 w-3.5" /> Keluar</button></form>
+          </div>
+        </nav>
+      </header>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-5 py-10">
+        <Flash flash={flash} />
+        {children}
+      </main>
+      <ServiceFooter brand={brand} />
     </div>
   );
 }

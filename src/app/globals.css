@@ -342,5 +342,15 @@ body:has(> .svc) { background-color: #faf7f1; }
 .svc .tag-gold { background: linear-gradient(135deg, var(--gold-2), var(--gold)); color: #2b2104; }
 .svc .check { display: flex; gap: 0.6rem; align-items: flex-start; }
 .svc .check::before { content: "✓"; flex: none; width: 1.15rem; height: 1.15rem; border-radius: 999px; background: #eef3ff; color: var(--navy); font-size: 0.7rem; font-weight: 700; display: grid; place-items: center; margin-top: 0.1rem; }
+.svc .pill { display: inline-flex; align-items: center; padding: 0.2rem 0.65rem; border-radius: 999px; font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
+.svc .pill-slate { background: #efeae0; color: #5b6472; }
+.svc .pill-violet { background: #efe9fb; color: #5b3fa3; }
+.svc .pill-cyan { background: #e6f0fb; color: #1f3561; }
+.svc .pill-emerald { background: #e5f6ea; color: #14532d; }
+.svc .pill-rose { background: #fdeaea; color: #9b1c1c; }
+.svc .pill-amber { background: #fbf1d9; color: #7a5a0f; }
+.svc .meter { display: block; height: 6px; border-radius: 999px; background: #e9e3d7; overflow: hidden; }
+.svc .meter > span { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--navy-2), var(--gold)); }
+.svc input[type="file"].input-dark { padding: 0.5rem; }
 .svc details > summary { list-style: none; }
 .svc details > summary::-webkit-details-marker { display: none; }

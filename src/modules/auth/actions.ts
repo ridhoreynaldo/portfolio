@@ -100,7 +100,7 @@ export async function logoutAction() {
 
 export async function logoutToHomeAction() {
   await destroySession();
-  redirect("/");
+  redirect("/jasa");
 }
 
 const changeInput = z

@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BrainCircuit, Code2, ExternalLink, GraduationCap, Headset, LayoutDashboard, Mail, MessageCircle, MessagesSquare, Phone, QrCode, Server, ShieldCheck, UserRound, Wrench } from "lucide-react";
+import { ArrowRight, BrainCircuit, Code2, ExternalLink, GraduationCap, Headset, LayoutDashboard, LogIn, Mail, MessageCircle, MessagesSquare, Phone, QrCode, Server, ShieldCheck, UserRound, Wrench } from "lucide-react";
 import { PORTFOLIO_URL, PriceTierTable, ServiceFooter, ServiceHeader, serviceBrandOf } from "@/components/service-shell";
-import { LoginForm } from "@/app/login/login-form";
 import { getCurrentUser, homeFor } from "@/modules/auth/session";
 import { CYCLE, fmtIDR, tierRange } from "@/modules/billing/labels";
 import { getPaymentSettings } from "@/modules/billing/repository";
@@ -60,10 +59,9 @@ function Section({ id, eyebrow, title, sub, children, narrow }: { id: string; ey
 }
 
 /** Halaman brand jasa (tema terang klasik): layanan, cara kerja, paket & harga, pembayaran, FAQ, kontak, dan masuk portal. */
-export default async function JasaPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
-  const [{ profile: p, packages }, user, pay, { next }] = await Promise.all([getPortfolio(), getCurrentUser(), getPaymentSettings(), searchParams]);
+export default async function JasaPage() {
+  const [{ profile: p, packages }, user, pay] = await Promise.all([getPortfolio(), getCurrentUser(), getPaymentSettings()]);
   const brand = serviceBrandOf(p);
-  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "";
   const wa = p?.phone ? waLink(p.phone) : null;
   const showPrices = p?.showServicePrices ?? false;
   const waAsk = (pkgName: string) => (p?.phone ? waLink(p.phone, `Halo, saya tertarik dengan paket "${pkgName}" di ${brand.name}. Boleh minta penawaran harganya?`) : null);
@@ -124,12 +122,17 @@ export default async function JasaPage({ searchParams }: { searchParams: Promise
                 </>
               ) : (
                 <>
-                  <p className="eyebrow">Login {brand.name}</p>
-                  <h2 className="font-serif mt-2 text-2xl font-semibold text-[var(--navy)]">Masuk ke akun</h2>
-                  <p className="mb-6 mt-2 text-sm text-[var(--ink-2)]">Pelanggan: pantau pesanan, lihat tagihan, dan bayar via QRIS. Admin: kelola paket, order, dan tagihan.</p>
-                  <LoginForm next={safeNext} />
-                  <p className="mt-5 text-center text-sm text-[var(--ink-3)]">
-                    Belum punya akun? <Link href={safeNext ? `/register?next=${encodeURIComponent(safeNext)}` : "/register"} className="font-semibold text-[var(--navy)] hover:underline">Daftar gratis</Link>
+                  <p className="eyebrow">Dashboard pelanggan</p>
+                  <h2 className="font-serif mt-2 text-2xl font-semibold text-[var(--navy)]">Sudah jadi pelanggan?</h2>
+                  <p className="mt-2 text-sm text-[var(--ink-2)]">Login untuk melihat langganan, tagihan, dan membayar via QRIS dari satu dashboard.</p>
+                  <ul className="mt-5 space-y-2 text-sm text-[var(--ink-2)]">
+                    <li className="check">Status langganan, sisa masa aktif & kuota</li>
+                    <li className="check">Tagihan bulanan & riwayat pembayaran</li>
+                    <li className="check">Bayar QRIS, unggah bukti, verifikasi 1×24 jam</li>
+                  </ul>
+                  <Link href="/login" className="btn-primary mt-6 w-full"><LogIn className="h-4 w-4" /> Login</Link>
+                  <p className="mt-4 text-center text-sm text-[var(--ink-3)]">
+                    Belum punya akun? <Link href="/register" className="font-semibold text-[var(--navy)] hover:underline">Daftar gratis</Link>
                   </p>
                 </>
               )}
@@ -241,7 +244,7 @@ export default async function JasaPage({ searchParams }: { searchParams: Promise
                 <li className="check">Bayar & unggah bukti, status diperbarui otomatis</li>
                 <li className="check">Profil & data penagihan</li>
               </ul>
-              <Link href={user ? homeFor(user) : "#masuk"} className="btn-ghost btn-sm mt-5">{user ? "Buka Dashboard" : "Login / daftar"} <ArrowRight className="h-3.5 w-3.5" /></Link>
+              <Link href={user ? homeFor(user) : "/login"} className="btn-ghost btn-sm mt-5">{user ? "Buka Dashboard" : "Login / daftar"} <ArrowRight className="h-3.5 w-3.5" /></Link>
             </div>
           </div>
         </Section>

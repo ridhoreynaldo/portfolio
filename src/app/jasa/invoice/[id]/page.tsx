@@ -18,7 +18,7 @@ export const metadata: Metadata = { title: "Invoice" };
 export default async function InvoicePrintPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!z.string().uuid().safeParse(id).success) notFound();
-  const user = await requireUser(`/invoice/${id}`);
+  const user = await requireUser(`/jasa/invoice/${id}`);
   const inv = await getInvoice(id);
   if (!inv || (inv.userId !== user.id && !isStaff(user))) notFound();
   const [{ profile }, pay, cust, order] = await Promise.all([getPortfolio(), getPaymentSettings(), getCustomerProfile(inv.userId), inv.orderId ? getOrder(inv.orderId) : Promise.resolve(undefined)]);
@@ -30,7 +30,7 @@ export default async function InvoicePrintPage({ params }: { params: Promise<{ i
   return (
     <div className="svc min-h-screen print:bg-white">
       <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-6 pt-6 print:hidden">
-        <Link href={isStaff(user) && inv.userId !== user.id ? "/admin/invoices" : `/portal/invoices/${inv.id}`} className="text-sm text-[var(--ink-3)] hover:text-[var(--navy)]">← Kembali</Link>
+        <Link href={isStaff(user) && inv.userId !== user.id ? "/admin/invoices" : `/jasa/dashboard/tagihan/${inv.id}`} className="text-sm text-[var(--ink-3)] hover:text-[var(--navy)]">← Kembali</Link>
         <PrintButton />
       </div>
 

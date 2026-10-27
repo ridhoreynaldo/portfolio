@@ -12,21 +12,21 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Dashboard Pelanggan" };
 
 const NAV = [
-  ["/portal", "Tagihan", Receipt],
-  ["/portal/orders", "Langganan", Server],
-  ["/portal/account", "Akun", UserRound],
+  ["/jasa/dashboard", "Tagihan", Receipt],
+  ["/jasa/dashboard/langganan", "Langganan", Server],
+  ["/jasa/dashboard/akun", "Akun", UserRound],
 ] as const;
 
 /** Dashboard pelanggan Kodeva (tema klasik terang, sama dengan halaman jasa): langganan, tagihan, pembayaran. Staf juga bisa membuka untuk uji coba. */
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
-  const user = await requireUser("/portal");
+  const user = await requireUser("/jasa/dashboard");
   const [flash, { profile }] = await Promise.all([readFlash(), getPortfolio()]);
   const brand = serviceBrandOf(profile);
   return (
     <div className="svc flex min-h-screen flex-col">
       <header className="sticky top-0 z-40 border-b border-[var(--rule)] bg-[rgba(250,247,241,0.9)] backdrop-blur">
         <nav className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-3">
-          <Link href="/portal" className="flex items-center gap-3">
+          <Link href="/jasa/dashboard" className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={SERVICE_LOGO} alt="" className="h-9 w-9" />
             <span className="leading-tight">

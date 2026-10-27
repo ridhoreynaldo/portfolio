@@ -18,7 +18,7 @@ export default async function OrderFormPage({ params }: { params: Promise<{ slug
   const { slug } = await params;
   const pkg = await getPackageBySlug(slug);
   if (!pkg) notFound();
-  const user = await requireUser(`/order/${slug}`); // belum login → /login?next=… (ada tautan daftar)
+  const user = await requireUser(`/jasa/order/${slug}`); // belum login → /login?next=… (ada tautan daftar)
   const [{ profile }, flash] = await Promise.all([getPortfolio(), readFlash()]);
   const brand = serviceBrandOf(profile);
 

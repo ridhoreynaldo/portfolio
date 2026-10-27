@@ -7,7 +7,7 @@ import { fmtDate } from "@/shared/ui";
 import { Pill, PortalTitle, Stat } from "./ui";
 
 export default async function PortalHome() {
-  const user = await requireUser("/portal");
+  const user = await requireUser("/jasa/dashboard");
   const [invoices, stats, pay] = await Promise.all([listInvoices({ userId: user.id }), billingStats(user.id), getPaymentSettings()]);
   const open = invoices.filter((i) => i.status === "unpaid" || i.status === "pending_verification");
 
@@ -18,7 +18,7 @@ export default async function PortalHome() {
       <div className="grid gap-4 sm:grid-cols-3">
         <Stat label="Belum dibayar" value={fmtIDR(stats.unpaidTotal)} sub={`${stats.unpaid + stats.verifying} tagihan`} />
         <Stat label="Menunggu verifikasi" value={stats.verifying} sub="bukti sudah diunggah" />
-        <Stat label="Langganan aktif" value={stats.activeOrders} sub={<>{stats.pendingOrders} menunggu konfirmasi · <Link href="/portal/orders" className="font-semibold text-[var(--navy)] hover:underline">lihat langganan</Link></>} />
+        <Stat label="Langganan aktif" value={stats.activeOrders} sub={<>{stats.pendingOrders} menunggu konfirmasi · <Link href="/jasa/dashboard/langganan" className="font-semibold text-[var(--navy)] hover:underline">lihat langganan</Link></>} />
       </div>
 
       {open.length > 0 && (
@@ -30,7 +30,7 @@ export default async function PortalHome() {
               <p className="text-sm text-[var(--ink-2)]">Buka tagihan, scan QRIS{pay?.bankAccount ? " atau transfer bank" : ""}, lalu unggah bukti pembayaran. Status berubah otomatis setelah diverifikasi.</p>
             </div>
           </div>
-          <Link href={`/portal/invoices/${open[0]!.id}`} className="btn-gold btn-sm shrink-0"><QrCode className="h-3.5 w-3.5" /> Bayar sekarang</Link>
+          <Link href={`/jasa/dashboard/tagihan/${open[0]!.id}`} className="btn-gold btn-sm shrink-0"><QrCode className="h-3.5 w-3.5" /> Bayar sekarang</Link>
         </div>
       )}
 
@@ -66,8 +66,8 @@ export default async function PortalHome() {
                   </table>
                   {i.note && <p className="mt-2 text-xs text-[var(--ink-3)]">{i.note}</p>}
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <Link href={`/portal/invoices/${i.id}`} className={`${i.status === "unpaid" ? "btn-primary" : "btn-ghost"} btn-sm`}><Receipt className="h-3.5 w-3.5" /> {i.status === "unpaid" ? "Bayar" : "Detail"}</Link>
-                    <a href={`/invoice/${i.id}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm"><Printer className="h-3.5 w-3.5" /> Cetak invoice</a>
+                    <Link href={`/jasa/dashboard/tagihan/${i.id}`} className={`${i.status === "unpaid" ? "btn-primary" : "btn-ghost"} btn-sm`}><Receipt className="h-3.5 w-3.5" /> {i.status === "unpaid" ? "Bayar" : "Detail"}</Link>
+                    <a href={`/jasa/invoice/${i.id}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm"><Printer className="h-3.5 w-3.5" /> Cetak invoice</a>
                   </div>
                 </div>
               </details>

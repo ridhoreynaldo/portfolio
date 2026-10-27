@@ -117,7 +117,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
                       {can(user, "invoice.update") && r.status === "unpaid" && (
                         <form action={setInvoiceStatusAction}><input type="hidden" name="id" value={r.id} /><input type="hidden" name="status" value="cancelled" /><button className="btn-ghost btn-sm">Batalkan</button></form>
                       )}
-                      <a href={`/invoice/${r.id}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm">Cetak</a>
+                      <a href={`/jasa/invoice/${r.id}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm">Cetak</a>
                       {can(user, "invoice.update") && <Link href={`/admin/invoices?edit=${r.id}`} className="btn-ghost btn-sm">Edit</Link>}
                       {can(user, "invoice.delete") && <form action={deleteInvoiceAction}><input type="hidden" name="id" value={r.id} /><button className="btn-danger btn-sm">Hapus</button></form>}
                     </div>

@@ -28,7 +28,7 @@ const NAV = [
 /** Header halaman jasa (tema svc, terang & klasik). Menu sendiri; nama pemilik menaut ke portofolio agar jelas siapa di balik jasa ini. */
 export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: AuthUser | null }) {
   const staff = !!user && (user.isSuper || user.permissions.length > 0);
-  const portal = user ? (staff ? "/admin" : "/portal") : null;
+  const portal = user ? (staff ? "/admin" : "/jasa/dashboard") : null;
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--rule)] bg-[rgba(250,247,241,0.85)] backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
@@ -47,7 +47,7 @@ export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: Auth
           {portal ? (
             <Link href={portal} className="btn-ghost btn-sm" title={staff ? "Dashboard admin" : "Dashboard pelanggan"}><UserRound className="h-3.5 w-3.5" /> Dashboard</Link>
           ) : (
-            <Link href="/login" className="btn-ghost btn-sm"><LogIn className="h-3.5 w-3.5" /> Login</Link>
+            <Link href="/jasa/login" className="btn-ghost btn-sm"><LogIn className="h-3.5 w-3.5" /> Login</Link>
           )}
           <Link href="/jasa#paket" className="btn-primary btn-sm">Pesan</Link>
         </div>

@@ -28,7 +28,7 @@ export type AuthUser = {
 /** Boleh masuk panel admin: super admin atau punya minimal 1 permission. */
 export const isStaff = (u: AuthUser) => u.isSuper || u.permissions.length > 0;
 /** Halaman tujuan setelah login. */
-export const homeFor = (u: AuthUser) => (isStaff(u) ? "/admin" : "/portal");
+export const homeFor = (u: AuthUser) => (isStaff(u) ? "/admin" : "/jasa/dashboard");
 
 export async function createSession(userId: string, meta: { ip?: string; userAgent?: string }) {
   const token = randomBytes(32).toString("base64url");

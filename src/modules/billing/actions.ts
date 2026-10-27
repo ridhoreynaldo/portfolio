@@ -124,8 +124,8 @@ export const updateOrderAction = action(async (form: FormData) => {
   if (!o) throw notFound();
   await updateOrder(id, v);
   revalidatePath("/admin/orders");
-  revalidatePath("/portal");
-  revalidatePath("/portal/orders");
+  revalidatePath("/jasa/dashboard");
+  revalidatePath("/jasa/dashboard/langganan");
   await setFlash(`Order ${o.number} diperbarui`);
   redirect("/admin/orders");
 });
@@ -151,8 +151,8 @@ export const createOrderAction = action(async (form: FormData) => {
     }
   }
   revalidatePath("/admin/orders");
-  revalidatePath("/portal");
-  revalidatePath("/portal/orders");
+  revalidatePath("/jasa/dashboard");
+  revalidatePath("/jasa/dashboard/langganan");
   await setFlash(`Order ${number} dibuat untuk ${cust.name}`);
   redirect("/admin/orders");
 });
@@ -207,7 +207,7 @@ export const saveInvoiceAction = action(async (form: FormData) => {
     await setFlash(`Tagihan ${number} dibuat`);
   }
   revalidatePath("/admin/invoices");
-  revalidatePath("/portal");
+  revalidatePath("/jasa/dashboard");
   redirect("/admin/invoices");
 });
 
@@ -232,7 +232,7 @@ export const setInvoiceStatusAction = action(async (form: FormData) => {
   if (!inv) throw notFound();
   await updateInvoice(d.id, { status: d.status, paidAt: d.status === "paid" ? (inv.paidAt ?? new Date()) : null });
   revalidatePath("/admin/invoices");
-  revalidatePath("/portal");
+  revalidatePath("/jasa/dashboard");
   await setFlash(`Tagihan ${inv.number}: ${d.status === "paid" ? "ditandai lunas" : d.status === "cancelled" ? "dibatalkan" : "status diubah"}`);
 });
 
@@ -266,7 +266,7 @@ export const generateMonthlyInvoicesAction = action(async (form: FormData) => {
     n++;
   }
   revalidatePath("/admin/invoices");
-  revalidatePath("/portal");
+  revalidatePath("/jasa/dashboard");
   await setFlash(n ? `${n} tagihan periode ${d.period} dibuat` : `Tidak ada order aktif yang perlu ditagih untuk ${d.period}`, n ? "ok" : "error");
   redirect("/admin/invoices");
 });
@@ -296,7 +296,7 @@ export const savePaymentSettingsAction = action(async (form: FormData) => {
   await upsertPaymentSettings({ ...rest, qrisFileId });
   if (current?.qrisFileId && current.qrisFileId !== qrisFileId) await deleteOrphanFile(current.qrisFileId);
   revalidatePath("/admin/payment");
-  revalidatePath("/portal");
+  revalidatePath("/jasa/dashboard");
   await setFlash("Pengaturan pembayaran tersimpan");
   redirect("/admin/payment");
 });

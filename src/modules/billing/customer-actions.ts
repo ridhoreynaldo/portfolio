@@ -12,7 +12,7 @@ import { users } from "@/modules/users/schema";
 import { PROOF_MIMES, readUpload } from "./files";
 import { deleteOrphanFile, getInvoice, getPackageBySlug, insertFile, insertOrder, nextNumber, updateInvoice, upsertCustomerProfile } from "./repository";
 
-/** Pelanggan memesan paket dari /order/<slug>. */
+/** Pelanggan memesan paket dari /jasa/order/<slug>. */
 export const placeOrderAction = action(async (form: FormData) => {
   const me = await requireLogin();
   const d = z
@@ -31,10 +31,10 @@ export const placeOrderAction = action(async (form: FormData) => {
       if (i === 2 || !String(e).includes("orders_number_unique")) throw e;
     }
   }
-  revalidatePath("/portal");
+  revalidatePath("/jasa/dashboard");
   revalidatePath("/admin/orders");
   await setFlash(`Pesanan ${number} diterima. Kami akan menghubungi Anda untuk konfirmasi.`);
-  redirect("/portal/orders");
+  redirect("/jasa/dashboard/langganan");
 });
 
 /** Pelanggan mengunggah bukti pembayaran → status "menunggu verifikasi". */
@@ -50,11 +50,11 @@ export const uploadProofAction = action(async (form: FormData) => {
   const old = inv.proofFileId;
   await updateInvoice(id, { proofFileId: fileId, proofUploadedAt: new Date(), status: "pending_verification" });
   await deleteOrphanFile(old);
-  revalidatePath("/portal");
-  revalidatePath(`/portal/invoices/${id}`);
+  revalidatePath("/jasa/dashboard");
+  revalidatePath(`/jasa/dashboard/tagihan/${id}`);
   revalidatePath("/admin/invoices");
   await setFlash("Bukti pembayaran terkirim. Admin akan memverifikasi.");
-  redirect(`/portal/invoices/${id}`);
+  redirect(`/jasa/dashboard/tagihan/${id}`);
 });
 
 /** Pelanggan mengubah data akunnya sendiri (nama, telepon, perusahaan, alamat). */
@@ -70,7 +70,7 @@ export const updateMyProfileAction = action(async (form: FormData) => {
     .parse({ name: form.get("name"), phone: form.get("phone") ?? "", company: form.get("company") ?? "", address: form.get("address") ?? "" });
   await db().update(users).set({ name: d.name, updatedAt: new Date() }).where(eq(users.id, me.id));
   await upsertCustomerProfile(me.id, { phone: d.phone, company: d.company, address: d.address });
-  revalidatePath("/portal/account");
+  revalidatePath("/jasa/dashboard/akun");
   await setFlash("Data akun tersimpan");
-  redirect("/portal/account");
+  redirect("/jasa/dashboard/akun");
 });

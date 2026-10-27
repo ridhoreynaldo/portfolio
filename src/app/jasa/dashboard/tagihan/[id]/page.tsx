@@ -16,7 +16,7 @@ export const metadata = { title: "Detail Tagihan" };
 export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!z.string().uuid().safeParse(id).success) notFound();
-  const user = await requireUser(`/portal/invoices/${id}`);
+  const user = await requireUser(`/jasa/dashboard/tagihan/${id}`);
   const inv = await getInvoice(id);
   if (!inv || inv.userId !== user.id) notFound();
   const [pay, profile] = await Promise.all([getPaymentSettings(), getProfile()]);
@@ -27,7 +27,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
   return (
     <>
-      <Link href="/portal" className="inline-flex items-center gap-1 text-sm text-[var(--ink-3)] hover:text-[var(--navy)]"><ArrowLeft className="h-3.5 w-3.5" /> Semua tagihan</Link>
+      <Link href="/jasa/dashboard" className="inline-flex items-center gap-1 text-sm text-[var(--ink-3)] hover:text-[var(--navy)]"><ArrowLeft className="h-3.5 w-3.5" /> Semua tagihan</Link>
       <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="font-mono text-xs text-[var(--navy-2)]">{inv.number}</p>
@@ -51,7 +51,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         </table>
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--rule)] bg-white/60 px-5 py-3">
           {inv.note ? <p className="text-xs text-[var(--ink-3)]">{inv.note}</p> : <span />}
-          <a href={`/invoice/${inv.id}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm"><Printer className="h-3.5 w-3.5" /> Cetak / simpan PDF</a>
+          <a href={`/jasa/invoice/${inv.id}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm"><Printer className="h-3.5 w-3.5" /> Cetak / simpan PDF</a>
         </div>
       </section>
 

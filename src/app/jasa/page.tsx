@@ -25,6 +25,13 @@ const STEPS = [
   ["Pakai & bayar lewat dashboard", "Langganan, tagihan, dan pembayaran QRIS tercatat di dashboard pelanggan. Garansi perbaikan setelah serah terima."],
 ] as const;
 
+/** Tiga sorotan di hero. */
+const HIGHLIGHTS = [
+  [Code2, "Aplikasi custom", "Beli putus (kode milik Anda) atau sekaligus dihosting di server terkelola."],
+  [Server, "Server & maintenance", "Cloud server, SSL, backup harian, monitoring, perbaikan bug — satu langganan."],
+  [MessageCircle, "WhatsApp gateway", "API notifikasi & OTP dengan dashboard log; biaya mengikuti volume pesan."],
+] as const;
+
 /** Dua model untuk pembuatan aplikasi: beli putus saja, atau beli putus + sewa server. */
 const APP_MODELS = [
   { title: "Beli putus", sub: "sekali bayar · tanpa hosting", points: ["Kode & aplikasi sepenuhnya milik Anda", "Dipasang di server Anda sendiri", "Garansi bug 30 hari"] },
@@ -70,8 +77,8 @@ export default async function JasaPage() {
         {/* ── Hero ── */}
         <section className="relative overflow-hidden">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(900px_380px_at_20%_-10%,rgba(184,146,58,0.16),transparent_60%),radial-gradient(700px_320px_at_90%_10%,rgba(20,33,61,0.10),transparent_60%)]" />
-          <div className="relative mx-auto max-w-6xl px-5 pb-16 pt-14 md:pb-24 md:pt-20">
-            <div className="max-w-3xl">
+          <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 pb-16 pt-14 md:grid-cols-[1.15fr_0.85fr] md:pb-24 md:pt-20">
+            <div>
               <p className="eyebrow">Aplikasi custom · sewa server · WhatsApp gateway</p>
               <h1 className="font-serif mt-4 text-4xl font-semibold leading-[1.1] text-[var(--navy)] md:text-6xl">
                 {brand.name}
@@ -86,13 +93,33 @@ export default async function JasaPage() {
                 <a href="#paket" className="btn-ghost"><Package className="h-4 w-4" /> Lihat Paket</a>
                 <Link href={PORTFOLIO_URL} className="btn-ghost" title="Siapa di balik Kodeva: pengalaman, sertifikasi & proyek"><UserRound className="h-4 w-4" /> Profil & Portofolio</Link>
               </div>
-              <ul className="mt-10 grid max-w-xl grid-cols-3 gap-4 border-t border-[var(--rule)] pt-6 text-sm">
+              <ul className="mt-10 grid grid-cols-3 gap-4 border-t border-[var(--rule)] pt-6 text-sm">
                 {[["Respons", "< 24 jam"], ["Pembayaran", "QRIS & transfer"], ["Garansi", "Perbaikan bug"]].map(([k, v]) => (
                   <li key={k}><p className="font-serif text-lg font-semibold text-[var(--navy)]">{v}</p><p className="text-xs text-[var(--ink-3)]">{k}</p></li>
                 ))}
               </ul>
             </div>
 
+            {/* Ringkasan layanan: pengganti panel akun */}
+            <aside className="card relative overflow-hidden p-7 md:p-8">
+              <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(184,146,58,0.22),transparent_70%)]" />
+              <p className="eyebrow">Yang Anda dapatkan</p>
+              <ul className="mt-5 divide-y divide-[var(--rule)]">
+                {HIGHLIGHTS.map(([Icon, t, d]) => (
+                  <li key={t} className="flex gap-4 py-4 first:pt-0 last:pb-0">
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#eef3ff] text-[var(--navy)]"><Icon className="h-5 w-5" /></span>
+                    <div>
+                      <p className="font-serif text-base font-semibold text-[var(--navy)]">{t}</p>
+                      <p className="mt-0.5 text-sm leading-relaxed text-[var(--ink-2)]">{d}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-6 flex items-center justify-between gap-3 rounded-xl bg-[var(--navy)] px-4 py-3 text-sm text-white">
+                <span>Harga pasti dikonfirmasi lewat WhatsApp</span>
+                <a href="#paket" className="shrink-0 font-semibold text-[var(--gold-2)] hover:underline">Lihat paket →</a>
+              </div>
+            </aside>
           </div>
         </section>
 
@@ -125,9 +152,9 @@ export default async function JasaPage() {
                           {waAsk(s.name) ? (
                             <a href={waAsk(s.name)!} target="_blank" rel="noreferrer" className="btn-gold btn-sm mt-4 w-full"><MessageCircle className="h-3.5 w-3.5" /> Diskusikan via WhatsApp</a>
                           ) : (
-                            <Link href={`/order/${s.slug}`} className="btn-primary btn-sm mt-4 w-full">Pesan <ArrowRight className="h-3.5 w-3.5" /></Link>
+                            <Link href={`/jasa/order/${s.slug}`} className="btn-primary btn-sm mt-4 w-full">Pesan <ArrowRight className="h-3.5 w-3.5" /></Link>
                           )}
-                          <Link href={`/order/${s.slug}`} className="mt-3 block text-center text-xs text-[var(--ink-3)] hover:text-[var(--navy)] hover:underline">atau pesan lewat dashboard</Link>
+                          <Link href={`/jasa/order/${s.slug}`} className="mt-3 block text-center text-xs text-[var(--ink-3)] hover:text-[var(--navy)] hover:underline">atau pesan lewat dashboard</Link>
                         </div>
                       </article>
                     ))}
@@ -173,9 +200,9 @@ export default async function JasaPage() {
                           {waAsk(s.name) ? (
                             <a href={waAsk(s.name)!} target="_blank" rel="noreferrer" className={`${s.isFeatured ? "btn-gold" : "btn-primary"} btn-sm mt-4 w-full`}><MessageCircle className="h-3.5 w-3.5" /> {s.priceTiers.length ? "Tanya harga pasti" : "Hubungi via WhatsApp"}</a>
                           ) : (
-                            <Link href={`/order/${s.slug}`} className="btn-primary btn-sm mt-4 w-full">Sewa paket ini <ArrowRight className="h-3.5 w-3.5" /></Link>
+                            <Link href={`/jasa/order/${s.slug}`} className="btn-primary btn-sm mt-4 w-full">Sewa paket ini <ArrowRight className="h-3.5 w-3.5" /></Link>
                           )}
-                          <Link href={`/order/${s.slug}`} className="mt-3 block text-center text-xs text-[var(--ink-3)] hover:text-[var(--navy)] hover:underline">atau sewa lewat dashboard</Link>
+                          <Link href={`/jasa/order/${s.slug}`} className="mt-3 block text-center text-xs text-[var(--ink-3)] hover:text-[var(--navy)] hover:underline">atau sewa lewat dashboard</Link>
                         </div>
                       </article>
                     ))}

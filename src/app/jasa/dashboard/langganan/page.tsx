@@ -72,7 +72,7 @@ function SubscriptionCard({ o, paidUntil, open }: { o: OrderRow; paidUntil?: str
       {open && (
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--rule)] pt-4 text-sm">
           <span className="text-[var(--ink-2)]"><CalendarClock className="mr-1 inline h-4 w-4 text-[var(--gold)]" />Tagihan {open.period ? fmtPeriod(open.period) : "berjalan"}: <b className="text-[var(--navy)]">{fmtIDR(open.amount)}</b> · <Pill tone={INVOICE_STATUS[open.status].tone}>{INVOICE_STATUS[open.status].label}</Pill></span>
-          <Link href={`/portal/invoices/${open.id}`} className={`${open.status === "unpaid" ? "btn-gold" : "btn-ghost"} btn-sm`}><Receipt className="h-3.5 w-3.5" /> {open.status === "unpaid" ? "Bayar via QRIS" : "Lihat tagihan"}</Link>
+          <Link href={`/jasa/dashboard/tagihan/${open.id}`} className={`${open.status === "unpaid" ? "btn-gold" : "btn-ghost"} btn-sm`}><Receipt className="h-3.5 w-3.5" /> {open.status === "unpaid" ? "Bayar via QRIS" : "Lihat tagihan"}</Link>
         </div>
       )}
     </article>
@@ -80,7 +80,7 @@ function SubscriptionCard({ o, paidUntil, open }: { o: OrderRow; paidUntil?: str
 }
 
 export default async function PortalOrders() {
-  const user = await requireUser("/portal/orders");
+  const user = await requireUser("/jasa/dashboard/langganan");
   const [orders, paid, open] = await Promise.all([listOrders({ userId: user.id }), lastPaidPeriods(user.id), openInvoiceByOrder(user.id)]);
   const active = orders.filter((o) => o.status === "active");
   const others = orders.filter((o) => o.status !== "active");

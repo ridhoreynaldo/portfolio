@@ -9,7 +9,7 @@ import { action, setFlash } from "@/shared/action";
 import { AppError } from "@/shared/errors";
 import { users } from "@/modules/users/schema";
 import { DUMMY_HASH, hashPassword, verifyPassword } from "./password";
-import { createSession, destroySession, getCurrentUser, homeFor, loadAccess, revokeUserSessions } from "./session";
+import { createSession, destroySession, getCurrentUser, homeFor, isStaff, loadAccess, revokeUserSessions } from "./session";
 import { userRoles } from "@/modules/users/schema";
 import { roles } from "@/modules/rbac/schema";
 import { CUSTOMER_ROLE } from "@/modules/rbac/permissions";
@@ -90,7 +90,7 @@ export async function registerAction(_: RegisterState, form: FormData): Promise<
     return u!.id;
   });
   await createSession(userId, { ip, userAgent: (await headers()).get("user-agent") ?? undefined });
-  redirect(safeNext(form.get("next"), "/portal"));
+  redirect(safeNext(form.get("next"), "/jasa/dashboard"));
 }
 
 export async function logoutAction() {
@@ -117,5 +117,5 @@ export const changePasswordAction = action(async (form: FormData) => {
   await db().update(users).set({ passwordHash: await hashPassword(data.next), updatedAt: new Date() }).where(eq(users.id, me.id));
   await revokeUserSessions(me.id);
   await setFlash("Password diubah. Silakan login lagi.");
-  redirect("/login");
+  redirect(isStaff(me) ? "/login" : "/jasa/login");
 });

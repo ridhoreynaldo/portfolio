@@ -19,7 +19,7 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
         <ServiceBrandMark brand={serviceBrandOf(profile)} title="Daftar Pelanggan" sub="Gratis. Untuk memesan jasa, melihat tagihan, dan membayar via QRIS." />
         <RegisterForm next={safe} />
         <p className="mt-5 text-center text-sm text-[var(--ink-3)]">
-          Sudah punya akun? <Link href={safe ? `/login?next=${encodeURIComponent(safe)}` : "/login"} className="font-semibold text-[var(--navy)] hover:underline">Masuk</Link>
+          Sudah punya akun? <Link href={safe ? `/jasa/login?next=${encodeURIComponent(safe)}` : "/jasa/login"} className="font-semibold text-[var(--navy)] hover:underline">Login</Link>
         </p>
         <p className="mt-6 text-center text-xs text-[var(--ink-3)]"><Link href="/jasa" className="hover:text-[var(--navy)]">← Halaman jasa</Link></p>
       </main>

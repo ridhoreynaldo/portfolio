@@ -6,7 +6,7 @@ type Menu = { id: string; label: string; path: string };
 
 /** Header HUD halaman portofolio: brand, menu dinamis (path "#section" relatif ke beranda, "/path" absolut), tombol Jasa & Masuk/Portal. */
 export function SiteHeader({ brand, menus, user, home = "/" }: { brand: string; menus: Menu[]; user: AuthUser | null; home?: string }) {
-  const portal = user ? (user.isSuper || user.permissions.length > 0 ? "/admin" : "/portal") : null;
+  const portal = user && (user.isSuper || user.permissions.length > 0) ? "/admin" : null; // akun pelanggan Kodeva tidak ditampilkan di portofolio
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[rgba(3,6,18,0.72)] backdrop-blur-xl">
       <div className="overflow-hidden border-b border-white/5 bg-black/30">
@@ -38,10 +38,10 @@ export function SiteHeader({ brand, menus, user, home = "/" }: { brand: string; 
         <div className="flex items-center gap-2">
           <Link href="/jasa" className="btn-primary btn-sm"><ShoppingCart className="h-3.5 w-3.5" /> Jasa</Link>
           {portal ? (
-            <Link href={portal} className="btn-ghost btn-sm"><UserRound className="h-3.5 w-3.5" /> {user!.name.split(" ")[0]}</Link>
-          ) : (
-            <Link href="/login" className="btn-ghost btn-sm"><LogIn className="h-3.5 w-3.5" /> Masuk</Link>
-          )}
+            <Link href={portal} className="btn-ghost btn-sm"><UserRound className="h-3.5 w-3.5" /> Admin</Link>
+          ) : !user ? (
+            <Link href="/login" className="btn-ghost btn-sm" title="Masuk admin portofolio"><LogIn className="h-3.5 w-3.5" /> Masuk</Link>
+          ) : null}
         </div>
       </nav>
     </header>

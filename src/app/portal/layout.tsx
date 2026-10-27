@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutDashboard, LogOut, Receipt, ShoppingCart, UserRound } from "lucide-react";
+import { LayoutDashboard, LogOut, Receipt, Server, UserRound } from "lucide-react";
 import { Starfield } from "@/components/starfield";
 import { SERVICE_BRAND_FALLBACK, SERVICE_LOGO } from "@/components/service-shell";
 import { getPortfolio } from "@/modules/portfolio/service";
@@ -14,7 +14,7 @@ export const metadata = { title: "Portal Pelanggan" };
 
 const NAV = [
   ["/portal", "Tagihan", Receipt],
-  ["/portal/orders", "Pesanan", ShoppingCart],
+  ["/portal/orders", "Langganan", Server],
   ["/portal/account", "Akun", UserRound],
 ] as const;
 

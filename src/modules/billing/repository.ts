@@ -58,6 +58,11 @@ const orderSelect = {
   adminNote: orders.adminNote,
   status: orders.status,
   startDate: orders.startDate,
+  endDate: orders.endDate,
+  unitPrice: orders.unitPrice,
+  items: orders.items,
+  itemLabel: orders.itemLabel,
+  itemLimit: orders.itemLimit,
   createdAt: orders.createdAt,
   updatedAt: orders.updatedAt,
   customerName: users.name,
@@ -67,6 +72,33 @@ const orderSelect = {
   unit: servicePackages.unit,
 };
 export type OrderRow = { [K in keyof typeof orderSelect]: (typeof orderSelect)[K]["_"]["data"] | (K extends "price" | "billingCycle" | "unit" ? null : never) };
+
+/** Harga per unit yang berlaku: kesepakatan khusus order, kalau tidak ada harga paket. */
+export const orderUnitPrice = (o: Pick<OrderRow, "unitPrice" | "price">) => o.unitPrice ?? o.price ?? 0;
+/** Total per siklus = harga unit × jumlah. */
+export const orderTotal = (o: Pick<OrderRow, "unitPrice" | "price" | "quantity">) => orderUnitPrice(o) * o.quantity;
+
+/** Periode "YYYY-MM" terakhir yang LUNAS per order (untuk "lunas s/d …" di langganan bulanan). */
+export async function lastPaidPeriods(userId: string): Promise<Record<string, string>> {
+  const rows = await db()
+    .select({ orderId: invoices.orderId, period: sql<string>`max(${invoices.period})` })
+    .from(invoices)
+    .where(and(eq(invoices.userId, userId), eq(invoices.status, "paid"), sql`${invoices.orderId} is not null and ${invoices.period} <> ''`))
+    .groupBy(invoices.orderId);
+  return Object.fromEntries(rows.filter((r) => r.orderId).map((r) => [r.orderId!, r.period]));
+}
+
+/** Tagihan terbuka (belum lunas) per order, untuk tombol "bayar" di kartu langganan. */
+export async function openInvoiceByOrder(userId: string): Promise<Record<string, { id: string; period: string; amount: number; status: InvoiceStatus }>> {
+  const rows = await db()
+    .select({ id: invoices.id, orderId: invoices.orderId, period: invoices.period, amount: invoices.amount, status: invoices.status })
+    .from(invoices)
+    .where(and(eq(invoices.userId, userId), sql`${invoices.status} in ('unpaid','pending_verification') and ${invoices.orderId} is not null`))
+    .orderBy(asc(invoices.dueDate));
+  const out: Record<string, { id: string; period: string; amount: number; status: InvoiceStatus }> = {};
+  for (const r of rows) if (r.orderId && !out[r.orderId]) out[r.orderId] = { id: r.id, period: r.period, amount: r.amount, status: r.status };
+  return out;
+}
 
 export const listOrders = (filter: { userId?: string; status?: OrderStatus } = {}) =>
   db()

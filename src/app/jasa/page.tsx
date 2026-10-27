@@ -70,7 +70,7 @@ export default async function JasaPage({ searchParams }: { searchParams: Promise
   const faq = showPrices ? FAQ : [["Berapa biayanya?", "Harga menyesuaikan kebutuhan dan scope pekerjaan. Untuk sewa server dan WhatsApp gateway tersedia tabel estimasi berdasarkan jumlah pengguna dan volume pesan. Hubungi saya lewat WhatsApp, ceritakan kebutuhan Anda, dan saya kirim penawaran pasti sebelum pengerjaan dimulai."] as const, ...FAQ.slice(1)];
   const groups = Object.entries(packages.reduce<Record<string, typeof packages>>((acc, s) => ((acc[s.category] ??= []).push(s), acc), {}));
   const hasBank = !!(pay?.bankName && pay.bankAccount);
-  const portalLabel = user && homeFor(user) === "/admin" ? "Panel Admin" : "Portal Pelanggan";
+  const portalLabel = user && homeFor(user) === "/admin" ? "Dashboard Admin" : "Dashboard Pelanggan";
 
   return (
     <div className="svc">
@@ -116,10 +116,10 @@ export default async function JasaPage({ searchParams }: { searchParams: Promise
             <aside id="masuk" className="card h-fit scroll-mt-24 p-7 md:p-8">
               {user ? (
                 <>
-                  <p className="eyebrow">{portalLabel === "Panel Admin" ? "Masuk sebagai admin" : "Akun pelanggan"}</p>
+                  <p className="eyebrow">{portalLabel === "Dashboard Admin" ? "Masuk sebagai admin" : "Akun pelanggan"}</p>
                   <h2 className="font-serif mt-2 text-2xl font-semibold text-[var(--navy)]">Halo, {user.name}</h2>
-                  <p className="mt-2 text-sm text-[var(--ink-2)]">Anda sudah masuk. Kelola pesanan, tagihan, dan pembayaran dari {portalLabel.toLowerCase()}.</p>
-                  <Link href={homeFor(user)} className="btn-primary mt-6 w-full"><LayoutDashboard className="h-4 w-4" /> Buka {portalLabel}</Link>
+                  <p className="mt-2 text-sm text-[var(--ink-2)]">Anda sudah masuk. {portalLabel === "Dashboard Admin" ? "Kelola paket, order, pelanggan, dan tagihan." : "Lihat langganan, tagihan, dan bayar via QRIS."}</p>
+                  <Link href={homeFor(user)} className="btn-primary mt-6 w-full"><LayoutDashboard className="h-4 w-4" /> Buka Dashboard</Link>
                   <a href="#paket" className="btn-ghost mt-2 w-full">Pesan paket baru</a>
                 </>
               ) : (
@@ -241,7 +241,7 @@ export default async function JasaPage({ searchParams }: { searchParams: Promise
                 <li className="check">Bayar & unggah bukti, status diperbarui otomatis</li>
                 <li className="check">Profil & data penagihan</li>
               </ul>
-              <Link href={user ? homeFor(user) : "#masuk"} className="btn-ghost btn-sm mt-5">{user ? `Buka ${portalLabel}` : "Masuk / daftar"} <ArrowRight className="h-3.5 w-3.5" /></Link>
+              <Link href={user ? homeFor(user) : "#masuk"} className="btn-ghost btn-sm mt-5">{user ? "Buka Dashboard" : "Login / daftar"} <ArrowRight className="h-3.5 w-3.5" /></Link>
             </div>
           </div>
         </Section>

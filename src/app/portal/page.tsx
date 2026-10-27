@@ -19,12 +19,12 @@ export default async function PortalHome() {
         {[
           ["Belum dibayar", fmtIDR(stats.unpaidTotal), `${stats.unpaid + stats.verifying} tagihan`],
           ["Menunggu verifikasi", String(stats.verifying), "bukti sudah diunggah"],
-          ["Layanan aktif", String(stats.activeOrders), `${stats.pendingOrders} menunggu konfirmasi`],
+          ["Langganan aktif", String(stats.activeOrders), `${stats.pendingOrders} menunggu konfirmasi`],
         ].map(([k, v, s]) => (
           <div key={k} className="hud p-4">
             <p className="hud-label !text-[10px]">{k}</p>
             <p className="font-display mt-1 text-xl font-bold text-neon">{v}</p>
-            <p className="text-xs text-slate-500">{s}</p>
+            <p className="text-xs text-slate-500">{s}{k === "Langganan aktif" && <> · <Link href="/portal/orders" className="text-cyan-300 hover:underline">lihat</Link></>}</p>
           </div>
         ))}
       </div>

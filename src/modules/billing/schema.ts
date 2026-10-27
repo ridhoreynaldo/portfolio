@@ -64,6 +64,16 @@ export const orders = pgTable(
     adminNote: text("admin_note").default("").notNull(),
     status: orderStatus("status").default("pending").notNull(),
     startDate: date("start_date", { mode: "string" }),
+    /** Akhir masa berlaku / sudah dibayar sampai (sewa tahunan, kontrak). */
+    endDate: date("end_date", { mode: "string" }),
+    /** Harga per unit khusus order ini (kesepakatan); null = harga paket. */
+    unitPrice: integer("unit_price"),
+    /** Objek yang dicakup langganan, mis. daftar domain/subdomain. */
+    items: jsonb("items").$type<string[]>().default([]).notNull(),
+    /** Sebutan item: "domain", "subdomain", "nomor", … */
+    itemLabel: varchar("item_label", { length: 32 }).default("").notNull(),
+    /** Batas jumlah item (kuota); null = tanpa batas. */
+    itemLimit: integer("item_limit"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },

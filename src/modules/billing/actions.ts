@@ -15,7 +15,7 @@ import { IMAGE_MIMES, readUpload } from "./files";
 import { PACKAGE_CATEGORIES } from "./labels";
 import {
   customerRoleId, deleteInvoice, deleteOrder, deleteOrphanFile, deletePackage, getInvoice, getOrder, getPackage, getPaymentSettings, insertFile, insertInvoice,
-  insertPackage, monthlyOrdersWithoutInvoice, nextNumber, uniquePackageSlug, updateInvoice, updateOrder, updatePackage, upsertCustomerProfile, upsertPaymentSettings,
+  insertOrder, insertPackage, monthlyOrdersWithoutInvoice, nextNumber, orderTotal, uniquePackageSlug, updateInvoice, updateOrder, updatePackage, upsertCustomerProfile, upsertPaymentSettings,
 } from "./repository";
 import { billingCycle, invoiceStatus, orderStatus } from "./schema";
 
@@ -84,23 +84,66 @@ export const deletePackageAction = action(async (form: FormData) => {
 });
 
 // ── Order ─────────────────────────────────────────────────────────────────────
+/** Field langganan yang diisi admin (dipakai form proses & order manual). */
+const subscriptionInput = z.object({
+  status: z.enum(orderStatus.enumValues),
+  adminNote: z.string().trim().max(2000).default(""),
+  startDate: z.string().trim().default(""),
+  endDate: z.string().trim().default(""),
+  unitPrice: z.union([z.literal(""), money]).transform((v) => (v === "" ? null : v)),
+  itemLabel: z.string().trim().max(32).default(""),
+  itemLimit: z.union([z.literal(""), z.coerce.number().int().min(0).max(100000)]).transform((v) => (v === "" || v === 0 ? null : v)),
+});
+const readSubscription = (form: FormData) => {
+  const d = subscriptionInput.parse({
+    status: form.get("status"), adminNote: form.get("adminNote") ?? "", startDate: form.get("startDate") ?? "", endDate: form.get("endDate") ?? "",
+    unitPrice: String(form.get("unitPrice") ?? "").trim(), itemLabel: form.get("itemLabel") ?? "", itemLimit: String(form.get("itemLimit") ?? "").trim(),
+  });
+  if (d.startDate && !DATE.test(d.startDate)) throw new AppError("Tanggal mulai tidak valid");
+  if (d.endDate && !DATE.test(d.endDate)) throw new AppError("Tanggal berakhir tidak valid");
+  const items = String(form.get("items") ?? "").split(/[\r\n,]+/).map((x) => x.trim().toLowerCase()).filter(Boolean).slice(0, 200);
+  if (d.itemLimit != null && items.length > d.itemLimit) throw new AppError(`Jumlah ${d.itemLabel || "item"} (${items.length}) melebihi limit ${d.itemLimit}`);
+  return { status: d.status, adminNote: d.adminNote, startDate: d.startDate || null, endDate: d.endDate || null, unitPrice: d.unitPrice, itemLabel: d.itemLabel, itemLimit: d.itemLimit, items };
+};
+
 export const updateOrderAction = action(async (form: FormData) => {
   await requirePermission("order.update");
-  const d = z
-    .object({
-      id: uuid,
-      status: z.enum(orderStatus.enumValues),
-      adminNote: z.string().trim().max(2000).default(""),
-      startDate: z.string().trim().default(""),
-    })
-    .parse({ id: form.get("id"), status: form.get("status"), adminNote: form.get("adminNote") ?? "", startDate: form.get("startDate") ?? "" });
-  if (d.startDate && !DATE.test(d.startDate)) throw new AppError("Tanggal mulai tidak valid");
-  const o = await getOrder(d.id);
+  const id = uuid.parse(form.get("id"));
+  const v = readSubscription(form);
+  const o = await getOrder(id);
   if (!o) throw notFound();
-  await updateOrder(d.id, { status: d.status, adminNote: d.adminNote, startDate: d.startDate || null });
+  await updateOrder(id, v);
   revalidatePath("/admin/orders");
   revalidatePath("/portal");
+  revalidatePath("/portal/orders");
   await setFlash(`Order ${o.number} diperbarui`);
+  redirect("/admin/orders");
+});
+
+/** Admin membuat order/langganan langsung untuk pelanggan (tanpa lewat form portal). */
+export const createOrderAction = action(async (form: FormData) => {
+  await requirePermission("order.create");
+  const d = z
+    .object({ userId: uuid, packageId: uuid, quantity: z.coerce.number().int().min(1).max(100).default(1) })
+    .parse({ userId: form.get("userId"), packageId: form.get("packageId"), quantity: form.get("quantity") || 1 });
+  const v = readSubscription(form);
+  const [cust, pkg] = await Promise.all([getUser(d.userId), getPackage(d.packageId)]);
+  if (!cust) throw new AppError("Pelanggan tidak ditemukan");
+  if (!pkg) throw new AppError("Paket tidak ditemukan");
+  let number = "";
+  for (let i = 0; i < 3; i++) {
+    number = await nextNumber("ORD");
+    try {
+      await insertOrder({ number, userId: d.userId, packageId: pkg.id, packageName: pkg.name, quantity: d.quantity, notes: "", ...v });
+      break;
+    } catch (e) {
+      if (i === 2 || !String(e).includes("orders_number_unique")) throw e;
+    }
+  }
+  revalidatePath("/admin/orders");
+  revalidatePath("/portal");
+  revalidatePath("/portal/orders");
+  await setFlash(`Order ${number} dibuat untuk ${cust.name}`);
   redirect("/admin/orders");
 });
 
@@ -198,8 +241,8 @@ export const generateMonthlyInvoicesAction = action(async (form: FormData) => {
   const dueDate = `${d.period}-${String(d.dueDay).padStart(2, "0")}`;
   let n = 0;
   for (const o of candidates) {
-    const price = (o.price ?? 0) * o.quantity;
-    if (price <= 0) continue; // paket "hubungi kami" tidak ditagih otomatis
+    const price = orderTotal(o);
+    if (price <= 0) continue; // paket "hubungi kami" tanpa harga kesepakatan tidak ditagih otomatis
     await createWithNumber({
       userId: o.userId, orderId: o.id, title: `${o.packageName}${o.quantity > 1 ? ` ×${o.quantity}` : ""} — ${o.number}`, period: d.period,
       amount: price, dueDate, note: "Tagihan bulanan otomatis",

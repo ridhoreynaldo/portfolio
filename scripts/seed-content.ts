@@ -11,7 +11,7 @@ import * as schema from "@/shared/db/schema";
 import type { PriceTier } from "@/modules/billing/schema";
 
 type Db = PostgresJsDatabase<typeof schema>;
-const { profile, experiences, certifications, skills, projects, servicePackages, menus } = schema;
+const { profile, experiences, certifications, skills, projects, servicePackages, menus, users, orders, invoices } = schema;
 
 const PROFILE: Partial<typeof profile.$inferInsert> = {
   siteName: "Ridho Reynaldo",
@@ -187,6 +187,9 @@ const PACKAGES: (typeof servicePackages.$inferInsert)[] = [
     description: "Aplikasi Anda berjalan di cloud server terkelola: nginx + SSL, backup database harian, monitoring, dan pembaruan keamanan. Biaya mengikuti jumlah pengguna aplikasi.",
     features: ["Cloud server terkelola + SSL", "Backup DB harian", "Monitoring uptime", "Perbaikan bug minor", "Kapasitas server naik sesuai tingkat pengguna"],
     priceTiers: SERVER_TIERS },
+  { name: "Sewa Domain", slug: "sewa-domain", category: "Sewa", price: 300_000, billingCycle: "yearly", unit: "domain", isFeatured: false, sortOrder: 8,
+    description: "Pendaftaran & perpanjangan domain (.com/.id/.sch.id, dll) atas nama Anda, termasuk pengaturan DNS dan pengingat perpanjangan.",
+    features: ["Domain atas nama pelanggan", "Pengaturan DNS & subdomain", "Pengingat sebelum kedaluwarsa"] },
   { name: "Sewa WhatsApp Gateway", slug: "sewa-whatsapp-gateway", category: "Sewa", price: 350_000, billingCycle: "monthly", unit: "nomor", isFeatured: false, sortOrder: 6,
     description: "API pengiriman pesan WhatsApp untuk notifikasi/OTP aplikasi Anda, lengkap dengan dashboard & log. Biaya mengikuti jumlah pengguna dan volume pesan per bulan.",
     features: ["REST API + API key", "Antrian & retry otomatis", "Dashboard log pengiriman", "Dukungan integrasi"],
@@ -240,6 +243,12 @@ export async function seedContent(db: Db, log: (m: string) => void) {
   const added = await db.insert(projects).values(PROJECTS).onConflictDoNothing({ target: projects.slug }).returning({ slug: projects.slug });
   if (added.length) log(`project baru: ${added.map((a) => a.slug).join(", ")}`);
 
+  // paket baru yang ditambahkan belakangan (tabel sudah terisi): sisipkan per slug
+  const newPk = await db.insert(servicePackages).values(PACKAGES).onConflictDoNothing({ target: servicePackages.slug }).returning({ slug: servicePackages.slug });
+  if (newPk.length) log(`paket layanan baru: ${newPk.map((p) => p.slug).join(", ")}`);
+
+  await seedAdzkiaSubscriptions(db, log);
+
   // menu PUBLIC "Jasa" → halaman /jasa (dulu section #layanan di beranda; dimigrasi otomatis)
   const migrated = await db.update(menus).set({ label: "Jasa", path: "/jasa" }).where(sql`${menus.scope} = 'PUBLIC' and ${menus.path} = '#layanan'`).returning({ id: menus.id });
   if (migrated.length) log("menu PUBLIC Layanan (#layanan) diarahkan ke /jasa");
@@ -249,4 +258,50 @@ export async function seedContent(db: Db, log: (m: string) => void) {
     await db.insert(menus).values({ scope: "PUBLIC", label: "Jasa", path: "/jasa", icon: "Globe", sortOrder: 6 });
     log("menu PUBLIC Jasa ditambahkan");
   }
+}
+
+
+/**
+ * Langganan pelanggan Adzkia (akun adzkia@adzkia.com) — data awal yang diminta pemilik 27 Okt 2026.
+ * Hanya dibuat bila akun ada dan belum punya order sama sekali; setelah itu dikelola dari Admin > Order.
+ */
+async function seedAdzkiaSubscriptions(db: Db, log: (m: string) => void) {
+  const [cust] = await db.select({ id: users.id }).from(users).where(eq(users.email, "adzkia@adzkia.com")).limit(1);
+  if (!cust) return;
+  const [cnt] = await db.select({ n: sql<number>`count(*)::int` }).from(orders).where(eq(orders.userId, cust.id));
+  if ((cnt?.n ?? 0) > 0) return;
+  const pk = Object.fromEntries((await db.select({ id: servicePackages.id, slug: servicePackages.slug, name: servicePackages.name, price: servicePackages.price }).from(servicePackages)).map((p) => [p.slug, p]));
+  const domainPk = pk["sewa-domain"], serverPk = pk["sewa-server-maintenance"];
+  if (!domainPk || !serverPk) return;
+
+  // 1) Sewa domain tahunan: sudah dibayar, berlaku 27 Sep 2026 – 27 Sep 2027 (sisa ±11 bulan)
+  const [domOrder] = await db.insert(orders).values({
+    number: "ORD-202609-0001", userId: cust.id, packageId: domainPk.id, packageName: domainPk.name, quantity: 2, status: "active",
+    startDate: "2026-09-27", endDate: "2027-09-27", itemLabel: "domain", itemLimit: 2, items: ["adzkiasmart.com", "yayasanadzkiainternasional.com"],
+    adminNote: "Perpanjangan tahunan untuk 2 domain. Sudah dibayar untuk periode 27 Sep 2026 – 27 Sep 2027.", createdAt: new Date("2026-09-27T09:00:00+07:00"),
+  }).onConflictDoNothing({ target: orders.number }).returning({ id: orders.id });
+  if (domOrder) {
+    await db.insert(invoices).values({
+      number: "INV-202609-0001", userId: cust.id, orderId: domOrder.id, title: "Sewa Domain ×2 (adzkiasmart.com, yayasanadzkiainternasional.com) — periode 2026/2027",
+      period: "", amount: domainPk.price * 2, dueDate: "2026-09-27", status: "paid", paidAt: new Date("2026-09-27T10:00:00+07:00"), note: "Sudah dibayar.",
+      createdAt: new Date("2026-09-27T09:05:00+07:00"),
+    }).onConflictDoNothing({ target: invoices.number });
+  }
+
+  // 2) Server + maintenance jadi satu langganan: Rp 2.000.000 + Rp 2.500.000 per bulan, maks. 10 subdomain
+  const subdomains = ["adzkiasmart.com", "adzset.yayasanadzkiainternasional.com", "am.yayasanadzkiainternasional.com", "digilib.yayasanadzkiainternasional.com", "grafo.yayasanadzkiainternasional.com", "roda.yayasanadzkiainternasional.com"];
+  const [srvOrder] = await db.insert(orders).values({
+    number: "ORD-202610-0001", userId: cust.id, packageId: serverPk.id, packageName: serverPk.name, quantity: 1, status: "active",
+    startDate: "2026-10-01", unitPrice: 4_500_000, itemLabel: "subdomain", itemLimit: 10, items: subdomains,
+    adminNote: "Biaya server Rp 2.000.000 + maintenance aplikasi Rp 2.500.000 per bulan untuk Adzkia Smart & Yayasan Adzkia Internasional. Mencakup maksimal 10 subdomain.",
+    createdAt: new Date("2026-10-01T09:00:00+07:00"),
+  }).onConflictDoNothing({ target: orders.number }).returning({ id: orders.id });
+  if (srvOrder) {
+    await db.insert(invoices).values({
+      number: "INV-202610-0001", userId: cust.id, orderId: srvOrder.id, title: "Sewa Server + Maintenance Aplikasi — Oktober 2026 (Adzkia Smart & Yayasan Adzkia)",
+      period: "2026-10", amount: 4_500_000, dueDate: "2026-11-05", status: "unpaid", note: "Server Rp 2.000.000 + maintenance Rp 2.500.000. Bayar via QRIS lalu unggah bukti.",
+      createdAt: new Date("2026-10-01T09:05:00+07:00"),
+    }).onConflictDoNothing({ target: invoices.number });
+  }
+  log("langganan Adzkia dibuat: sewa domain (lunas, s.d. 27 Sep 2027) + server & maintenance (Rp 4.500.000/bulan, tagihan Okt 2026 belum dibayar)");
 }

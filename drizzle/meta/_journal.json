@@ -71,6 +71,13 @@
       "when": 1793073405893,
       "tag": "0009_org_logos",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793074375399,
+      "tag": "0010_order_subscriptions",
+      "breakpoints": true
     }
   ]
 }

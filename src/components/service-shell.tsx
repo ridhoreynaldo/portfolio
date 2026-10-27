@@ -47,7 +47,7 @@ export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: Auth
         </ul>
         <div className="flex items-center gap-2">
           {portal ? (
-            <Link href={portal} className="btn-ghost btn-sm"><UserRound className="h-3.5 w-3.5" /> {staff ? "Panel Admin" : "Portal Saya"}</Link>
+            <Link href={portal} className="btn-ghost btn-sm" title={staff ? "Dashboard admin" : "Dashboard pelanggan"}><UserRound className="h-3.5 w-3.5" /> Dashboard</Link>
           ) : (
             <Link href="/jasa#masuk" className="btn-ghost btn-sm"><LogIn className="h-3.5 w-3.5" /> Login</Link>
           )}

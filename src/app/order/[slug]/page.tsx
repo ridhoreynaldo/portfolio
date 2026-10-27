@@ -28,7 +28,7 @@ export default async function OrderFormPage({ params }: { params: Promise<{ slug
       <div className="relative z-10">
         <SiteHeader brand={profile?.siteName || profile?.fullName || "Portfolio"} menus={menus} user={user} />
         <main className="mx-auto max-w-3xl px-5 py-14">
-          <Link href="/order" className="hud-label mb-4 inline-flex items-center gap-1 hover:text-white"><ArrowLeft className="h-3.5 w-3.5" /> kembali ke katalog</Link>
+          <Link href="/jasa#paket" className="hud-label mb-4 inline-flex items-center gap-1 hover:text-white"><ArrowLeft className="h-3.5 w-3.5" /> kembali ke paket jasa</Link>
           <h1 className="font-display text-2xl font-black tracking-wide md:text-3xl">Pesan: <span className="text-gradient">{pkg.name}</span></h1>
           <Flash flash={flash} />
           <div className="mt-6 grid gap-6 md:grid-cols-[1fr_280px]">

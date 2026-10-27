@@ -37,7 +37,7 @@ export default async function PortalLayout({ children }: { children: React.React
                   <Link href={href} className="flex items-center gap-1.5 px-3 py-1.5 text-slate-300 transition hover:text-cyan-300"><Icon className="h-4 w-4" />{label}</Link>
                 </li>
               ))}
-              <li><Link href="/order" className="btn-primary btn-sm ml-1">+ Order</Link></li>
+              <li><Link href="/jasa#paket" className="btn-primary btn-sm ml-1">+ Order</Link></li>
             </ul>
             <div className="flex items-center gap-2 text-xs text-slate-400">
               <span className="hidden sm:inline">{user.name}</span>

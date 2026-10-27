@@ -58,7 +58,7 @@ export const savePackageAction = action(async (form: FormData) => {
   if (id) await updatePackage(id, values);
   else await insertPackage(values);
   revalidatePath("/admin/packages");
-  revalidatePath("/order");
+  revalidatePath("/jasa");
   revalidatePortfolio();
   await setFlash(`Paket "${d.name}" tersimpan`);
   redirect("/admin/packages");
@@ -71,7 +71,7 @@ export const deletePackageAction = action(async (form: FormData) => {
   if (!p) throw notFound();
   await deletePackage(id);
   revalidatePath("/admin/packages");
-  revalidatePath("/order");
+  revalidatePath("/jasa");
   revalidatePortfolio();
   await setFlash(`Paket "${p.name}" dihapus`);
 });

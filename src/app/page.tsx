@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Award, Briefcase, Cpu, FolderKanban, Globe, Handshake, Mail, Phone, Rocket, Satellite, Sparkles, UserRound, Wallet } from "lucide-react";
+import { ArrowRight, Award, Briefcase, Cpu, FolderKanban, Globe, Handshake, Mail, Phone, Rocket, Satellite, Sparkles, UserRound } from "lucide-react";
 import { SiGithub } from "react-icons/si";
 import { FaLinkedin } from "react-icons/fa";
 import { Starfield } from "@/components/starfield";
@@ -8,7 +8,6 @@ import { ProjectGrid } from "@/components/project-grid";
 import { ExpIcon } from "@/components/exp-icon";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
 import { getCurrentUser } from "@/modules/auth/session";
-import { CYCLE, fmtIDR } from "@/modules/billing/labels";
 import { getPortfolio } from "@/modules/portfolio/service";
 import { safeUrl, waLink } from "@/shared/url";
 import { fmtDate } from "@/shared/ui";
@@ -103,7 +102,7 @@ export default async function HomePage() {
               </h1>
               {p?.summary && <p className="mt-5 max-w-2xl text-base text-slate-300/85 md:text-lg">{p.summary}</p>}
               <div className="mt-8 flex flex-wrap justify-center gap-3 md:justify-start">
-                <Link href="/order" className="btn-primary">Order Jasa <ArrowRight className="h-4 w-4" /></Link>
+                <Link href="/jasa" className="btn-primary">Jasa & Layanan <ArrowRight className="h-4 w-4" /></Link>
                 {show("proyek") && <a href="#proyek" className="btn-ghost"><Rocket className="h-4 w-4" /> Lihat Proyek</a>}
                 {github && <a href={github} target="_blank" rel="noreferrer" className="btn-ghost"><SiGithub className="h-4 w-4" /> GitHub</a>}
                 {linkedin && <a href={linkedin} target="_blank" rel="noreferrer" className="btn-ghost"><FaLinkedin className="h-4 w-4" /> LinkedIn</a>}
@@ -216,39 +215,23 @@ export default async function HomePage() {
             </Section>
           )}
 
-          {show("layanan") && packages.length > 0 && (
-            <Section id="layanan" no="07" icon={<Handshake className="h-6 w-6" />} title="Jasa &" accent="Layanan" sub="Konsultasi, pembuatan aplikasi apa pun (web, API, machine learning/DSS), sewa server & WhatsApp gateway, maintenance, dan mentoring. Pesan lewat portal, tagihan & pembayaran QRIS dikelola di akun Anda.">
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {packages.map((s) => (
-                  <article key={s.id} className={`hud flex flex-col p-6 ${s.isFeatured ? "!border-fuchsia-400/50" : ""}`}>
-                    <p className="hud-label !text-fuchsia-300">{s.category}</p>
-                    <h3 className="font-display mt-2 text-base font-bold text-white">{s.name}</h3>
-                    <p className="mt-2 text-sm text-slate-300/80">{s.description}</p>
-                    {s.features.length > 0 && (
-                      <ul className="mt-4 space-y-1.5 text-sm text-slate-300">
-                        {s.features.map((f) => <li key={f} className="flex gap-2"><span className="text-cyan-300">▸</span>{f}</li>)}
-                      </ul>
-                    )}
-                    <div className="mt-auto pt-5">
-                      <p className="font-display text-xl font-bold text-neon">{s.price > 0 ? fmtIDR(s.price) : "Hubungi"}</p>
-                      <p className="hud-label !text-[10px] !text-slate-500">{s.price > 0 ? CYCLE[s.billingCycle] : "harga mengikuti scope"}{s.unit && ` / ${s.unit}`}</p>
-                      <Link href={`/order/${s.slug}`} className="btn-primary btn-sm mt-4 w-full">Pesan <ArrowRight className="h-3.5 w-3.5" /></Link>
-                    </div>
-                  </article>
-                ))}
-              </div>
-              <div className="hud mt-8 flex flex-col items-center justify-between gap-4 p-6 md:flex-row">
+          {/* Detail jasa & paket ada di halaman /jasa — di sini hanya ajakan singkat. */}
+          <section id="layanan" className="mx-auto max-w-4xl scroll-mt-28 px-5 py-10">
+            <div className="hud flex flex-col items-center justify-between gap-5 p-7 text-center md:flex-row md:text-left">
+              <div className="flex items-start gap-4">
+                <Handshake className="mt-1 hidden h-8 w-8 shrink-0 text-cyan-300 md:block" />
                 <div>
-                  <p className="font-display font-bold text-white"><Wallet className="mr-2 inline h-5 w-5 text-cyan-300" />Sudah jadi pelanggan?</p>
-                  <p className="mt-1 text-sm text-slate-400">Cek tagihan bulanan, bayar via QRIS, dan unggah bukti pembayaran di portal.</p>
+                  <p className="hud-label mb-1"><span className="text-magenta">[jasa]</span> // butuh bantuan teknis?</p>
+                  <p className="font-display text-lg font-bold text-white">Konsultasi, pembuatan aplikasi, sewa server & WA gateway, maintenance, mentoring.</p>
+                  <p className="mt-1 text-sm text-slate-400">Paket, harga, cara kerja, dan portal pelanggan ada di halaman jasa.</p>
                 </div>
-                <Link href="/portal" className="btn-ghost">Buka Portal Pelanggan <ArrowRight className="h-4 w-4" /></Link>
               </div>
-            </Section>
-          )}
+              <Link href="/jasa" className="btn-primary shrink-0">Lihat Jasa & Layanan <ArrowRight className="h-4 w-4" /></Link>
+            </div>
+          </section>
 
           {show("kontak") && (
-            <Section id="kontak" no="08" icon={<Mail className="h-6 w-6" />} title="Mari" accent="Terhubung" narrow>
+            <Section id="kontak" no="07" icon={<Mail className="h-6 w-6" />} title="Mari" accent="Terhubung" narrow>
               <div className="hud p-8 text-center">
                 <p className="text-slate-300/80">Punya proyek, butuh konsultasi, atau ingin menyewa layanan? Saya senang mendengarnya.</p>
                 <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
@@ -257,7 +240,7 @@ export default async function HomePage() {
                   {github && <a href={github} target="_blank" rel="noreferrer" className="btn-ghost"><SiGithub className="h-4 w-4" /> GitHub</a>}
                   {linkedin && <a href={linkedin} target="_blank" rel="noreferrer" className="btn-ghost"><FaLinkedin className="h-4 w-4" /> LinkedIn</a>}
                   {website && <a href={website} target="_blank" rel="noreferrer" className="btn-ghost"><Globe className="h-4 w-4" /> Website</a>}
-                  <Link href="/order" className="btn-magenta">Order Jasa</Link>
+                  <Link href="/jasa" className="btn-magenta">Lihat Jasa</Link>
                 </div>
               </div>
             </Section>

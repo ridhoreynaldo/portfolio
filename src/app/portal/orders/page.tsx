@@ -14,7 +14,7 @@ export default async function PortalOrders() {
       <p className="hud-label mb-1">// riwayat</p>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-2xl font-black tracking-wide">Pesanan <span className="text-gradient">Saya</span></h1>
-        <Link href="/order" className="btn-primary btn-sm">+ Pesan layanan</Link>
+        <Link href="/jasa#paket" className="btn-primary btn-sm">+ Pesan layanan</Link>
       </div>
       <section className="hud mt-6 p-0">
         <Table>
@@ -34,7 +34,7 @@ export default async function PortalOrders() {
                 <td className={`${td} text-xs text-slate-400`}>{fmtDateTime(o.createdAt)}</td>
               </tr>
             ))}
-            {!orders.length && <tr><td className={td} colSpan={6}>Belum ada pesanan. <Link href="/order" className="text-cyan-300 hover:underline">Lihat katalog layanan →</Link></td></tr>}
+            {!orders.length && <tr><td className={td} colSpan={6}>Belum ada pesanan. <Link href="/jasa#paket" className="text-cyan-300 hover:underline">Lihat paket jasa →</Link></td></tr>}
           </tbody>
         </Table>
       </section>

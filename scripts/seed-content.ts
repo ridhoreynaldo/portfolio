@@ -179,11 +179,13 @@ export async function seedContent(db: Db, log: (m: string) => void) {
   const added = await db.insert(projects).values(PROJECTS).onConflictDoNothing({ target: projects.slug }).returning({ slug: projects.slug });
   if (added.length) log(`project baru: ${added.map((a) => a.slug).join(", ")}`);
 
-  // menu PUBLIC "Layanan" (section #layanan) sebelum Kontak
-  const [hasLayanan] = await db.select({ id: menus.id }).from(menus).where(sql`${menus.scope} = 'PUBLIC' and ${menus.path} = '#layanan'`).limit(1);
-  if (!hasLayanan) {
+  // menu PUBLIC "Jasa" → halaman /jasa (dulu section #layanan di beranda; dimigrasi otomatis)
+  const migrated = await db.update(menus).set({ label: "Jasa", path: "/jasa" }).where(sql`${menus.scope} = 'PUBLIC' and ${menus.path} = '#layanan'`).returning({ id: menus.id });
+  if (migrated.length) log("menu PUBLIC Layanan (#layanan) diarahkan ke /jasa");
+  const [hasJasa] = await db.select({ id: menus.id }).from(menus).where(sql`${menus.scope} = 'PUBLIC' and ${menus.path} = '/jasa'`).limit(1);
+  if (!hasJasa) {
     await db.update(menus).set({ sortOrder: sql`${menus.sortOrder} + 1` }).where(sql`${menus.scope} = 'PUBLIC' and ${menus.sortOrder} >= 6`);
-    await db.insert(menus).values({ scope: "PUBLIC", label: "Layanan", path: "#layanan", icon: "Globe", sortOrder: 6 });
-    log("menu PUBLIC Layanan ditambahkan");
+    await db.insert(menus).values({ scope: "PUBLIC", label: "Jasa", path: "/jasa", icon: "Globe", sortOrder: 6 });
+    log("menu PUBLIC Jasa ditambahkan");
   }
 }

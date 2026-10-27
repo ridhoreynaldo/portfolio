@@ -78,6 +78,13 @@
       "when": 1793074375399,
       "tag": "0010_order_subscriptions",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793076080000,
+      "tag": "0011_invoice_items",
+      "breakpoints": true
     }
   ]
 }

@@ -3,7 +3,7 @@ import { db } from "@/shared/db";
 import { users, userRoles } from "@/modules/users/schema";
 import { roles } from "@/modules/rbac/schema";
 import { CUSTOMER_ROLE } from "@/modules/rbac/permissions";
-import { customerProfiles, files, invoices, orders, paymentSettings, servicePackages, type InvoiceStatus, type OrderStatus } from "./schema";
+import { customerProfiles, files, invoices, orders, paymentSettings, servicePackages, type InvoiceItem, type InvoiceStatus, type OrderStatus } from "./schema";
 
 // ── Paket layanan ─────────────────────────────────────────────────────────────
 export type PackageRow = typeof servicePackages.$inferSelect;
@@ -63,6 +63,7 @@ const orderSelect = {
   items: orders.items,
   itemLabel: orders.itemLabel,
   itemLimit: orders.itemLimit,
+  breakdown: orders.breakdown,
   createdAt: orders.createdAt,
   updatedAt: orders.updatedAt,
   customerName: users.name,
@@ -75,8 +76,20 @@ export type OrderRow = { [K in keyof typeof orderSelect]: (typeof orderSelect)[K
 
 /** Harga per unit yang berlaku: kesepakatan khusus order, kalau tidak ada harga paket. */
 export const orderUnitPrice = (o: Pick<OrderRow, "unitPrice" | "price">) => o.unitPrice ?? o.price ?? 0;
-/** Total per siklus = harga unit × jumlah. */
-export const orderTotal = (o: Pick<OrderRow, "unitPrice" | "price" | "quantity">) => orderUnitPrice(o) * o.quantity;
+/** Total per siklus: jumlah rincian biaya bila ada, kalau tidak harga unit × jumlah. */
+export const orderTotal = (o: Pick<OrderRow, "unitPrice" | "price" | "quantity" | "breakdown">) =>
+  o.breakdown.length ? o.breakdown.reduce((t, b) => t + b.amount, 0) : orderUnitPrice(o) * o.quantity;
+
+/**
+ * Baris tagihan untuk satu siklus order: rincian biaya bila diisi; kalau tidak dan order punya daftar item
+ * (mis. 2 domain) → satu baris per item dengan harga unit; selain itu satu baris paket × jumlah.
+ */
+export function invoiceLinesFor(o: Pick<OrderRow, "unitPrice" | "price" | "quantity" | "breakdown" | "items" | "packageName" | "itemLabel">): InvoiceItem[] {
+  if (o.breakdown.length) return o.breakdown;
+  const unit = orderUnitPrice(o);
+  if (o.items.length && o.items.length === o.quantity) return o.items.map((it) => ({ description: `${o.packageName} — ${it}`, amount: unit }));
+  return [{ description: `${o.packageName}${o.quantity > 1 ? ` ×${o.quantity}` : ""}`, amount: unit * o.quantity }];
+}
 
 /** Periode "YYYY-MM" terakhir yang LUNAS per order (untuk "lunas s/d …" di langganan bulanan). */
 export async function lastPaidPeriods(userId: string): Promise<Record<string, string>> {
@@ -89,14 +102,14 @@ export async function lastPaidPeriods(userId: string): Promise<Record<string, st
 }
 
 /** Tagihan terbuka (belum lunas) per order, untuk tombol "bayar" di kartu langganan. */
-export async function openInvoiceByOrder(userId: string): Promise<Record<string, { id: string; period: string; amount: number; status: InvoiceStatus }>> {
+export async function openInvoiceByOrder(userId: string): Promise<Record<string, { id: string; period: string; amount: number; status: InvoiceStatus; dueDate: string }>> {
   const rows = await db()
-    .select({ id: invoices.id, orderId: invoices.orderId, period: invoices.period, amount: invoices.amount, status: invoices.status })
+    .select({ id: invoices.id, orderId: invoices.orderId, period: invoices.period, amount: invoices.amount, status: invoices.status, dueDate: invoices.dueDate })
     .from(invoices)
     .where(and(eq(invoices.userId, userId), sql`${invoices.status} in ('unpaid','pending_verification') and ${invoices.orderId} is not null`))
     .orderBy(asc(invoices.dueDate));
-  const out: Record<string, { id: string; period: string; amount: number; status: InvoiceStatus }> = {};
-  for (const r of rows) if (r.orderId && !out[r.orderId]) out[r.orderId] = { id: r.id, period: r.period, amount: r.amount, status: r.status };
+  const out: Record<string, { id: string; period: string; amount: number; status: InvoiceStatus; dueDate: string }> = {};
+  for (const r of rows) if (r.orderId && !out[r.orderId]) out[r.orderId] = { id: r.id, period: r.period, amount: r.amount, status: r.status, dueDate: r.dueDate };
   return out;
 }
 
@@ -133,6 +146,7 @@ const invoiceSelect = {
   title: invoices.title,
   period: invoices.period,
   amount: invoices.amount,
+  items: invoices.items,
   dueDate: invoices.dueDate,
   status: invoices.status,
   note: invoices.note,

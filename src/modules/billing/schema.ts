@@ -13,6 +13,9 @@ export type OrderStatus = (typeof orderStatus.enumValues)[number];
 export type InvoiceStatus = (typeof invoiceStatus.enumValues)[number];
 
 /** Katalog jasa: konsultasi, pembuatan aplikasi, sewa (server/aplikasi), maintenance. */
+/** Satu baris rincian tagihan / rincian biaya langganan, mis. { description: "Sewa Server", amount: 2000000 }. */
+export type InvoiceItem = { description: string; amount: number };
+
 /** Satu baris tabel harga bertingkat, mis. { label: "≤ 5.000 pengguna", price: 2500000 }. */
 export type PriceTier = { label: string; price: number };
 
@@ -74,6 +77,8 @@ export const orders = pgTable(
     itemLabel: varchar("item_label", { length: 32 }).default("").notNull(),
     /** Batas jumlah item (kuota); null = tanpa batas. */
     itemLimit: integer("item_limit"),
+    /** Rincian biaya per siklus (mis. Sewa Server 2 jt + Maintenance 2,5 jt). Kosong = harga unit × jumlah. Dipakai sebagai baris tagihan. */
+    breakdown: jsonb("breakdown").$type<InvoiceItem[]>().default([]).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
@@ -104,6 +109,8 @@ export const invoices = pgTable(
     /** Periode tagihan "YYYY-MM" (kosong untuk tagihan sekali). */
     period: varchar("period", { length: 7 }).default("").notNull(),
     amount: integer("amount").notNull(),
+    /** Rincian baris tagihan; jumlahnya = amount. Kosong = satu baris (title). */
+    items: jsonb("items").$type<InvoiceItem[]>().default([]).notNull(),
     dueDate: date("due_date", { mode: "string" }).notNull(),
     status: invoiceStatus("status").default("unpaid").notNull(),
     note: text("note").default("").notNull(),

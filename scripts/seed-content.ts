@@ -5,7 +5,7 @@
  *  - project: per slug (yang sudah ada dibiarkan; yang belum ada ditambahkan)
  * Semua bisa diubah lewat panel admin setelahnya.
  */
-import { eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import * as schema from "@/shared/db/schema";
 import type { PriceTier } from "@/modules/billing/schema";
@@ -171,9 +171,9 @@ const PACKAGES: (typeof servicePackages.$inferInsert)[] = [
   { name: "Konsultasi Teknis (1 sesi)", slug: "konsultasi-teknis", category: "Konsultasi", price: 150_000, billingCycle: "once", unit: "sesi", isFeatured: false, sortOrder: 0,
     description: "Sesi konsultasi 60 menit via Google Meet/WhatsApp: arsitektur aplikasi, database, deployment, atau machine learning.",
     features: ["60 menit via Meet / WhatsApp", "Review kode atau arsitektur", "Rekomendasi tertulis setelah sesi"] },
-  { name: "Pembuatan Aplikasi Web Custom", slug: "pembuatan-aplikasi-web", category: "Pembuatan Aplikasi", price: 0, billingCycle: "once", unit: "", isFeatured: true, sortOrder: 1,
-    description: "Aplikasi web sesuai kebutuhan: sistem informasi, dashboard admin, REST API, integrasi WhatsApp/pembayaran. Harga mengikuti scope.",
-    features: ["Analisis kebutuhan & desain database", "Backend Laravel / Next.js / Go", "Panel admin + role & permission", "Deploy ke server + SSL", "Garansi bug 30 hari"] },
+  { name: "Pembuatan Aplikasi Custom", slug: "pembuatan-aplikasi-web", category: "Pembuatan Aplikasi", price: 0, billingCycle: "once", unit: "", isFeatured: true, sortOrder: 1,
+    description: "Aplikasi dibuat sesuai kebutuhan Anda: sistem informasi, dashboard admin, REST API, integrasi WhatsApp/pembayaran, sampai machine learning & DSS. Pilih beli putus (tanpa hosting) atau beli putus + sewa server bulanan.",
+    features: ["Analisis kebutuhan & desain database", "Web, API, dashboard, ML/DSS", "Panel admin + role & permission", "Integrasi WhatsApp / pembayaran", "Serah terima kode & dokumentasi", "Garansi bug 30 hari"] },
   { name: "Landing Page + Dashboard Admin", slug: "landing-page-admin", category: "Pembuatan Aplikasi", price: 2_500_000, billingCycle: "once", unit: "", isFeatured: false, sortOrder: 2,
     description: "Website profil usaha/lembaga dengan halaman admin untuk mengelola konten, formulir pendaftaran, dan integrasi WhatsApp.",
     features: ["Desain responsif", "Konten dikelola dari admin", "Form pendaftaran / kontak", "SEO dasar + SSL"] },
@@ -248,6 +248,8 @@ export async function seedContent(db: Db, log: (m: string) => void) {
   if (newPk.length) log(`paket layanan baru: ${newPk.map((p) => p.slug).join(", ")}`);
 
   await seedAdzkiaSubscriptions(db, log);
+  await fixAdzkiaOctober(db, log);
+  await simplifyPackages(db, log);
 
   // menu PUBLIC "Jasa" → halaman /jasa (dulu section #layanan di beranda; dimigrasi otomatis)
   const migrated = await db.update(menus).set({ label: "Jasa", path: "/jasa" }).where(sql`${menus.scope} = 'PUBLIC' and ${menus.path} = '#layanan'`).returning({ id: menus.id });
@@ -303,5 +305,49 @@ async function seedAdzkiaSubscriptions(db: Db, log: (m: string) => void) {
       createdAt: new Date("2026-10-01T09:05:00+07:00"),
     }).onConflictDoNothing({ target: invoices.number });
   }
-  log("langganan Adzkia dibuat: sewa domain (lunas, s.d. 27 Sep 2027) + server & maintenance (Rp 4.500.000/bulan, tagihan Okt 2026 belum dibayar)");
+  log("langganan Adzkia dibuat");
+}
+
+/**
+ * Koreksi data Adzkia 27 Okt 2026 (permintaan pemilik): tagihan dirinci per baris, keduanya dibayar 15 Okt 2026,
+ * jadwal berikutnya 15 Nov 2026 (bulanan) dan 15 Okt 2027 (domain). Hanya jalan bila INV-202610-0001 belum punya rincian.
+ */
+async function fixAdzkiaOctober(db: Db, log: (m: string) => void) {
+  const [inv] = await db.select({ id: invoices.id, userId: invoices.userId, orderId: invoices.orderId, items: invoices.items }).from(invoices).where(eq(invoices.number, "INV-202610-0001")).limit(1);
+  if (!inv || inv.items.length > 0 || !inv.orderId) return;
+  const paidAt = new Date("2026-10-15T10:00:00+07:00");
+  const serverLines = [{ description: "Sewa Server (Adzkia Smart & Yayasan Adzkia Internasional)", amount: 2_000_000 }, { description: "Maintenance Aplikasi", amount: 2_500_000 }];
+  await db.update(orders).set({ startDate: "2026-10-15", breakdown: serverLines, updatedAt: new Date() }).where(eq(orders.id, inv.orderId));
+  await db.update(invoices).set({ title: "Sewa Server + Maintenance Aplikasi — Oktober 2026", items: serverLines, amount: 4_500_000, dueDate: "2026-10-15", status: "paid", paidAt, note: "Dibayar 15 Oktober 2026.", updatedAt: new Date() }).where(eq(invoices.id, inv.id));
+  await db.insert(invoices).values({
+    number: "INV-202611-0001", userId: inv.userId, orderId: inv.orderId, title: "Sewa Server + Maintenance Aplikasi — November 2026", period: "2026-11",
+    amount: 4_500_000, items: serverLines, dueDate: "2026-11-15", status: "unpaid", note: "Tagihan bulanan. Bayar via QRIS lalu unggah bukti.",
+  }).onConflictDoNothing({ target: invoices.number });
+
+  const [dom] = await db.select({ id: invoices.id, orderId: invoices.orderId, amount: invoices.amount }).from(invoices).where(eq(invoices.number, "INV-202609-0001")).limit(1);
+  if (dom?.orderId) {
+    const per = Math.round(dom.amount / 2);
+    const domLines = [{ description: "Sewa Domain — adzkiasmart.com (1 tahun)", amount: per }, { description: "Sewa Domain — yayasanadzkiainternasional.com (1 tahun)", amount: dom.amount - per }];
+    await db.update(orders).set({ startDate: "2026-10-15", endDate: "2027-10-15", adminNote: "Perpanjangan tahunan 2 domain. Dibayar 15 Okt 2026; tagihan berikutnya 15 Okt 2027.", updatedAt: new Date() }).where(eq(orders.id, dom.orderId));
+    await db.update(invoices).set({ title: "Sewa Domain ×2 — periode 15 Okt 2026 s.d. 15 Okt 2027", items: domLines, dueDate: "2026-10-15", status: "paid", paidAt, note: "Dibayar 15 Oktober 2026. Perpanjangan berikutnya 15 Oktober 2027.", updatedAt: new Date() }).where(eq(invoices.id, dom.id));
+  }
+  log("data Adzkia dikoreksi: rincian tagihan, dibayar 15 Okt 2026, tagihan Nov 2026 dibuat (jatuh tempo 15 Nov), domain s.d. 15 Okt 2027");
+}
+
+
+/**
+ * Penyederhanaan katalog 27 Okt 2026 (permintaan pemilik: "sedikit tapi padat"): paket yang belum pernah diubah admin
+ * (updated_at = created_at) dan bukan paket inti dinonaktifkan; paket aplikasi custom disamakan dengan seed.
+ * Admin bisa mengaktifkan kembali kapan saja — baris yang sudah disentuh admin tidak diubah.
+ */
+async function simplifyPackages(db: Db, log: (m: string) => void) {
+  const hide = ["konsultasi-teknis", "landing-page-admin", "aplikasi-ml-dss", "mentoring-tugas-akhir", "maintenance-support"];
+  const off = await db.update(servicePackages).set({ isActive: false, updatedAt: new Date() })
+    .where(and(inArray(servicePackages.slug, hide), eq(servicePackages.isActive, true), sql`${servicePackages.updatedAt} = ${servicePackages.createdAt}`))
+    .returning({ slug: servicePackages.slug });
+  if (off.length) log(`paket dinonaktifkan (katalog disederhanakan): ${off.map((o) => o.slug).join(", ")}`);
+  const custom = PACKAGES.find((x) => x.slug === "pembuatan-aplikasi-web")!;
+  const upd = await db.update(servicePackages).set({ name: custom.name, description: custom.description, features: custom.features, updatedAt: new Date() })
+    .where(sql`${servicePackages.slug} = 'pembuatan-aplikasi-web' and ${servicePackages.name} = 'Pembuatan Aplikasi Web Custom'`).returning({ id: servicePackages.id });
+  if (upd.length) log("paket aplikasi custom diperbarui (beli putus / + sewa server)");
 }

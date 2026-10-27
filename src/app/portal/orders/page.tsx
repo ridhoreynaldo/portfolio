@@ -17,7 +17,7 @@ function remaining(end: string): { text: string; tone: Tone } {
   return { text: `${Math.round(days / 30.4)} bulan lagi`, tone: "emerald" };
 }
 
-type OpenInv = { id: string; period: string; amount: number; status: "unpaid" | "pending_verification" | "paid" | "cancelled" };
+type OpenInv = { id: string; period: string; amount: number; status: "unpaid" | "pending_verification" | "paid" | "cancelled"; dueDate: string };
 
 function SubscriptionCard({ o, paidUntil, open }: { o: OrderRow; paidUntil?: string; open?: OpenInv }) {
   const total = orderTotal(o);
@@ -44,8 +44,9 @@ function SubscriptionCard({ o, paidUntil, open }: { o: OrderRow; paidUntil?: str
         {o.endDate ? (
           <div><dt className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Berlaku s.d.</dt><dd className="text-[var(--ink)]">{fmtDate(o.endDate)}</dd>{rem && <dd className="mt-1"><Pill tone={rem.tone}>{rem.text}</Pill></dd>}</div>
         ) : cycle === "monthly" ? (
-          <div><dt className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Pembayaran</dt><dd className="text-[var(--ink)]">{paidUntil ? `lunas s.d. ${fmtPeriod(paidUntil)}` : "belum ada pembayaran"}</dd></div>
+          <div><dt className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Pembayaran</dt><dd className="text-[var(--ink)]">{paidUntil ? `lunas s.d. ${fmtPeriod(paidUntil)}` : "belum ada pembayaran"}</dd>{open && <dd className="text-xs text-[var(--ink-3)]">tagihan berikutnya {fmtDate(open.dueDate)}</dd>}</div>
         ) : null}
+        {o.endDate && cycle !== "monthly" && <div><dt className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Tagihan berikutnya</dt><dd className="text-[var(--ink)]">{fmtDate(o.endDate)}</dd><dd className="text-xs text-[var(--ink-3)]">perpanjangan {CYCLE[cycle]}</dd></div>}
         {(o.items.length > 0 || o.itemLimit != null) && (
           <div>
             <dt className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Kuota {label}</dt>
@@ -55,6 +56,11 @@ function SubscriptionCard({ o, paidUntil, open }: { o: OrderRow; paidUntil?: str
         )}
       </dl>
 
+      {o.breakdown.length > 0 && (
+        <ul className="divide-y divide-[var(--rule)] rounded-xl border border-[var(--rule)] bg-white/60 text-sm">
+          {o.breakdown.map((b, k) => <li key={k} className="flex justify-between px-4 py-2"><span className="text-[var(--ink)]">{b.description}</span><span className="text-[var(--ink-2)]">{fmtIDR(b.amount)}</span></li>)}
+        </ul>
+      )}
       {o.items.length > 0 && (
         <div>
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">{label} yang dicakup</p>

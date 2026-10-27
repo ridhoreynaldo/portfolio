@@ -15,7 +15,7 @@ import { IMAGE_MIMES, readUpload } from "./files";
 import { PACKAGE_CATEGORIES } from "./labels";
 import {
   customerRoleId, deleteInvoice, deleteOrder, deleteOrphanFile, deletePackage, getInvoice, getOrder, getPackage, getPaymentSettings, insertFile, insertInvoice,
-  insertOrder, insertPackage, monthlyOrdersWithoutInvoice, nextNumber, orderTotal, uniquePackageSlug, updateInvoice, updateOrder, updatePackage, upsertCustomerProfile, upsertPaymentSettings,
+  insertOrder, insertPackage, invoiceLinesFor, monthlyOrdersWithoutInvoice, nextNumber, orderTotal, uniquePackageSlug, updateInvoice, updateOrder, updatePackage, upsertCustomerProfile, upsertPaymentSettings,
 } from "./repository";
 import { billingCycle, invoiceStatus, orderStatus } from "./schema";
 
@@ -29,6 +29,15 @@ const lines = (s: unknown) =>
     .map((x) => x.trim())
     .filter(Boolean)
     .slice(0, 20);
+
+/** Textarea rincian: satu baris "deskripsi | nominal" → baris tagihan / rincian biaya. */
+const lineItems = (s: unknown) =>
+  lines(s)
+    .map((row) => {
+      const [description = "", raw = ""] = row.split("|").map((x) => x.trim());
+      return { description: description.slice(0, 160), amount: Math.max(0, Math.min(1_000_000_000, Math.round(Number(raw.replace(/[^\d]/g, "")) || 0))) };
+    })
+    .filter((t) => t.description);
 
 /** Textarea harga bertingkat: satu baris "label | harga" (harga kosong/0 = "hubungi"). */
 const tiers = (s: unknown) =>
@@ -103,7 +112,8 @@ const readSubscription = (form: FormData) => {
   if (d.endDate && !DATE.test(d.endDate)) throw new AppError("Tanggal berakhir tidak valid");
   const items = String(form.get("items") ?? "").split(/[\r\n,]+/).map((x) => x.trim().toLowerCase()).filter(Boolean).slice(0, 200);
   if (d.itemLimit != null && items.length > d.itemLimit) throw new AppError(`Jumlah ${d.itemLabel || "item"} (${items.length}) melebihi limit ${d.itemLimit}`);
-  return { status: d.status, adminNote: d.adminNote, startDate: d.startDate || null, endDate: d.endDate || null, unitPrice: d.unitPrice, itemLabel: d.itemLabel, itemLimit: d.itemLimit, items };
+  const breakdown = lineItems(form.get("breakdown"));
+  return { status: d.status, adminNote: d.adminNote, startDate: d.startDate || null, endDate: d.endDate || null, unitPrice: d.unitPrice, itemLabel: d.itemLabel, itemLimit: d.itemLimit, items, breakdown };
 };
 
 export const updateOrderAction = action(async (form: FormData) => {
@@ -163,31 +173,37 @@ const invoiceInput = z.object({
   orderId: z.union([z.literal(""), uuid]).transform((v) => v || null),
   title: z.string().trim().min(2).max(255),
   period: z.string().trim().default(""),
-  amount: money.min(1, "Nominal minimal 1"),
+  amount: money,
   dueDate: z.string().regex(DATE, "Jatuh tempo tidak valid"),
   note: z.string().trim().max(2000).default(""),
+  paidAt: z.string().trim().default(""),
 });
 
 export const saveInvoiceAction = action(async (form: FormData) => {
   const id = String(form.get("id") || "") || undefined;
   await requirePermission(`invoice.${id ? "update" : "create"}`);
-  const d = invoiceInput.parse({
+  const { paidAt, ...d } = invoiceInput.parse({
     userId: form.get("userId"), orderId: form.get("orderId") ?? "", title: form.get("title"), period: form.get("period") ?? "",
-    amount: form.get("amount"), dueDate: form.get("dueDate"), note: form.get("note") ?? "",
+    amount: form.get("amount") || 0, dueDate: form.get("dueDate"), note: form.get("note") ?? "", paidAt: form.get("paidAt") ?? "",
   });
   if (d.period && !PERIOD.test(d.period)) throw new AppError("Periode harus format YYYY-MM");
+  if (paidAt && !DATE.test(paidAt)) throw new AppError("Tanggal bayar tidak valid");
+  const items = lineItems(form.get("items"));
+  if (items.length) d.amount = items.reduce((t, i) => t + i.amount, 0); // nominal = jumlah rincian
+  if (d.amount < 1) throw new AppError("Nominal minimal 1 (isi nominal atau rincian)");
   if (!(await getUser(d.userId))) throw new AppError("Pelanggan tidak ditemukan");
   if (d.orderId) {
     const o = await getOrder(d.orderId);
     if (!o || o.userId !== d.userId) throw new AppError("Order tidak cocok dengan pelanggan");
   }
+  const paidPatch = paidAt ? { status: "paid" as const, paidAt: new Date(`${paidAt}T12:00:00+07:00`) } : {};
   if (id) {
     const inv = await getInvoice(id);
     if (!inv) throw notFound();
-    await updateInvoice(id, d);
+    await updateInvoice(id, { ...d, items, ...paidPatch });
     await setFlash(`Tagihan ${inv.number} diperbarui`);
   } else {
-    const number = await createWithNumber(d);
+    const number = await createWithNumber({ ...d, items, ...paidPatch });
     await setFlash(`Tagihan ${number} dibuat`);
   }
   revalidatePath("/admin/invoices");
@@ -245,7 +261,7 @@ export const generateMonthlyInvoicesAction = action(async (form: FormData) => {
     if (price <= 0) continue; // paket "hubungi kami" tanpa harga kesepakatan tidak ditagih otomatis
     await createWithNumber({
       userId: o.userId, orderId: o.id, title: `${o.packageName}${o.quantity > 1 ? ` ×${o.quantity}` : ""} — ${o.number}`, period: d.period,
-      amount: price, dueDate, note: "Tagihan bulanan otomatis",
+      amount: price, items: invoiceLinesFor(o), dueDate, note: "Tagihan bulanan otomatis",
     });
     n++;
   }

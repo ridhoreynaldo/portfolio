@@ -32,6 +32,22 @@ const PROFILE: Partial<typeof profile.$inferInsert> = {
   serviceTagline: "Solusi software, cloud & AI untuk bisnis Anda",
 };
 
+/** Logo via favicon Google (tanpa kunci API, ukuran 128px); ganti lewat admin bila punya berkas logo sendiri. */
+const favicon = (domain: string) => `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+/** Domain resmi perusahaan/penerbit → dipakai seed logo & pelengkap baris lama yang logonya masih kosong (cocok per nama). */
+const ORG_DOMAINS: Record<string, string> = {
+  "CODEPOLITAN (Freelance)": "codepolitan.com",
+  "Evermos": "evermos.com",
+  "Bank Rakyat Indonesia (BRI)": "bri.co.id",
+  "Binar Academy": "binaracademy.com",
+  "Hacktiv8 Indonesia × Digital Talent Scholarship": "hacktiv8.com",
+  "Microsoft (skor 842/1000)": "microsoft.com",
+  "Digital Talent Scholarship — Kominfo": "digitalent.komdigi.go.id",
+  "IBM SkillsBuild": "ibm.com",
+  "Cisco Networking Academy": "netacad.com",
+};
+const logoFor = (org: string) => (ORG_DOMAINS[org] ? favicon(ORG_DOMAINS[org]!) : "");
+
 const EXPERIENCES: (typeof experiences.$inferInsert)[] = [
   { position: "Full Stack Engineer", company: "Universitas Quality", location: "Medan", startDate: "Agu 2025", isCurrent: true, icon: "server", sortOrder: 0,
     description: "Membangun sistem asset management, villa, task management & reporting inventaris, serta portal akademik (SIAKAD) universitas. Backend Laravel/PHP, deploy dengan Docker di Windows Server dan Linux." },
@@ -195,8 +211,16 @@ export async function seedContent(db: Db, log: (m: string) => void) {
   const count = async (t: typeof experiences | typeof certifications | typeof skills | typeof servicePackages) =>
     (await db.select({ n: sql<number>`count(*)::int` }).from(t))[0]!.n;
 
-  if ((await count(experiences)) === 0) { await db.insert(experiences).values(EXPERIENCES); log(`pengalaman: ${EXPERIENCES.length} baris`); }
-  if ((await count(certifications)) === 0) { await db.insert(certifications).values(CERTIFICATIONS); log(`sertifikasi: ${CERTIFICATIONS.length} baris`); }
+  if ((await count(experiences)) === 0) { await db.insert(experiences).values(EXPERIENCES.map((e) => ({ ...e, logoUrl: logoFor(e.company) }))); log(`pengalaman: ${EXPERIENCES.length} baris`); }
+  if ((await count(certifications)) === 0) { await db.insert(certifications).values(CERTIFICATIONS.map((c) => ({ ...c, logoUrl: logoFor(c.issuer) }))); log(`sertifikasi: ${CERTIFICATIONS.length} baris`); }
+  // baris lama tanpa logo: isi dari domain yang dikenal (nama persis sama); admin bebas mengganti
+  let filled = 0;
+  for (const [org, domain] of Object.entries(ORG_DOMAINS)) {
+    const a = await db.update(experiences).set({ logoUrl: favicon(domain) }).where(sql`${experiences.company} = ${org} and ${experiences.logoUrl} = ''`).returning({ id: experiences.id });
+    const b = await db.update(certifications).set({ logoUrl: favicon(domain) }).where(sql`${certifications.issuer} = ${org} and ${certifications.logoUrl} = ''`).returning({ id: certifications.id });
+    filled += a.length + b.length;
+  }
+  if (filled) log(`logo perusahaan/penerbit diisi: ${filled} baris`);
   if ((await count(skills)) === 0) { await db.insert(skills).values(SKILLS); log(`skill: ${SKILLS.length} baris`); }
   if ((await count(servicePackages)) === 0) { await db.insert(servicePackages).values(PACKAGES); log(`paket layanan: ${PACKAGES.length} baris`); }
   else {

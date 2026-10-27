@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BrainCircuit, Code2, GraduationCap, Headset, LayoutDashboard, Mail, MessageCircle, MessagesSquare, Phone, QrCode, Server, ShieldCheck, Wrench } from "lucide-react";
-import { PriceTierTable, ServiceFooter, ServiceHeader, serviceBrandOf } from "@/components/service-shell";
+import { ArrowRight, BrainCircuit, Code2, ExternalLink, GraduationCap, Headset, LayoutDashboard, Mail, MessageCircle, MessagesSquare, Phone, QrCode, Server, ShieldCheck, UserRound, Wrench } from "lucide-react";
+import { PORTFOLIO_URL, PriceTierTable, ServiceFooter, ServiceHeader, serviceBrandOf } from "@/components/service-shell";
 import { LoginForm } from "@/app/login/login-form";
 import { getCurrentUser, homeFor } from "@/modules/auth/session";
 import { CYCLE, fmtIDR, tierRange } from "@/modules/billing/labels";
@@ -88,7 +88,7 @@ export default async function JasaPage({ searchParams }: { searchParams: Promise
                 <span className="block text-2xl font-medium text-[var(--ink-2)] md:text-3xl">{brand.tagline}</span>
               </h1>
               <p className="mt-6 max-w-xl text-lg leading-relaxed text-[var(--ink-2)]">
-                Dari ide sampai sistem yang berjalan: konsultasi, pembuatan aplikasi, server, dan perawatan, ditangani langsung oleh <span className="font-semibold text-[var(--navy)]">{brand.owner}</span>.
+                Dari ide sampai sistem yang berjalan: konsultasi, pembuatan aplikasi, server, dan perawatan, ditangani langsung oleh <Link href={PORTFOLIO_URL} className="inline-flex items-center gap-1 font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4 hover:text-[var(--gold-2)]" title="Lihat portofolio, pengalaman & sertifikasi">{brand.owner} <ExternalLink className="h-3.5 w-3.5" /></Link>.
                 {showPrices ? "Harga jelas, progres transparan, pembayaran mudah lewat portal." : "Penawaran menyesuaikan kebutuhan, progres transparan, pembayaran mudah lewat portal."}
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
@@ -100,6 +100,7 @@ export default async function JasaPage({ searchParams }: { searchParams: Promise
                 ) : (
                   <>
                     {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-primary"><MessageCircle className="h-4 w-4" /> Hubungi via WhatsApp</a>}
+                    <Link href={PORTFOLIO_URL} className="btn-ghost" title="Siapa di balik Kodeva: pengalaman, sertifikasi & proyek"><UserRound className="h-4 w-4" /> Profil & Portofolio</Link>
                     <a href="#paket" className="btn-ghost">Lihat Paket <ArrowRight className="h-4 w-4" /></a>
                   </>
                 )}
@@ -267,12 +268,13 @@ export default async function JasaPage({ searchParams }: { searchParams: Promise
             <div className="flex items-center gap-4">
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[var(--navy)] text-white"><Headset className="h-6 w-6" /></span>
               <div>
-                <p className="font-serif text-lg font-semibold text-[var(--navy)]">{brand.owner}</p>
-                <p className="text-sm text-[var(--ink-3)]">{p?.location || "Indonesia"} · balas dalam 24 jam</p>
+                <Link href={PORTFOLIO_URL} className="font-serif inline-flex items-center gap-1.5 text-lg font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4 hover:text-[var(--gold-2)]" title="Lihat portofolio">{brand.owner} <ExternalLink className="h-4 w-4" /></Link>
+                <p className="text-sm text-[var(--ink-3)]">{p?.location || "Indonesia"} · balas dalam 24 jam · <Link href={PORTFOLIO_URL} className="underline underline-offset-2 hover:text-[var(--navy)]">lihat pengalaman & sertifikasi</Link></p>
               </div>
             </div>
             <div className="flex flex-wrap justify-center gap-3">
               {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-primary"><Phone className="h-4 w-4" /> WhatsApp</a>}
+              <Link href={PORTFOLIO_URL} className="btn-ghost"><UserRound className="h-4 w-4" /> Portofolio</Link>
               {p?.email && <a href={`mailto:${p.email}`} className="btn-ghost"><Mail className="h-4 w-4" /> Email</a>}
             </div>
           </div>

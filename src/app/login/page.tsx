@@ -26,6 +26,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         </p>
         <p className="mt-6 flex justify-center gap-5 text-xs text-[var(--ink-3)]">
           <Link href="/jasa" className="hover:text-[var(--navy)]">← Halaman jasa</Link>
+          <Link href="/" className="hover:text-[var(--navy)]">Portofolio pemilik ↗</Link>
         </p>
       </main>
     </div>

@@ -6,6 +6,7 @@ import { FaLinkedin } from "react-icons/fa";
 import { Starfield } from "@/components/starfield";
 import { ProjectGrid } from "@/components/project-grid";
 import { ExpIcon } from "@/components/exp-icon";
+import { OrgLogo } from "@/components/org-logo";
 import { SERVICE_BRAND_FALLBACK, SERVICE_LOGO } from "@/components/service-shell";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
 import { getCurrentUser } from "@/modules/auth/session";
@@ -147,12 +148,17 @@ export default async function HomePage() {
                       <ExpIcon icon={e.icon} className="h-3 w-3 text-cyan-200" />
                     </span>
                     <article className="hud p-6">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <h3 className="font-display text-base font-bold text-white md:text-lg">{e.position}</h3>
-                        {e.isCurrent && <span className="chip chip-lime">● saat ini</span>}
+                      <div className="flex items-start gap-4">
+                        <OrgLogo src={e.logoUrl} name={e.company} size="lg" />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <h3 className="font-display text-base font-bold text-white md:text-lg">{e.position}</h3>
+                            {e.isCurrent && <span className="chip chip-lime">● saat ini</span>}
+                          </div>
+                          <p className="mt-1 text-sm font-medium text-cyan-300">{e.company}{e.location && <span className="text-slate-400"> · {e.location}</span>}</p>
+                          <p className="hud-label mt-1 !text-[10px] !text-slate-500">{e.startDate} — {e.isCurrent ? "Sekarang" : e.endDate || "—"}</p>
+                        </div>
                       </div>
-                      <p className="mt-1 text-sm font-medium text-cyan-300">{e.company}{e.location && <span className="text-slate-400"> · {e.location}</span>}</p>
-                      <p className="hud-label mt-1 !text-[10px] !text-slate-500">{e.startDate} — {e.isCurrent ? "Sekarang" : e.endDate || "—"}</p>
                       <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-300/85">{e.description}</p>
                     </article>
                   </div>
@@ -188,8 +194,11 @@ export default async function HomePage() {
                   const url = safeUrl(c.credentialUrl);
                   return (
                     <li key={c.id} className="hud p-5">
+                      <div className="mb-3 flex items-center gap-3">
+                        <OrgLogo src={c.logoUrl} name={c.issuer} />
+                        <p className="text-sm text-cyan-300">{c.issuer}</p>
+                      </div>
                       <h3 className="font-display text-sm font-bold text-white">{c.name}</h3>
-                      <p className="mt-1 text-sm text-cyan-300">{c.issuer}</p>
                       <p className="hud-label mt-2 !text-[10px] !text-slate-500">Terbit {fmtDate(c.issueDate)}{c.expiryDate && ` · s/d ${fmtDate(c.expiryDate)}`}</p>
                       {url && <a href={url} target="_blank" rel="noreferrer" className="mt-3 inline-block text-xs text-fuchsia-300 hover:underline">Lihat kredensial →</a>}
                     </li>

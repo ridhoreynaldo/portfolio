@@ -41,6 +41,8 @@ export const experiences = pgTable("experiences", {
   description: text("description").notNull(),
   /** Nama ikon (lihat components/exp-icon.tsx). */
   icon: varchar("icon", { length: 64 }),
+  /** URL logo perusahaan/institusi (kosong = inisial). */
+  logoUrl: text("logo_url").default("").notNull(),
   sortOrder: integer("sort_order").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -53,6 +55,8 @@ export const certifications = pgTable("certifications", {
   issueDate: date("issue_date", { mode: "string" }).notNull(),
   expiryDate: date("expiry_date", { mode: "string" }),
   credentialUrl: text("credential_url").default("").notNull(),
+  /** URL logo penerbit (kosong = inisial). */
+  logoUrl: text("logo_url").default("").notNull(),
   sortOrder: integer("sort_order").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

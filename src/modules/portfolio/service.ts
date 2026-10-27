@@ -20,12 +20,12 @@ async function load() {
       .select({
         id: experiences.id, company: experiences.company, position: experiences.position, location: experiences.location,
         startDate: experiences.startDate, endDate: experiences.endDate, isCurrent: experiences.isCurrent,
-        description: experiences.description, icon: experiences.icon,
+        description: experiences.description, icon: experiences.icon, logoUrl: experiences.logoUrl,
       })
       .from(experiences)
       .orderBy(asc(experiences.sortOrder), desc(experiences.createdAt)),
     db()
-      .select({ id: certifications.id, name: certifications.name, issuer: certifications.issuer, issueDate: certifications.issueDate, expiryDate: certifications.expiryDate, credentialUrl: certifications.credentialUrl })
+      .select({ id: certifications.id, name: certifications.name, issuer: certifications.issuer, issueDate: certifications.issueDate, expiryDate: certifications.expiryDate, credentialUrl: certifications.credentialUrl, logoUrl: certifications.logoUrl })
       .from(certifications)
       .orderBy(asc(certifications.sortOrder), desc(certifications.issueDate)),
     db().select({ id: skills.id, name: skills.name, category: skills.category, level: skills.level }).from(skills).orderBy(asc(skills.category), asc(skills.sortOrder)),

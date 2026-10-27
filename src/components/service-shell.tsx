@@ -4,6 +4,8 @@ import type { AuthUser } from "@/modules/auth/session";
 import { fmtIDR } from "@/modules/billing/labels";
 import type { PriceTier } from "@/modules/billing/schema";
 
+/** Halaman portofolio pemilik (domain yang sama, ridhoreynaldo.com). */
+export const PORTFOLIO_URL = "/";
 /** Logo brand jasa (SVG di public/). */
 export const SERVICE_LOGO = "/service-logo.svg";
 /** Nama & tagline brand jasa cadangan bila kolom profil masih kosong (ubah di Admin > Profil). */
@@ -25,7 +27,7 @@ const NAV = [
   ["/jasa#kontak", "Kontak"],
 ] as const;
 
-/** Header halaman jasa (tema svc, terang & klasik). Berdiri sendiri: tidak memakai menu maupun tautan ke portofolio. */
+/** Header halaman jasa (tema svc, terang & klasik). Menu sendiri; nama pemilik menaut ke portofolio agar jelas siapa di balik jasa ini. */
 export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: AuthUser | null }) {
   const staff = !!user && (user.isSuper || user.permissions.length > 0);
   const portal = user ? (staff ? "/admin" : "/portal") : null;
@@ -37,7 +39,7 @@ export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: Auth
           <img src={SERVICE_LOGO} alt="" className="h-10 w-10" />
           <span className="leading-tight">
             <span className="font-serif block text-xl font-semibold tracking-wide text-[var(--navy)]">{brand.name}</span>
-            <span className="block text-[11px] text-[var(--ink-3)]">{brand.tagline}</span>
+            <span className="block text-[11px] text-[var(--ink-3)]">oleh <Link href={PORTFOLIO_URL} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-2 hover:text-[var(--gold-2)]" title={`Lihat portofolio ${brand.owner}`}>{brand.owner} ↗</Link></span>
           </span>
         </Link>
         <ul className="hidden items-center gap-6 text-sm font-medium text-[var(--ink-2)] md:flex">
@@ -65,7 +67,7 @@ export function ServiceFooter({ brand }: { brand: ServiceBrand }) {
           <img src={SERVICE_LOGO} alt="" className="h-7 w-7" />
           <span><span className="font-serif text-sm font-semibold text-[var(--navy)]">{brand.name}</span> · {brand.tagline}</span>
         </div>
-        <p>© {new Date().getFullYear()} {brand.name} · {brand.owner}</p>
+        <p>© {new Date().getFullYear()} {brand.name} · dikelola oleh <Link href={PORTFOLIO_URL} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2 hover:text-[var(--gold-2)]">{brand.owner} ↗</Link></p>
       </div>
     </footer>
   );
@@ -80,7 +82,7 @@ export function ServiceBrandMark({ brand, title, sub }: { brand: ServiceBrand; t
         <img src={SERVICE_LOGO} alt="" className="mx-auto h-14 w-14" />
       </Link>
       <p className="font-serif mt-3 text-lg font-semibold tracking-wide text-[var(--navy)]">{brand.name}</p>
-      <p className="text-[11px] text-[var(--ink-3)]">{brand.tagline}</p>
+      <p className="text-[11px] text-[var(--ink-3)]">oleh <Link href={PORTFOLIO_URL} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2 hover:text-[var(--gold-2)]">{brand.owner} ↗</Link></p>
       <h1 className="font-serif mt-5 text-2xl font-semibold text-[var(--ink)]">{title}</h1>
       <p className="mt-1 text-sm text-[var(--ink-3)]">{sub}</p>
     </div>

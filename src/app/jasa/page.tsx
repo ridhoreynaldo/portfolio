@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, BadgeCheck, Clock, Handshake, LayoutDashboard, LogIn, Mail, MessageCircle, Phone, QrCode, ShieldCheck, Wallet, Wrench } from "lucide-react";
 import { Starfield } from "@/components/starfield";
-import { SiteFooter, SiteHeader } from "@/components/site-header";
+import { SERVICE_BRAND_FALLBACK, SERVICE_LOGO, SiteFooter, SiteHeader } from "@/components/site-header";
 import { LoginForm } from "@/app/login/login-form";
 import { getCurrentUser, homeFor } from "@/modules/auth/session";
 import { CYCLE, fmtIDR } from "@/modules/billing/labels";
@@ -15,9 +15,10 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata(): Promise<Metadata> {
   const { profile } = await getPortfolio();
   const name = profile?.fullName || "Portfolio";
+  const brand = profile?.serviceBrand || SERVICE_BRAND_FALLBACK;
   return {
-    title: "Jasa & Layanan",
-    description: `Jasa konsultasi teknis, pembuatan aplikasi (web, API, machine learning/DSS), sewa server & WhatsApp gateway, maintenance, dan mentoring oleh ${name}.`,
+    title: { absolute: `${brand} · Jasa & Layanan` },
+    description: `${brand}: jasa konsultasi teknis, pembuatan aplikasi (web, API, machine learning/DSS), sewa server & WhatsApp gateway, maintenance, dan mentoring oleh ${name}.`,
   };
 }
 
@@ -59,7 +60,9 @@ const Bullet = ({ children }: { children: React.ReactNode }) => <li className="f
 /** Halaman khusus jasa: info layanan lengkap, cara kerja, katalog paket, pembayaran, FAQ, dan akses portal (form login). */
 export default async function JasaPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const [{ profile: p, menus, packages }, user, pay, { next }] = await Promise.all([getPortfolio(), getCurrentUser(), getPaymentSettings(), searchParams]);
-  const brand = p?.siteName || p?.fullName || "Portfolio";
+  const owner = p?.fullName || "Portfolio";
+  const brand = p?.serviceBrand || SERVICE_BRAND_FALLBACK;
+  const tagline = p?.serviceTagline || "Software · Cloud · AI Services";
   const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "";
   const wa = p?.phone ? waLink(p.phone) : null;
   const groups = Object.entries(packages.reduce<Record<string, typeof packages>>((acc, s) => ((acc[s.category] ??= []).push(s), acc), {}));
@@ -71,17 +74,22 @@ export default async function JasaPage({ searchParams }: { searchParams: Promise
     <div className="relative min-h-screen">
       <Starfield />
       <div className="relative z-10">
-        <SiteHeader brand={brand} menus={menus} user={user} />
+        <SiteHeader brand={brand} logo={SERVICE_LOGO} home="/jasa" by={{ name: owner, href: "/" }} ticker={tagline.toUpperCase()} menus={menus} user={user} />
 
         <main>
-          {/* ── Hero jasa + panel akses (login) ── */}
+          {/* ── Hero brand jasa + panel akses (login) ── */}
           <section className="mx-auto grid max-w-6xl gap-10 px-5 pb-14 pt-16 md:grid-cols-[1fr_360px] md:pt-24">
             <div className="min-w-0">
-              <p className="hud-label mb-3 flex items-center gap-2"><span className="pulse-dot" /> <span className="text-magenta">[jasa]</span> // layanan profesional</p>
-              <h1 className="font-display text-3xl font-black leading-tight tracking-wide md:text-5xl">
-                Jasa & <span className="text-gradient">Layanan</span>
-              </h1>
-              <p className="mt-5 max-w-2xl text-base text-slate-300/85 md:text-lg">
+              <p className="hud-label mb-3 flex items-center gap-2"><span className="pulse-dot" /> <span className="text-magenta">[{brand.toLowerCase()}]</span> // {tagline}</p>
+              <div className="flex items-center gap-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={SERVICE_LOGO} alt="" className="h-14 w-14 shrink-0 rounded-lg shadow-[0_0_24px_rgba(0,240,255,0.45)] md:h-20 md:w-20" />
+                <h1 className="font-display text-3xl font-black leading-tight tracking-wider md:text-6xl">
+                  <span className="glitch text-gradient" data-text={brand}>{brand}</span>
+                </h1>
+              </div>
+              <p className="font-display mt-4 text-lg font-bold text-white md:text-2xl">Jasa & Layanan <span className="text-slate-500">·</span> <span className="text-cyan-300">oleh {owner}</span></p>
+              <p className="mt-4 max-w-2xl text-base text-slate-300/85 md:text-lg">
                 Konsultasi teknis, pembuatan aplikasi apa pun (web, REST API, machine learning/DSS), sewa server & WhatsApp gateway, maintenance aplikasi, serta mentoring tugas akhir.
                 Semua pesanan, tagihan, dan pembayaran dikelola lewat portal pelanggan.
               </p>
@@ -93,7 +101,7 @@ export default async function JasaPage({ searchParams }: { searchParams: Promise
               <div className="mt-8 flex flex-wrap gap-3">
                 <a href="#paket" className="btn-primary">Lihat Paket <ArrowRight className="h-4 w-4" /></a>
                 {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-ghost"><MessageCircle className="h-4 w-4" /> Konsultasi via WhatsApp</a>}
-                <Link href="/" className="btn-ghost">← Portofolio</Link>
+                <Link href="/" className="btn-ghost">← Portofolio {owner}</Link>
               </div>
               <dl className="mt-10 grid grid-cols-3 gap-3">
                 {[["Paket aktif", `${packages.length}`], ["Respons", "< 24 jam"], ["Pembayaran", "QRIS · Bank"]].map(([k, v]) => (
@@ -212,7 +220,7 @@ export default async function JasaPage({ searchParams }: { searchParams: Promise
           </Section>
         </main>
 
-        <SiteFooter name={p?.fullName || "Portfolio"} />
+        <SiteFooter name={brand} by={owner} />
       </div>
     </div>
   );

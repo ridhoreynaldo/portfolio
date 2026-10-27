@@ -123,6 +123,8 @@ export function parseForm(fields: Field[], fd: FormData): Record<string, unknown
 export const PROFILE_FIELDS: Field[] = [
   { name: "siteName", label: "Nama situs / brand (navbar)", type: "text", required: true },
   { name: "fullName", label: "Nama lengkap", type: "text", required: true },
+  { name: "serviceBrand", label: "Brand jasa (halaman /jasa, login, portal)", type: "text", placeholder: "NEXORBIT" },
+  { name: "serviceTagline", label: "Tagline brand jasa", type: "text", placeholder: "Software · Cloud · AI Services" },
   { name: "headline", label: "Judul hero", type: "text", placeholder: "Halo, saya Ridho — Full-Stack Developer" },
   { name: "tagline", label: "Tagline (badge kecil)", type: "text" },
   { name: "summary", label: "Sub-judul hero", type: "textarea" },

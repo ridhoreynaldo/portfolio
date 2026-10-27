@@ -25,6 +25,8 @@ const PROFILE: Partial<typeof profile.$inferInsert> = {
   github: "https://github.com/ridhoreynaldo",
   linkedin: "https://www.linkedin.com/in/ridhoreynaldo",
   website: "https://ridhoreynaldo.com",
+  serviceBrand: "NEXORBIT",
+  serviceTagline: "Software · Cloud · AI Services",
 };
 
 const EXPERIENCES: (typeof experiences.$inferInsert)[] = [

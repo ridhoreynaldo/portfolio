@@ -4,6 +4,8 @@ import { boolean, date, index, integer, jsonb, pgTable, text, timestamp, uuid, v
 export const profile = pgTable("profile", {
   id: integer("id").primaryKey().default(1),
   siteName: varchar("site_name", { length: 128 }).default("").notNull(), // brand di navbar
+  serviceBrand: varchar("service_brand", { length: 128 }).default("").notNull(), // brand halaman jasa (/jasa), terpisah dari nama pribadi
+  serviceTagline: varchar("service_tagline", { length: 255 }).default("").notNull(),
   fullName: varchar("full_name", { length: 255 }).default("").notNull(),
   headline: varchar("headline", { length: 255 }).default("").notNull(), // judul hero
   tagline: varchar("tagline", { length: 255 }).default("").notNull(), // badge kecil di atas judul

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Send } from "lucide-react";
 import { Starfield } from "@/components/starfield";
-import { SiteFooter, SiteHeader } from "@/components/site-header";
+import { SERVICE_BRAND_FALLBACK, SERVICE_LOGO, SiteFooter, SiteHeader } from "@/components/site-header";
 import { requireUser } from "@/modules/auth/guards";
 import { placeOrderAction } from "@/modules/billing/customer-actions";
 import { CYCLE, fmtIDR } from "@/modules/billing/labels";
@@ -21,12 +21,14 @@ export default async function OrderFormPage({ params }: { params: Promise<{ slug
   if (!pkg) notFound();
   const user = await requireUser(`/order/${slug}`); // belum login → /login?next=… (ada tautan daftar)
   const [{ profile, menus }, flash] = await Promise.all([getPortfolio(), readFlash()]);
+  const owner = profile?.fullName || "Portfolio";
+  const brand = profile?.serviceBrand || SERVICE_BRAND_FALLBACK;
 
   return (
     <div className="relative min-h-screen">
       <Starfield />
       <div className="relative z-10">
-        <SiteHeader brand={profile?.siteName || profile?.fullName || "Portfolio"} menus={menus} user={user} />
+        <SiteHeader brand={brand} logo={SERVICE_LOGO} home="/jasa" by={{ name: owner, href: "/" }} menus={menus} user={user} />
         <main className="mx-auto max-w-3xl px-5 py-14">
           <Link href="/jasa#paket" className="hud-label mb-4 inline-flex items-center gap-1 hover:text-white"><ArrowLeft className="h-3.5 w-3.5" /> kembali ke paket jasa</Link>
           <h1 className="font-display text-2xl font-black tracking-wide md:text-3xl">Pesan: <span className="text-gradient">{pkg.name}</span></h1>
@@ -65,7 +67,7 @@ export default async function OrderFormPage({ params }: { params: Promise<{ slug
             </aside>
           </div>
         </main>
-        <SiteFooter name={profile?.fullName || "Portfolio"} />
+        <SiteFooter name={brand} by={owner} />
       </div>
     </div>
   );

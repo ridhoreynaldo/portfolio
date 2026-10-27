@@ -43,6 +43,13 @@
       "when": 1793032593985,
       "tag": "0005_services_billing",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793065513852,
+      "tag": "0006_service_brand",
+      "breakpoints": true
     }
   ]
 }

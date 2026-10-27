@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { LayoutDashboard, LogOut, Receipt, ShoppingCart, UserRound } from "lucide-react";
 import { Starfield } from "@/components/starfield";
+import { SERVICE_BRAND_FALLBACK, SERVICE_LOGO } from "@/components/site-header";
+import { getPortfolio } from "@/modules/portfolio/service";
 import { logoutToHomeAction } from "@/modules/auth/actions";
 import { requireUser } from "@/modules/auth/guards";
 import { isStaff } from "@/modules/auth/session";
@@ -19,17 +21,19 @@ const NAV = [
 /** Portal pelanggan: order, tagihan, pembayaran. Staf juga bisa membuka untuk uji coba. */
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser("/portal");
-  const flash = await readFlash();
+  const [flash, { profile }] = await Promise.all([readFlash(), getPortfolio()]);
+  const brand = profile?.serviceBrand || SERVICE_BRAND_FALLBACK;
   return (
     <div className="relative min-h-screen">
       <Starfield />
       <div className="relative z-10">
         <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[rgba(3,6,18,0.72)] backdrop-blur-xl">
           <nav className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-5 py-3">
-            <Link href="/" className="flex items-center gap-2.5">
+            <Link href="/jasa" className="flex items-center gap-2.5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="" className="h-8 w-8 rounded-md shadow-[0_0_16px_rgba(0,240,255,0.5)]" />
-              <span className="font-display text-sm font-bold tracking-wider text-gradient">Portal Pelanggan</span>
+              <img src={SERVICE_LOGO} alt="" className="h-8 w-8 rounded-md shadow-[0_0_16px_rgba(0,240,255,0.5)]" />
+              <span className="font-display text-sm font-bold tracking-wider text-gradient">{brand}</span>
+              <span className="hidden text-[10px] text-slate-500 sm:inline" style={{ fontFamily: "var(--font-mono)" }}>// portal pelanggan</span>
             </Link>
             <ul className="flex items-center gap-1 text-sm">
               {NAV.map(([href, label, Icon]) => (

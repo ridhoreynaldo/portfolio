@@ -27,7 +27,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
   return (
     <>
-      <Link href="/jasa/dashboard" className="inline-flex items-center gap-1 text-sm text-[var(--ink-3)] hover:text-[var(--navy)]"><ArrowLeft className="h-3.5 w-3.5" /> Semua tagihan</Link>
+      <Link href="/jasa/dashboard" className="inline-flex items-center gap-1 text-sm text-[var(--ink-3)] hover:text-[var(--navy)]"><ArrowLeft className="h-3.5 w-3.5" /> Kembali</Link>
       <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="font-mono text-xs text-[var(--navy-2)]">{inv.number}</p>

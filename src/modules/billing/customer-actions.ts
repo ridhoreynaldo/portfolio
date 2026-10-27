@@ -34,7 +34,7 @@ export const placeOrderAction = action(async (form: FormData) => {
   revalidatePath("/jasa/dashboard");
   revalidatePath("/admin/orders");
   await setFlash(`Pesanan ${number} diterima. Kami akan menghubungi Anda untuk konfirmasi.`);
-  redirect("/jasa/dashboard/langganan");
+  redirect("/jasa/dashboard");
 });
 
 /** Pelanggan mengunggah bukti pembayaran → status "menunggu verifikasi". */

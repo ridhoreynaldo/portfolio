@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutDashboard, LogOut, Receipt, Server, UserRound } from "lucide-react";
+import { LayoutDashboard, LogOut, Server, UserRound } from "lucide-react";
 import { SERVICE_LOGO, serviceBrandOf, ServiceFooter } from "@/components/service-shell";
 import { getPortfolio } from "@/modules/portfolio/service";
 import { logoutToHomeAction } from "@/modules/auth/actions";
@@ -12,8 +12,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Dashboard Pelanggan" };
 
 const NAV = [
-  ["/jasa/dashboard", "Tagihan", Receipt],
-  ["/jasa/dashboard/langganan", "Langganan", Server],
+  ["/jasa/dashboard", "Langganan", Server],
   ["/jasa/dashboard/akun", "Akun", UserRound],
 ] as const;
 

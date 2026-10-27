@@ -10,9 +10,10 @@ const config: NextConfig = {
   async redirects() {
     return [
       { source: "/portal", destination: "/jasa/dashboard", permanent: true },
-      { source: "/portal/orders", destination: "/jasa/dashboard/langganan", permanent: true },
+      { source: "/portal/orders", destination: "/jasa/dashboard", permanent: true },
       { source: "/portal/account", destination: "/jasa/dashboard/akun", permanent: true },
       { source: "/portal/invoices/:id", destination: "/jasa/dashboard/tagihan/:id", permanent: true },
+      { source: "/jasa/dashboard/langganan", destination: "/jasa/dashboard", permanent: true },
       { source: "/order", destination: "/jasa#paket", permanent: true },
       { source: "/order/:slug", destination: "/jasa/order/:slug", permanent: true },
       { source: "/invoice/:id", destination: "/jasa/invoice/:id", permanent: true },

@@ -6,7 +6,8 @@ import { FaLinkedin } from "react-icons/fa";
 import { Starfield } from "@/components/starfield";
 import { ProjectGrid } from "@/components/project-grid";
 import { ExpIcon } from "@/components/exp-icon";
-import { SERVICE_BRAND_FALLBACK, SERVICE_LOGO, SiteFooter, SiteHeader } from "@/components/site-header";
+import { SERVICE_BRAND_FALLBACK, SERVICE_LOGO } from "@/components/service-shell";
+import { SiteFooter, SiteHeader } from "@/components/site-header";
 import { getCurrentUser } from "@/modules/auth/session";
 import { getPortfolio } from "@/modules/portfolio/service";
 import { safeUrl, waLink } from "@/shared/url";
@@ -220,7 +221,7 @@ export default async function HomePage() {
             <div className="hud flex flex-col items-center justify-between gap-5 p-7 text-center md:flex-row md:text-left">
               <div className="flex items-start gap-4">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={SERVICE_LOGO} alt="" className="mt-0.5 hidden h-12 w-12 shrink-0 rounded-md shadow-[0_0_16px_rgba(0,240,255,0.5)] md:block" />
+                <img src={SERVICE_LOGO} alt="" className="mt-0.5 hidden h-12 w-12 shrink-0 md:block" />
                 <div>
                   <p className="hud-label mb-1"><span className="text-magenta">[{(p?.serviceBrand || SERVICE_BRAND_FALLBACK).toLowerCase()}]</span> // butuh bantuan teknis?</p>
                   <p className="font-display text-lg font-bold text-white"><span className="text-gradient">{p?.serviceBrand || SERVICE_BRAND_FALLBACK}</span> <Handshake className="mx-1 inline h-5 w-5 text-cyan-300" /> layanan jasa saya: konsultasi, pembuatan aplikasi, sewa server & WA gateway, maintenance, mentoring.</p>

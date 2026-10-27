@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, Clock, Handshake, LayoutDashboard, LogIn, Mail, MessageCircle, Phone, QrCode, ShieldCheck, Wallet, Wrench } from "lucide-react";
-import { Starfield } from "@/components/starfield";
-import { SERVICE_BRAND_FALLBACK, SERVICE_LOGO, SiteFooter, SiteHeader } from "@/components/site-header";
+import { ArrowRight, BrainCircuit, Code2, GraduationCap, Headset, LayoutDashboard, Mail, MessageCircle, MessagesSquare, Phone, QrCode, Server, ShieldCheck, Wrench } from "lucide-react";
+import { ServiceFooter, ServiceHeader, serviceBrandOf } from "@/components/service-shell";
 import { LoginForm } from "@/app/login/login-form";
 import { getCurrentUser, homeFor } from "@/modules/auth/session";
 import { CYCLE, fmtIDR } from "@/modules/billing/labels";
@@ -14,155 +13,165 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { profile } = await getPortfolio();
-  const name = profile?.fullName || "Portfolio";
-  const brand = profile?.serviceBrand || SERVICE_BRAND_FALLBACK;
+  const b = serviceBrandOf(profile);
   return {
-    title: { absolute: `${brand} · Jasa & Layanan` },
-    description: `${brand}: jasa konsultasi teknis, pembuatan aplikasi (web, API, machine learning/DSS), sewa server & WhatsApp gateway, maintenance, dan mentoring oleh ${name}.`,
+    title: { absolute: `${b.name} · Jasa Pembuatan Aplikasi, Sewa Server & Konsultasi IT` },
+    description: `${b.name}: ${b.tagline}. Konsultasi teknis, pembuatan aplikasi (web, API, machine learning), sewa server & WhatsApp gateway, maintenance, dan mentoring. Dikelola oleh ${b.owner}.`,
   };
 }
 
-const STEPS = [
-  { icon: Handshake, title: "Pilih & pesan", desc: "Daftar akun pelanggan (gratis), pilih paket, lalu tulis brief kebutuhan Anda." },
-  { icon: ShieldCheck, title: "Konfirmasi scope", desc: "Saya hubungi Anda lewat WhatsApp/email untuk detail scope, jadwal, dan harga final." },
-  { icon: Wrench, title: "Pengerjaan", desc: "Progres dilaporkan berkala. Revisi sesuai kesepakatan sampai siap pakai." },
-  { icon: Wallet, title: "Bayar via portal", desc: "Tagihan (sekali atau bulanan) tampil di akun Anda: scan QRIS/transfer, unggah bukti, status otomatis diperbarui." },
+const SERVICES = [
+  { icon: MessagesSquare, title: "Konsultasi Teknis", desc: "Diskusi arsitektur, pemilihan teknologi, audit kode, dan rencana pengembangan sistem Anda." },
+  { icon: Code2, title: "Pembuatan Aplikasi", desc: "Aplikasi web, REST API, sistem informasi, dashboard, dan integrasi, dibangun rapi dan siap dikembangkan." },
+  { icon: BrainCircuit, title: "Machine Learning & DSS", desc: "Model prediksi, sistem pendukung keputusan, dan analitik data yang benar-benar terpakai." },
+  { icon: Server, title: "Sewa Server & WA Gateway", desc: "Server terkelola dengan SSL dan backup, plus API WhatsApp untuk notifikasi dan OTP aplikasi Anda." },
+  { icon: Wrench, title: "Maintenance & Support", desc: "Perbaikan bug, pembaruan keamanan, pemantauan, dan dukungan prioritas setiap bulan." },
+  { icon: GraduationCap, title: "Mentoring Tugas Akhir", desc: "Bimbingan skripsi/tugas akhir bidang informatika, algoritma, dan machine learning." },
 ];
 
+const STEPS = [
+  ["Konsultasi gratis", "Ceritakan kebutuhan Anda lewat WhatsApp atau form pesanan. Tidak ada biaya untuk diskusi awal."],
+  ["Penawaran & kesepakatan", "Saya susun scope, jadwal, dan harga final yang jelas. Pengerjaan dimulai setelah Anda setuju."],
+  ["Pengerjaan transparan", "Progres dilaporkan berkala. Revisi sesuai kesepakatan sampai hasilnya siap dipakai."],
+  ["Serah terima & dukungan", "Tagihan tampil di portal pelanggan, bayar via QRIS atau transfer. Garansi perbaikan setelah serah terima."],
+] as const;
+
 const FAQ = [
-  ["Apakah harga di sini final?", "Harga paket adalah harga dasar. Untuk pembuatan aplikasi, harga final mengikuti scope yang kita sepakati saat konfirmasi."],
-  ["Bagaimana skema pembayaran?", "Jasa sekali bayar: DP saat mulai, pelunasan saat serah terima. Sewa & maintenance: tagihan bulanan otomatis muncul di portal pelanggan."],
-  ["Bagaimana cara bayar?", "Scan QRIS atau transfer bank, lalu unggah bukti pembayaran di halaman tagihan. Setelah saya verifikasi, status tagihan berubah jadi lunas."],
+  ["Apakah harga paket sudah final?", "Harga paket adalah harga dasar. Untuk pembuatan aplikasi, harga final mengikuti scope yang kita sepakati bersama sebelum pengerjaan dimulai."],
+  ["Bagaimana skema pembayarannya?", "Jasa sekali bayar: uang muka saat mulai, pelunasan saat serah terima. Sewa dan maintenance: tagihan bulanan otomatis muncul di portal pelanggan."],
+  ["Bagaimana cara membayar?", "Scan QRIS atau transfer bank, lalu unggah bukti pembayaran di halaman tagihan. Setelah diverifikasi, status tagihan berubah menjadi lunas."],
   ["Apakah ada garansi?", "Ya. Perbaikan bug untuk fitur yang sudah disepakati gratis selama masa garansi, dan bisa dilanjutkan dengan paket maintenance bulanan."],
+  ["Apakah saya perlu akun untuk memesan?", "Ya, akun pelanggan gratis. Dengan akun, Anda bisa memantau pesanan, melihat tagihan, dan mengunggah bukti pembayaran kapan saja."],
 ] as const;
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
-function Section({ id, no, icon, title, accent, children, narrow, sub }: { id: string; no: string; icon: React.ReactNode; title: string; accent: string; children: React.ReactNode; narrow?: boolean; sub?: string }) {
+function Section({ id, eyebrow, title, sub, children, narrow }: { id: string; eyebrow: string; title: string; sub?: string; children: React.ReactNode; narrow?: boolean }) {
   return (
-    <section id={id} className={`relative mx-auto scroll-mt-28 px-5 py-14 ${narrow ? "max-w-4xl" : "max-w-6xl"}`}>
-      <div className="mb-8">
-        <p className="hud-label mb-2 flex items-center gap-2"><span className="text-magenta">[{no}]</span> // sektor</p>
-        <div className="flex items-center gap-3">
-          <span className="text-cyan-300">{icon}</span>
-          <h2 className="font-display text-2xl font-bold tracking-wide md:text-3xl">{title} <span className="text-gradient">{accent}</span></h2>
-        </div>
-        {sub && <p className="mt-2 max-w-2xl text-sm text-slate-400">{sub}</p>}
-        <hr className="hr-glow mt-5" />
+    <section id={id} className={`mx-auto scroll-mt-24 px-5 py-16 ${narrow ? "max-w-4xl" : "max-w-6xl"}`}>
+      <div className="mb-10 max-w-2xl">
+        <p className="eyebrow">{eyebrow}</p>
+        <h2 className="font-serif mt-3 text-3xl font-semibold text-[var(--navy)] md:text-4xl">{title}</h2>
+        {sub && <p className="mt-3 text-[var(--ink-2)]">{sub}</p>}
       </div>
       {children}
     </section>
   );
 }
 
-const Bullet = ({ children }: { children: React.ReactNode }) => <li className="flex gap-2"><span className="text-cyan-300">▸</span><span>{children}</span></li>;
-
-/** Halaman khusus jasa: info layanan lengkap, cara kerja, katalog paket, pembayaran, FAQ, dan akses portal (form login). */
+/** Halaman brand jasa (tema terang klasik): layanan, cara kerja, paket & harga, pembayaran, FAQ, kontak, dan masuk portal. */
 export default async function JasaPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
-  const [{ profile: p, menus, packages }, user, pay, { next }] = await Promise.all([getPortfolio(), getCurrentUser(), getPaymentSettings(), searchParams]);
-  const owner = p?.fullName || "Portfolio";
-  const brand = p?.serviceBrand || SERVICE_BRAND_FALLBACK;
-  const tagline = p?.serviceTagline || "Software · Cloud · AI Services";
+  const [{ profile: p, packages }, user, pay, { next }] = await Promise.all([getPortfolio(), getCurrentUser(), getPaymentSettings(), searchParams]);
+  const brand = serviceBrandOf(p);
   const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "";
   const wa = p?.phone ? waLink(p.phone) : null;
   const groups = Object.entries(packages.reduce<Record<string, typeof packages>>((acc, s) => ((acc[s.category] ??= []).push(s), acc), {}));
   const hasBank = !!(pay?.bankName && pay.bankAccount);
-  const portalHref = user ? homeFor(user) : "#masuk";
   const portalLabel = user && homeFor(user) === "/admin" ? "Panel Admin" : "Portal Pelanggan";
 
   return (
-    <div className="relative min-h-screen">
-      <Starfield />
-      <div className="relative z-10">
-        <SiteHeader brand={brand} logo={SERVICE_LOGO} home="/jasa" by={{ name: owner, href: "/" }} ticker={tagline.toUpperCase()} menus={menus} user={user} />
+    <div className="svc">
+      <ServiceHeader brand={brand} user={user} />
 
-        <main>
-          {/* ── Hero brand jasa + panel akses (login) ── */}
-          <section className="mx-auto grid max-w-6xl gap-10 px-5 pb-14 pt-16 md:grid-cols-[1fr_360px] md:pt-24">
-            <div className="min-w-0">
-              <p className="hud-label mb-3 flex items-center gap-2"><span className="pulse-dot" /> <span className="text-magenta">[{brand.toLowerCase()}]</span> // {tagline}</p>
-              <div className="flex items-center gap-4">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={SERVICE_LOGO} alt="" className="h-14 w-14 shrink-0 rounded-lg shadow-[0_0_24px_rgba(0,240,255,0.45)] md:h-20 md:w-20" />
-                <h1 className="font-display text-3xl font-black leading-tight tracking-wider md:text-6xl">
-                  <span className="glitch text-gradient" data-text={brand}>{brand}</span>
-                </h1>
-              </div>
-              <p className="font-display mt-4 text-lg font-bold text-white md:text-2xl">Jasa & Layanan <span className="text-slate-500">·</span> <span className="text-cyan-300">oleh {owner}</span></p>
-              <p className="mt-4 max-w-2xl text-base text-slate-300/85 md:text-lg">
-                Konsultasi teknis, pembuatan aplikasi apa pun (web, REST API, machine learning/DSS), sewa server & WhatsApp gateway, maintenance aplikasi, serta mentoring tugas akhir.
-                Semua pesanan, tagihan, dan pembayaran dikelola lewat portal pelanggan.
+      <main>
+        {/* ── Hero ── */}
+        <section className="relative overflow-hidden">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(900px_380px_at_20%_-10%,rgba(184,146,58,0.16),transparent_60%),radial-gradient(700px_320px_at_90%_10%,rgba(20,33,61,0.10),transparent_60%)]" />
+          <div className="relative mx-auto grid max-w-6xl gap-12 px-5 pb-16 pt-14 md:grid-cols-[1.15fr_0.85fr] md:pb-24 md:pt-20">
+            <div>
+              <p className="eyebrow">Jasa pembuatan aplikasi & layanan IT</p>
+              <h1 className="font-serif mt-4 text-4xl font-semibold leading-[1.1] text-[var(--navy)] md:text-6xl">
+                {brand.name}
+                <span className="block text-2xl font-medium text-[var(--ink-2)] md:text-3xl">{brand.tagline}</span>
+              </h1>
+              <p className="mt-6 max-w-xl text-lg leading-relaxed text-[var(--ink-2)]">
+                Dari ide sampai sistem yang berjalan: konsultasi, pembuatan aplikasi, server, dan perawatan, ditangani langsung oleh <Link href="/" className="font-semibold text-[var(--navy)] underline-offset-4 hover:underline">{brand.owner}</Link>.
+                Harga jelas, progres transparan, pembayaran mudah lewat portal.
               </p>
-              {groups.length > 0 && (
-                <ul className="mt-6 flex flex-wrap gap-2">
-                  {groups.map(([c]) => <li key={c}><a href={`#paket-${slugify(c)}`} className="chip chip-magenta hover:brightness-125">{c}</a></li>)}
-                </ul>
-              )}
               <div className="mt-8 flex flex-wrap gap-3">
-                <a href="#paket" className="btn-primary">Lihat Paket <ArrowRight className="h-4 w-4" /></a>
-                {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-ghost"><MessageCircle className="h-4 w-4" /> Konsultasi via WhatsApp</a>}
-                <Link href="/" className="btn-ghost">← Portofolio {owner}</Link>
+                <a href="#paket" className="btn-primary">Lihat Paket & Harga <ArrowRight className="h-4 w-4" /></a>
+                {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-ghost"><MessageCircle className="h-4 w-4" /> Konsultasi Gratis</a>}
               </div>
-              <dl className="mt-10 grid grid-cols-3 gap-3">
-                {[["Paket aktif", `${packages.length}`], ["Respons", "< 24 jam"], ["Pembayaran", "QRIS · Bank"]].map(([k, v]) => (
-                  <div key={k} className="hud px-4 py-3">
-                    <dd className="font-display text-lg font-bold text-neon md:text-2xl">{v}</dd>
-                    <dt className="hud-label mt-1 !text-[9px] !opacity-60">{k}</dt>
-                  </div>
+              <ul className="mt-10 grid grid-cols-3 gap-4 border-t border-[var(--rule)] pt-6 text-sm">
+                {[["Respons", "< 24 jam"], ["Pembayaran", "QRIS & transfer"], ["Garansi", "Perbaikan bug"]].map(([k, v]) => (
+                  <li key={k}><p className="font-serif text-lg font-semibold text-[var(--navy)]">{v}</p><p className="text-xs text-[var(--ink-3)]">{k}</p></li>
                 ))}
-              </dl>
+              </ul>
             </div>
 
-            <aside id="masuk" className="hud h-fit scroll-mt-28 p-6">
-              <p className="hud-label">// access terminal</p>
+            {/* Panel masuk / portal */}
+            <aside id="masuk" className="card h-fit scroll-mt-24 p-7 md:p-8">
               {user ? (
                 <>
-                  <h2 className="font-display mt-1 text-lg font-bold text-white">Halo, {user.name.split(" ")[0]}</h2>
-                  <p className="mt-2 text-sm text-slate-400">Anda sudah masuk. Kelola pesanan, tagihan, dan pembayaran dari {portalLabel.toLowerCase()}.</p>
-                  <Link href={homeFor(user)} className="btn-primary mt-5 w-full"><LayoutDashboard className="h-4 w-4" /> Buka {portalLabel}</Link>
+                  <p className="eyebrow">Akun Anda</p>
+                  <h2 className="font-serif mt-2 text-2xl font-semibold text-[var(--navy)]">Halo, {user.name.split(" ")[0]}</h2>
+                  <p className="mt-2 text-sm text-[var(--ink-2)]">Anda sudah masuk. Kelola pesanan, tagihan, dan pembayaran dari {portalLabel.toLowerCase()}.</p>
+                  <Link href={homeFor(user)} className="btn-primary mt-6 w-full"><LayoutDashboard className="h-4 w-4" /> Buka {portalLabel}</Link>
                   <a href="#paket" className="btn-ghost mt-2 w-full">Pesan paket baru</a>
                 </>
               ) : (
                 <>
-                  <h2 className="font-display mt-1 text-lg font-bold text-white"><LogIn className="mr-2 inline h-5 w-5 text-cyan-300" />Masuk Portal</h2>
-                  <p className="mb-5 mt-2 text-xs text-slate-400">Pelanggan: pesan jasa, lihat tagihan, bayar via QRIS. Admin: panel pengelolaan.</p>
+                  <p className="eyebrow">Portal pelanggan</p>
+                  <h2 className="font-serif mt-2 text-2xl font-semibold text-[var(--navy)]">Masuk ke akun</h2>
+                  <p className="mb-6 mt-2 text-sm text-[var(--ink-2)]">Pantau pesanan, lihat tagihan, dan bayar via QRIS dari satu tempat.</p>
                   <LoginForm next={safeNext} />
-                  <p className="mt-5 text-center text-xs text-slate-400">
-                    Belum punya akun? <Link href={safeNext ? `/register?next=${encodeURIComponent(safeNext)}` : "/register"} className="text-cyan-300 hover:underline">Daftar pelanggan (gratis)</Link>
+                  <p className="mt-5 text-center text-sm text-[var(--ink-3)]">
+                    Belum punya akun? <Link href={safeNext ? `/register?next=${encodeURIComponent(safeNext)}` : "/register"} className="font-semibold text-[var(--navy)] hover:underline">Daftar gratis</Link>
                   </p>
                 </>
               )}
             </aside>
-          </section>
+          </div>
+        </section>
 
-          <Section id="cara-kerja" no="01" icon={<Clock className="h-6 w-6" />} title="Cara" accent="Kerja">
-            <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {STEPS.map((s, i) => (
-                <li key={s.title} className="hud p-5">
-                  <p className="hud-label !text-fuchsia-300">langkah {i + 1}</p>
-                  <div className="mt-2 flex items-center gap-2 font-display text-sm font-bold text-white"><s.icon className="h-5 w-5 text-cyan-300" />{s.title}</div>
-                  <p className="mt-2 text-xs leading-relaxed text-slate-400">{s.desc}</p>
-                </li>
+        {/* ── Layanan ── */}
+        <div className="border-y border-[var(--rule)] bg-white/70">
+          <Section id="layanan" eyebrow="Apa yang bisa saya kerjakan" title="Layanan" sub="Satu tempat untuk kebutuhan software Anda, dari konsultasi awal hingga sistem berjalan dan terawat.">
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {SERVICES.map((s) => (
+                <article key={s.title} className="card p-6 transition hover:-translate-y-0.5">
+                  <span className="grid h-11 w-11 place-items-center rounded-xl bg-[#eef3ff] text-[var(--navy)]"><s.icon className="h-5 w-5" /></span>
+                  <h3 className="font-serif mt-4 text-lg font-semibold text-[var(--navy)]">{s.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--ink-2)]">{s.desc}</p>
+                </article>
               ))}
-            </ol>
+            </div>
           </Section>
+        </div>
 
-          <Section id="paket" no="02" icon={<Handshake className="h-6 w-6" />} title="Paket &" accent="Harga" sub="Pilih paket yang paling mendekati kebutuhan Anda. Jika belum ada yang cocok, pesan paket konsultasi atau hubungi saya langsung.">
-            {groups.length === 0 && <p className="hud p-8 text-center text-slate-400">Belum ada paket layanan yang aktif.</p>}
+        {/* ── Cara kerja ── */}
+        <Section id="cara-kerja" eyebrow="Prosesnya sederhana" title="Cara Kerja" sub="Empat langkah dari pertama kali menghubungi sampai sistem Anda berjalan.">
+          <ol className="grid gap-6 md:grid-cols-4">
+            {STEPS.map(([t, d], i) => (
+              <li key={t} className="relative">
+                <span className="font-serif text-5xl font-semibold text-[var(--gold-2)]">{String(i + 1).padStart(2, "0")}</span>
+                <h3 className="font-serif mt-2 text-lg font-semibold text-[var(--navy)]">{t}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--ink-2)]">{d}</p>
+              </li>
+            ))}
+          </ol>
+        </Section>
+
+        {/* ── Paket & harga ── */}
+        <div className="border-y border-[var(--rule)] bg-white/70">
+          <Section id="paket" eyebrow="Transparan sejak awal" title="Paket & Harga" sub="Pilih paket yang paling mendekati kebutuhan Anda. Belum ada yang pas? Mulai dari konsultasi, atau hubungi saya langsung.">
+            {groups.length === 0 && <p className="card p-8 text-center text-[var(--ink-3)]">Belum ada paket layanan yang aktif.</p>}
             {groups.map(([cat, list], gi) => (
-              <div key={cat} id={`paket-${slugify(cat)}`} className={`scroll-mt-28 ${gi ? "mt-12" : ""}`}>
-                <h3 className="hud-label mb-4 !text-fuchsia-300">// {cat}</h3>
+              <div key={cat} id={`paket-${slugify(cat)}`} className={`scroll-mt-24 ${gi ? "mt-12" : ""}`}>
+                <h3 className="font-serif mb-5 flex items-center gap-3 text-xl font-semibold text-[var(--navy)]"><span className="ornament text-xs">◆</span>{cat}</h3>
                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                   {list.map((s) => (
-                    <article key={s.id} className={`hud flex flex-col p-6 ${s.isFeatured ? "!border-fuchsia-400/50" : ""}`}>
-                      {s.isFeatured && <span className="chip chip-magenta mb-3 self-start">★ populer</span>}
-                      <h4 className="font-display text-base font-bold text-white">{s.name}</h4>
-                      <p className="mt-2 text-sm text-slate-300/80">{s.description}</p>
-                      {s.features.length > 0 && <ul className="mt-4 space-y-1.5 text-sm text-slate-300">{s.features.map((f) => <Bullet key={f}>{f}</Bullet>)}</ul>}
-                      <div className="mt-auto pt-5">
-                        <p className="font-display text-xl font-bold text-neon">{s.price > 0 ? fmtIDR(s.price) : "Hubungi"}</p>
-                        <p className="hud-label !text-[10px] !text-slate-500">{s.price > 0 ? CYCLE[s.billingCycle] : "harga mengikuti scope"}{s.unit && ` / ${s.unit}`}</p>
-                        <Link href={`/order/${s.slug}`} className="btn-primary btn-sm mt-4 w-full">Pesan paket ini <ArrowRight className="h-3.5 w-3.5" /></Link>
+                    <article key={s.id} className={`card flex flex-col p-6 ${s.isFeatured ? "card-featured" : ""}`}>
+                      {s.isFeatured && <span className="tag tag-gold mb-3 self-start">Paling diminati</span>}
+                      <h4 className="font-serif text-lg font-semibold text-[var(--navy)]">{s.name}</h4>
+                      <p className="mt-2 text-sm leading-relaxed text-[var(--ink-2)]">{s.description}</p>
+                      {s.features.length > 0 && (
+                        <ul className="mt-4 space-y-2 text-sm text-[var(--ink-2)]">{s.features.map((f) => <li key={f} className="check">{f}</li>)}</ul>
+                      )}
+                      <div className="mt-auto border-t border-[var(--rule)] pt-5">
+                        <p className="font-serif text-2xl font-semibold text-[var(--navy)]">{s.price > 0 ? fmtIDR(s.price) : "Hubungi"}</p>
+                        <p className="text-xs text-[var(--ink-3)]">{s.price > 0 ? CYCLE[s.billingCycle] : "harga mengikuti scope"}{s.unit && ` / ${s.unit}`}</p>
+                        <Link href={`/order/${s.slug}`} className={`${s.isFeatured ? "btn-gold" : "btn-primary"} btn-sm mt-4 w-full`}>Pesan paket ini <ArrowRight className="h-3.5 w-3.5" /></Link>
                       </div>
                     </article>
                   ))}
@@ -170,58 +179,68 @@ export default async function JasaPage({ searchParams }: { searchParams: Promise
               </div>
             ))}
           </Section>
+        </div>
 
-          <Section id="pembayaran" no="03" icon={<QrCode className="h-6 w-6" />} title="Pembayaran" accent="& Portal" narrow>
-            <div className="grid gap-5 sm:grid-cols-2">
-              <div className="hud p-6">
-                <p className="font-display font-bold text-white"><QrCode className="mr-2 inline h-5 w-5 text-cyan-300" />Metode pembayaran</p>
-                <ul className="mt-3 space-y-2 text-sm text-slate-300">
-                  <Bullet>QRIS (semua e-wallet & mobile banking)</Bullet>
-                  {hasBank ? <Bullet>Transfer {pay!.bankName} {pay!.bankAccount}{pay!.bankHolder && ` a.n. ${pay!.bankHolder}`}</Bullet> : <Bullet>Transfer bank (detail tampil di tagihan)</Bullet>}
-                  <Bullet>Unggah bukti bayar di halaman tagihan, verifikasi maksimal 1×24 jam</Bullet>
-                </ul>
-                {pay?.instructions && <p className="mt-3 whitespace-pre-line text-xs text-slate-500">{pay.instructions}</p>}
-              </div>
-              <div className="hud p-6">
-                <p className="font-display font-bold text-white"><LayoutDashboard className="mr-2 inline h-5 w-5 text-cyan-300" />Portal pelanggan</p>
-                <ul className="mt-3 space-y-2 text-sm text-slate-300">
-                  <Bullet>Riwayat & status pesanan</Bullet>
-                  <Bullet>Tagihan bulanan sewa/maintenance otomatis</Bullet>
-                  <Bullet>Bayar & unggah bukti, status diperbarui otomatis</Bullet>
-                  <Bullet>Profil & data penagihan</Bullet>
-                </ul>
-                <Link href={portalHref} className="btn-ghost btn-sm mt-4">{user ? `Buka ${portalLabel}` : "Masuk / daftar"} <ArrowRight className="h-3.5 w-3.5" /></Link>
-              </div>
+        {/* ── Pembayaran & portal ── */}
+        <Section id="pembayaran" eyebrow="Mudah dan tercatat" title="Pembayaran & Portal Pelanggan" narrow>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="card p-6">
+              <div className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-xl bg-[#eef3ff] text-[var(--navy)]"><QrCode className="h-5 w-5" /></span><h3 className="font-serif text-lg font-semibold text-[var(--navy)]">Metode pembayaran</h3></div>
+              <ul className="mt-4 space-y-2 text-sm text-[var(--ink-2)]">
+                <li className="check">QRIS (semua e-wallet & mobile banking)</li>
+                <li className="check">{hasBank ? `Transfer ${pay!.bankName} ${pay!.bankAccount}${pay!.bankHolder ? ` a.n. ${pay!.bankHolder}` : ""}` : "Transfer bank (detail tampil di tagihan)"}</li>
+                <li className="check">Unggah bukti bayar di halaman tagihan, verifikasi maksimal 1×24 jam</li>
+              </ul>
+              {pay?.instructions && <p className="mt-3 whitespace-pre-line text-xs text-[var(--ink-3)]">{pay.instructions}</p>}
             </div>
-          </Section>
+            <div className="card p-6">
+              <div className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-xl bg-[#eef3ff] text-[var(--navy)]"><ShieldCheck className="h-5 w-5" /></span><h3 className="font-serif text-lg font-semibold text-[var(--navy)]">Yang Anda dapatkan di portal</h3></div>
+              <ul className="mt-4 space-y-2 text-sm text-[var(--ink-2)]">
+                <li className="check">Riwayat & status pesanan</li>
+                <li className="check">Tagihan bulanan sewa/maintenance otomatis</li>
+                <li className="check">Bayar & unggah bukti, status diperbarui otomatis</li>
+                <li className="check">Profil & data penagihan</li>
+              </ul>
+              <Link href={user ? homeFor(user) : "#masuk"} className="btn-ghost btn-sm mt-5">{user ? `Buka ${portalLabel}` : "Masuk / daftar"} <ArrowRight className="h-3.5 w-3.5" /></Link>
+            </div>
+          </div>
+        </Section>
 
-          <Section id="faq" no="04" icon={<BadgeCheck className="h-6 w-6" />} title="Pertanyaan" accent="Umum" narrow>
-            <div className="hud divide-y divide-white/5">
+        {/* ── FAQ ── */}
+        <div className="border-y border-[var(--rule)] bg-white/70">
+          <Section id="faq" eyebrow="Sebelum memesan" title="Pertanyaan Umum" narrow>
+            <div className="card divide-y divide-[var(--rule)]">
               {FAQ.map(([q, a]) => (
                 <details key={q} className="group p-5">
-                  <summary className="cursor-pointer list-none font-display text-sm font-bold text-white">
-                    <span className="mr-2 inline-block text-cyan-300 transition group-open:rotate-90">▸</span>{q}
+                  <summary className="flex cursor-pointer items-center justify-between gap-4 font-semibold text-[var(--navy)]">
+                    {q}<span className="text-[var(--gold)] transition group-open:rotate-45">+</span>
                   </summary>
-                  <p className="mt-3 pl-5 text-sm leading-relaxed text-slate-400">{a}</p>
+                  <p className="mt-3 text-sm leading-relaxed text-[var(--ink-2)]">{a}</p>
                 </details>
               ))}
             </div>
           </Section>
+        </div>
 
-          <Section id="kontak" no="05" icon={<Mail className="h-6 w-6" />} title="Masih" accent="Ragu?" narrow>
-            <div className="hud p-8 text-center">
-              <p className="text-slate-300/80">Ceritakan kebutuhan Anda dulu, gratis. Saya bantu tentukan paket dan estimasi yang paling masuk akal.</p>
-              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-                {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-primary"><Phone className="h-4 w-4" /> WhatsApp</a>}
-                {p?.email && <a href={`mailto:${p.email}`} className="btn-ghost"><Mail className="h-4 w-4" /> {p.email}</a>}
-                <a href="#paket" className="btn-magenta">Lihat Paket</a>
+        {/* ── Kontak ── */}
+        <Section id="kontak" eyebrow="Mari berdiskusi" title="Masih ragu? Konsultasi dulu, gratis." sub="Ceritakan kebutuhan Anda. Saya bantu tentukan paket dan estimasi yang paling masuk akal." narrow>
+          <div className="card flex flex-col items-center gap-4 p-8 text-center md:flex-row md:justify-between md:text-left">
+            <div className="flex items-center gap-4">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[var(--navy)] text-white"><Headset className="h-6 w-6" /></span>
+              <div>
+                <p className="font-serif text-lg font-semibold text-[var(--navy)]">{brand.owner}</p>
+                <p className="text-sm text-[var(--ink-3)]">{p?.location || "Indonesia"} · balas dalam 24 jam</p>
               </div>
             </div>
-          </Section>
-        </main>
+            <div className="flex flex-wrap justify-center gap-3">
+              {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-primary"><Phone className="h-4 w-4" /> WhatsApp</a>}
+              {p?.email && <a href={`mailto:${p.email}`} className="btn-ghost"><Mail className="h-4 w-4" /> Email</a>}
+            </div>
+          </div>
+        </Section>
+      </main>
 
-        <SiteFooter name={brand} by={owner} />
-      </div>
+      <ServiceFooter brand={brand} />
     </div>
   );
 }

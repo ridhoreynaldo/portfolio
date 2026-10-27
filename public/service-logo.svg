@@ -1,25 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Logo brand jasa">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Logo Kodeva">
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#00f0ff"/>
-      <stop offset="1" stop-color="#ff2bd6"/>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e9d292"/>
+      <stop offset="1" stop-color="#b8923a"/>
     </linearGradient>
-    <radialGradient id="core" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="0.45" stop-color="#00f0ff"/>
-      <stop offset="1" stop-color="#00f0ff" stop-opacity="0"/>
-    </radialGradient>
   </defs>
-  <rect width="64" height="64" rx="12" fill="#070b1f"/>
-  <rect x="1" y="1" width="62" height="62" rx="11" fill="none" stroke="url(#g)" stroke-opacity="0.6"/>
-  <!-- hexagon nexus -->
-  <polygon points="32,10 51,21 51,43 32,54 13,43 13,21" fill="none" stroke="url(#g)" stroke-width="2"/>
-  <!-- orbit ring -->
-  <ellipse cx="32" cy="32" rx="25" ry="9" fill="none" stroke="#ff2bd6" stroke-width="1.6" transform="rotate(-28 32 32)" stroke-dasharray="4 3"/>
-  <!-- core -->
-  <circle cx="32" cy="32" r="11" fill="url(#core)"/>
-  <circle cx="32" cy="32" r="5" fill="#ffffff"/>
-  <!-- satellite -->
-  <circle cx="52.5" cy="20.5" r="3" fill="#ff2bd6"/>
-  <circle cx="52.5" cy="20.5" r="5" fill="none" stroke="#ff2bd6" stroke-opacity="0.5"/>
+  <!-- medali navy dengan cincin emas -->
+  <circle cx="32" cy="32" r="30" fill="#14213d"/>
+  <circle cx="32" cy="32" r="27.5" fill="none" stroke="url(#gold)" stroke-width="1.5"/>
+  <circle cx="32" cy="32" r="24" fill="none" stroke="url(#gold)" stroke-width="0.6" stroke-opacity="0.6"/>
+  <!-- monogram K dengan garis kode < > -->
+  <path d="M22 18 v28" stroke="url(#gold)" stroke-width="4.5" stroke-linecap="round"/>
+  <path d="M41 19 L24 32 L41 45" fill="none" stroke="url(#gold)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M44 27 l5 5 -5 5" fill="none" stroke="#faf7f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
 </svg>

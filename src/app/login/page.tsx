@@ -3,9 +3,8 @@ import { redirect } from "next/navigation";
 import { readFlash } from "@/shared/action";
 import { Flash } from "@/shared/ui";
 import { getCurrentUser, homeFor } from "@/modules/auth/session";
-import { Starfield } from "@/components/starfield";
-import { SERVICE_BRAND_FALLBACK, ServiceBrandMark } from "@/components/site-header";
 import { getPortfolio } from "@/modules/portfolio/service";
+import { ServiceBrandMark, serviceBrandOf } from "@/components/service-shell";
 import { LoginForm } from "./login-form";
 
 export const dynamic = "force-dynamic";
@@ -17,18 +16,19 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const [{ next }, flash, { profile }] = await Promise.all([searchParams, readFlash(), getPortfolio()]);
   const safe = next && next.startsWith("/") && !next.startsWith("//") ? next : "";
   return (
-    <main className="relative grid min-h-screen place-items-center px-4">
-      <Starfield grid={false} />
-      <div className="hud relative z-10 w-full max-w-sm p-8">
-        <ServiceBrandMark brand={profile?.serviceBrand || SERVICE_BRAND_FALLBACK} by={profile?.fullName || "Portfolio"} sub="access terminal · masuk" />
-        <p className="mb-5 text-xs text-slate-400">Pelanggan: akses portal order & tagihan. Admin: panel pengelolaan.</p>
+    <div className="svc grid min-h-screen place-items-center px-4 py-10">
+      <main className="card w-full max-w-sm p-8">
+        <ServiceBrandMark brand={serviceBrandOf(profile)} title="Masuk" sub="Pelanggan: portal pesanan & tagihan. Admin: panel pengelolaan." />
         <Flash flash={flash} />
         <LoginForm next={safe} />
-        <p className="mt-5 text-center text-xs text-slate-400">
-          Belum punya akun? <Link href={safe ? `/register?next=${encodeURIComponent(safe)}` : "/register"} className="text-cyan-300 hover:underline">Daftar pelanggan</Link>
+        <p className="mt-5 text-center text-sm text-[var(--ink-3)]">
+          Belum punya akun? <Link href={safe ? `/register?next=${encodeURIComponent(safe)}` : "/register"} className="font-semibold text-[var(--navy)] hover:underline">Daftar gratis</Link>
         </p>
-        <p className="mt-4 flex justify-center gap-4 text-xs text-slate-500"><Link href="/jasa" className="hover:text-cyan-300">← halaman jasa</Link><Link href="/" className="hover:text-cyan-300">portofolio</Link></p>
-      </div>
-    </main>
+        <p className="mt-6 flex justify-center gap-5 text-xs text-[var(--ink-3)]">
+          <Link href="/jasa" className="hover:text-[var(--navy)]">← Halaman jasa</Link>
+          <Link href="/" className="hover:text-[var(--navy)]">Portofolio</Link>
+        </p>
+      </main>
+    </div>
   );
 }

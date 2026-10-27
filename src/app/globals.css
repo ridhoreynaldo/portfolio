@@ -11,6 +11,7 @@
   --font-display: var(--font-orbitron), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-serif: var(--font-playfair), Georgia, "Times New Roman", serif;
   --color-neon-cyan: #00f0ff;
   --color-neon-magenta: #ff2bd6;
   --color-neon-violet: #8b5cf6;
@@ -264,3 +265,82 @@ input[type="file"].input-dark::file-selector-button {
   .cyber-grid, .ticker, .glitch::before, .glitch::after, .pulse-dot::after { animation: none !important; }
   .glitch::before, .glitch::after { display: none; }
 }
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Tema SVC: halaman jasa (brand terpisah). Klasik & terang: kertas hangat,
+   navy + emas, judul serif. Berbeda total dari tema galactic di atas.
+   Kelas .input-dark/.label/.btn-* ditimpa di dalam .svc agar form login/daftar
+   (komponen bersama) ikut bertema tanpa diubah.
+   ─────────────────────────────────────────────────────────────────────────── */
+.svc {
+  --paper: #faf7f1;
+  --paper-2: #ffffff;
+  --navy: #14213d;
+  --navy-2: #1f3561;
+  --gold: #b8923a;
+  --gold-2: #e3c77a;
+  --ink: #1b2233;
+  --ink-2: #4b5567;
+  --ink-3: #7b8494;
+  --rule: #e6dfd2;
+  color: var(--ink);
+  background: var(--paper);
+  min-height: 100vh;
+  font-family: var(--font-sans);
+}
+body:has(> .svc)::after, body:has(> .svc) { background-image: none; }
+body:has(> .svc)::after { display: none; }
+body:has(> .svc) { background-color: #faf7f1; }
+
+.svc .font-serif { font-family: var(--font-serif); }
+.svc .card {
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px rgba(20, 33, 61, 0.04), 0 12px 32px -20px rgba(20, 33, 61, 0.25);
+}
+.svc .card-featured { border-color: var(--gold-2); box-shadow: 0 0 0 3px rgba(184, 146, 58, 0.12), 0 18px 40px -22px rgba(20, 33, 61, 0.35); }
+.svc .eyebrow {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold);
+}
+.svc .eyebrow::before { content: ""; width: 1.5rem; height: 1px; background: var(--gold); }
+.svc .rule { border: 0; border-top: 1px solid var(--rule); }
+.svc .ornament { color: var(--gold); letter-spacing: 0.4em; }
+
+.svc .btn-primary, .svc .btn-ghost, .svc .btn-gold {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  padding: 0.7rem 1.35rem; font-size: 0.9rem; font-weight: 600; border-radius: 999px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, filter 0.15s ease;
+  text-transform: none; letter-spacing: 0; clip-path: none; font-family: var(--font-sans);
+}
+.svc .btn-sm { padding: 0.45rem 1rem; font-size: 0.8rem; }
+.svc .btn-primary { background: var(--navy); color: #fff; box-shadow: 0 10px 24px -12px rgba(20, 33, 61, 0.7); filter: none; }
+.svc .btn-primary:hover { background: var(--navy-2); transform: translateY(-1px); filter: none; }
+.svc .btn-primary:disabled { opacity: 0.6; transform: none; }
+.svc .btn-ghost { background: transparent; border: 1px solid #cfc6b5; color: var(--navy); box-shadow: none; }
+.svc .btn-ghost:hover { background: #fff; border-color: var(--navy); box-shadow: none; }
+.svc .btn-gold { background: linear-gradient(135deg, var(--gold-2), var(--gold)); color: #2b2104; box-shadow: 0 10px 24px -12px rgba(184, 146, 58, 0.8); }
+.svc .btn-gold:hover { filter: brightness(1.05); transform: translateY(-1px); }
+
+.svc .label { font-family: var(--font-sans); font-size: 0.8rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--ink-2); }
+.svc .input-dark {
+  background: #fff; border: 1px solid #d9d1c2; border-radius: 0.6rem; color: var(--ink); padding: 0.65rem 0.9rem;
+}
+.svc .input-dark:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(20, 33, 61, 0.12); outline: none; }
+.svc .input-dark::placeholder { color: #a39c8f; }
+.svc .alert-error { border: 1px solid #f1b8b8; background: #fff2f2; color: #9b1c1c; }
+.svc .alert-ok { border: 1px solid #bfe3c8; background: #f0faf2; color: #14532d; }
+/* pesan error/flash bawaan (kelas tailwind gelap) → warna terang */
+.svc .text-rose-200 { color: #9b1c1c; } .svc .bg-rose-500\/10 { background: #fff2f2; } .svc .border-rose-400\/40 { border-color: #f1b8b8; }
+.svc .text-emerald-200 { color: #14532d; } .svc .bg-emerald-500\/10 { background: #f0faf2; } .svc .border-emerald-400\/40 { border-color: #bfe3c8; }
+.svc .text-slate-400, .svc .text-slate-500 { color: var(--ink-3); }
+.svc .text-slate-200, .svc .text-slate-300 { color: var(--ink-2); }
+.svc .text-cyan-300 { color: var(--navy-2); }
+
+.svc .tag { display: inline-flex; align-items: center; padding: 0.25rem 0.7rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; background: #f1ebdf; color: #6b5420; }
+.svc .tag-gold { background: linear-gradient(135deg, var(--gold-2), var(--gold)); color: #2b2104; }
+.svc .check { display: flex; gap: 0.6rem; align-items: flex-start; }
+.svc .check::before { content: "✓"; flex: none; width: 1.15rem; height: 1.15rem; border-radius: 999px; background: #eef3ff; color: var(--navy); font-size: 0.7rem; font-weight: 700; display: grid; place-items: center; margin-top: 0.1rem; }
+.svc details > summary { list-style: none; }
+.svc details > summary::-webkit-details-marker { display: none; }

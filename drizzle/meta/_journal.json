@@ -50,6 +50,13 @@
       "when": 1793065513852,
       "tag": "0006_service_brand",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793067770235,
+      "tag": "0007_show_service_prices",
+      "breakpoints": true
     }
   ]
 }

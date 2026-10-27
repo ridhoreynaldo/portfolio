@@ -20,6 +20,8 @@ const PROFILE: Partial<typeof profile.$inferInsert> = {
   summary: "Membangun sistem back-end yang scalable dan mengeksplorasi Machine Learning untuk solusi teknologi yang berdampak.",
   about:
     "Saat ini fokus pada Back-End Development dan Cloud Computing, aktif membangun dan belajar melalui proyek nyata: sistem informasi akademik, manajemen aset, pembayaran asrama, WhatsApp gateway, hingga sistem pendukung keputusan berbasis machine learning.\n\nSenang menjadi mentor bagi mahasiswa, khususnya dalam menyelesaikan tugas akhir di bidang Computer Science dan algoritma Machine Learning. Juga memperluas pengetahuan di bidang Cybersecurity, serta memiliki dasar kuat dalam IT Support (troubleshooting perangkat keras dan lunak).\n\nMenerima jasa konsultasi teknis, pembuatan aplikasi (web, API, machine learning/DSS), sewa & maintenance server, serta mentoring tugas akhir.",
+  email: "ridhofailed@gmail.com",
+  phone: "0895601217009",
   location: "Medan Kota, Sumatera Utara, Indonesia",
   nationality: "Indonesia",
   github: "https://github.com/ridhoreynaldo",

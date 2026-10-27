@@ -54,8 +54,17 @@ export default async function OrderFormPage({ params }: { params: Promise<{ slug
             <p className="eyebrow">{pkg.category}</p>
             <h2 className="font-serif mt-2 text-xl font-semibold text-[var(--navy)]">{pkg.name}</h2>
             <p className="mt-2 text-sm text-[var(--ink-2)]">{pkg.description}</p>
-            <p className="font-serif mt-5 text-2xl font-semibold text-[var(--navy)]">{pkg.price > 0 ? fmtIDR(pkg.price) : "Hubungi"}</p>
-            <p className="text-xs text-[var(--ink-3)]">{pkg.price > 0 ? CYCLE[pkg.billingCycle] : "harga mengikuti scope"}{pkg.unit && ` / ${pkg.unit}`}</p>
+            {profile?.showServicePrices ? (
+              <>
+                <p className="font-serif mt-5 text-2xl font-semibold text-[var(--navy)]">{pkg.price > 0 ? fmtIDR(pkg.price) : "Hubungi"}</p>
+                <p className="text-xs text-[var(--ink-3)]">{pkg.price > 0 ? CYCLE[pkg.billingCycle] : "harga mengikuti scope"}{pkg.unit && ` / ${pkg.unit}`}</p>
+              </>
+            ) : (
+              <>
+                <p className="font-serif mt-5 text-lg font-semibold text-[var(--navy)]">Harga menyesuaikan kebutuhan</p>
+                <p className="text-xs text-[var(--ink-3)]">{CYCLE[pkg.billingCycle]}{pkg.unit && ` / ${pkg.unit}`} · penawaran dikirim setelah konfirmasi</p>
+              </>
+            )}
             {pkg.features.length > 0 && <ul className="mt-4 space-y-2 text-sm text-[var(--ink-2)]">{pkg.features.map((f) => <li key={f} className="check">{f}</li>)}</ul>}
           </aside>
         </div>

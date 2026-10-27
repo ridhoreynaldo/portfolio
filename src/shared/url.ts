@@ -13,9 +13,10 @@ export function safeUrl(value: string | null | undefined): string | null {
 }
 
 /** Nomor telepon lokal → tautan wa.me (Indonesia default). */
-export function waLink(phone: string): string | null {
+/** Tautan wa.me; `text` (opsional) jadi pesan awal. */
+export function waLink(phone: string, text?: string): string | null {
   const digits = phone.replace(/\D/g, "");
   if (digits.length < 8) return null;
   const intl = digits.startsWith("0") ? "62" + digits.slice(1) : digits;
-  return `https://wa.me/${intl}`;
+  return `https://wa.me/${intl}${text ? `?text=${encodeURIComponent(text)}` : ""}`;
 }

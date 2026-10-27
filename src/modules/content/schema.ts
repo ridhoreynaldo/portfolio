@@ -6,6 +6,8 @@ export const profile = pgTable("profile", {
   siteName: varchar("site_name", { length: 128 }).default("").notNull(), // brand di navbar
   serviceBrand: varchar("service_brand", { length: 128 }).default("").notNull(), // brand halaman jasa (/jasa), terpisah dari nama pribadi
   serviceTagline: varchar("service_tagline", { length: 255 }).default("").notNull(),
+  /** Tampilkan harga paket di halaman jasa; false = "hubungi via WhatsApp" (harga tetap dipakai internal untuk tagihan). */
+  showServicePrices: boolean("show_service_prices").default(false).notNull(),
   fullName: varchar("full_name", { length: 255 }).default("").notNull(),
   headline: varchar("headline", { length: 255 }).default("").notNull(), // judul hero
   tagline: varchar("tagline", { length: 255 }).default("").notNull(), // badge kecil di atas judul

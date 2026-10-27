@@ -18,7 +18,7 @@ export const serviceBrandOf = (p: { serviceBrand?: string; serviceTagline?: stri
 const NAV = [
   ["/jasa#layanan", "Layanan"],
   ["/jasa#cara-kerja", "Cara Kerja"],
-  ["/jasa#paket", "Paket & Harga"],
+  ["/jasa#paket", "Paket"],
   ["/jasa#faq", "FAQ"],
   ["/jasa#kontak", "Kontak"],
 ] as const;

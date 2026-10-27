@@ -65,6 +65,9 @@ export default async function JasaPage({ searchParams }: { searchParams: Promise
   const brand = serviceBrandOf(p);
   const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "";
   const wa = p?.phone ? waLink(p.phone) : null;
+  const showPrices = p?.showServicePrices ?? false;
+  const waAsk = (pkgName: string) => (p?.phone ? waLink(p.phone, `Halo, saya tertarik dengan paket "${pkgName}" di ${brand.name}. Boleh minta penawaran harganya?`) : null);
+  const faq = showPrices ? FAQ : [["Berapa biayanya?", "Harga menyesuaikan kebutuhan dan scope pekerjaan. Hubungi saya lewat WhatsApp, ceritakan kebutuhan Anda, dan saya kirim penawaran yang jelas sebelum pengerjaan dimulai."] as const, ...FAQ.slice(1)];
   const groups = Object.entries(packages.reduce<Record<string, typeof packages>>((acc, s) => ((acc[s.category] ??= []).push(s), acc), {}));
   const hasBank = !!(pay?.bankName && pay.bankAccount);
   const portalLabel = user && homeFor(user) === "/admin" ? "Panel Admin" : "Portal Pelanggan";
@@ -86,11 +89,20 @@ export default async function JasaPage({ searchParams }: { searchParams: Promise
               </h1>
               <p className="mt-6 max-w-xl text-lg leading-relaxed text-[var(--ink-2)]">
                 Dari ide sampai sistem yang berjalan: konsultasi, pembuatan aplikasi, server, dan perawatan, ditangani langsung oleh <Link href="/" className="font-semibold text-[var(--navy)] underline-offset-4 hover:underline">{brand.owner}</Link>.
-                Harga jelas, progres transparan, pembayaran mudah lewat portal.
+                {showPrices ? "Harga jelas, progres transparan, pembayaran mudah lewat portal." : "Penawaran menyesuaikan kebutuhan, progres transparan, pembayaran mudah lewat portal."}
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <a href="#paket" className="btn-primary">Lihat Paket & Harga <ArrowRight className="h-4 w-4" /></a>
-                {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-ghost"><MessageCircle className="h-4 w-4" /> Konsultasi Gratis</a>}
+                {showPrices ? (
+                  <>
+                    <a href="#paket" className="btn-primary">Lihat Paket & Harga <ArrowRight className="h-4 w-4" /></a>
+                    {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-ghost"><MessageCircle className="h-4 w-4" /> Konsultasi Gratis</a>}
+                  </>
+                ) : (
+                  <>
+                    {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-primary"><MessageCircle className="h-4 w-4" /> Hubungi via WhatsApp</a>}
+                    <a href="#paket" className="btn-ghost">Lihat Paket <ArrowRight className="h-4 w-4" /></a>
+                  </>
+                )}
               </div>
               <ul className="mt-10 grid grid-cols-3 gap-4 border-t border-[var(--rule)] pt-6 text-sm">
                 {[["Respons", "< 24 jam"], ["Pembayaran", "QRIS & transfer"], ["Garansi", "Perbaikan bug"]].map(([k, v]) => (
@@ -154,7 +166,7 @@ export default async function JasaPage({ searchParams }: { searchParams: Promise
 
         {/* ── Paket & harga ── */}
         <div className="border-y border-[var(--rule)] bg-white/70">
-          <Section id="paket" eyebrow="Transparan sejak awal" title="Paket & Harga" sub="Pilih paket yang paling mendekati kebutuhan Anda. Belum ada yang pas? Mulai dari konsultasi, atau hubungi saya langsung.">
+          <Section id="paket" eyebrow={showPrices ? "Transparan sejak awal" : "Menyesuaikan kebutuhan Anda"} title={showPrices ? "Paket & Harga" : "Paket Layanan"} sub={showPrices ? "Pilih paket yang paling mendekati kebutuhan Anda. Belum ada yang pas? Mulai dari konsultasi, atau hubungi saya langsung." : "Pilih paket yang paling mendekati kebutuhan Anda, lalu hubungi saya via WhatsApp untuk penawaran harga. Belum ada yang pas? Ceritakan saja kebutuhannya."}>
             {groups.length === 0 && <p className="card p-8 text-center text-[var(--ink-3)]">Belum ada paket layanan yang aktif.</p>}
             {groups.map(([cat, list], gi) => (
               <div key={cat} id={`paket-${slugify(cat)}`} className={`scroll-mt-24 ${gi ? "mt-12" : ""}`}>
@@ -169,9 +181,24 @@ export default async function JasaPage({ searchParams }: { searchParams: Promise
                         <ul className="mt-4 space-y-2 text-sm text-[var(--ink-2)]">{s.features.map((f) => <li key={f} className="check">{f}</li>)}</ul>
                       )}
                       <div className="mt-auto border-t border-[var(--rule)] pt-5">
-                        <p className="font-serif text-2xl font-semibold text-[var(--navy)]">{s.price > 0 ? fmtIDR(s.price) : "Hubungi"}</p>
-                        <p className="text-xs text-[var(--ink-3)]">{s.price > 0 ? CYCLE[s.billingCycle] : "harga mengikuti scope"}{s.unit && ` / ${s.unit}`}</p>
-                        <Link href={`/order/${s.slug}`} className={`${s.isFeatured ? "btn-gold" : "btn-primary"} btn-sm mt-4 w-full`}>Pesan paket ini <ArrowRight className="h-3.5 w-3.5" /></Link>
+                        {showPrices ? (
+                          <>
+                            <p className="font-serif text-2xl font-semibold text-[var(--navy)]">{s.price > 0 ? fmtIDR(s.price) : "Hubungi"}</p>
+                            <p className="text-xs text-[var(--ink-3)]">{s.price > 0 ? CYCLE[s.billingCycle] : "harga mengikuti scope"}{s.unit && ` / ${s.unit}`}</p>
+                            <Link href={`/order/${s.slug}`} className={`${s.isFeatured ? "btn-gold" : "btn-primary"} btn-sm mt-4 w-full`}>Pesan paket ini <ArrowRight className="h-3.5 w-3.5" /></Link>
+                          </>
+                        ) : (
+                          <>
+                            <p className="font-serif text-lg font-semibold text-[var(--navy)]">Harga menyesuaikan kebutuhan</p>
+                            <p className="text-xs text-[var(--ink-3)]">{CYCLE[s.billingCycle]}{s.unit && ` / ${s.unit}`} · penawaran via WhatsApp</p>
+                            {waAsk(s.name) ? (
+                              <a href={waAsk(s.name)!} target="_blank" rel="noreferrer" className={`${s.isFeatured ? "btn-gold" : "btn-primary"} btn-sm mt-4 w-full`}><MessageCircle className="h-3.5 w-3.5" /> Hubungi via WhatsApp</a>
+                            ) : (
+                              <Link href={`/order/${s.slug}`} className="btn-primary btn-sm mt-4 w-full">Pesan paket ini <ArrowRight className="h-3.5 w-3.5" /></Link>
+                            )}
+                            <Link href={`/order/${s.slug}`} className="mt-3 block text-center text-xs text-[var(--ink-3)] hover:text-[var(--navy)] hover:underline">atau pesan lewat portal</Link>
+                          </>
+                        )}
                       </div>
                     </article>
                   ))}
@@ -210,7 +237,7 @@ export default async function JasaPage({ searchParams }: { searchParams: Promise
         <div className="border-y border-[var(--rule)] bg-white/70">
           <Section id="faq" eyebrow="Sebelum memesan" title="Pertanyaan Umum" narrow>
             <div className="card divide-y divide-[var(--rule)]">
-              {FAQ.map(([q, a]) => (
+              {faq.map(([q, a]) => (
                 <details key={q} className="group p-5">
                   <summary className="flex cursor-pointer items-center justify-between gap-4 font-semibold text-[var(--navy)]">
                     {q}<span className="text-[var(--gold)] transition group-open:rotate-45">+</span>

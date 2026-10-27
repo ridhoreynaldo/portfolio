@@ -88,7 +88,7 @@ export default async function JasaPage({ searchParams }: { searchParams: Promise
                 <span className="block text-2xl font-medium text-[var(--ink-2)] md:text-3xl">{brand.tagline}</span>
               </h1>
               <p className="mt-6 max-w-xl text-lg leading-relaxed text-[var(--ink-2)]">
-                Dari ide sampai sistem yang berjalan: konsultasi, pembuatan aplikasi, server, dan perawatan, ditangani langsung oleh <Link href="/" className="font-semibold text-[var(--navy)] underline-offset-4 hover:underline">{brand.owner}</Link>.
+                Dari ide sampai sistem yang berjalan: konsultasi, pembuatan aplikasi, server, dan perawatan, ditangani langsung oleh <span className="font-semibold text-[var(--navy)]">{brand.owner}</span>.
                 {showPrices ? "Harga jelas, progres transparan, pembayaran mudah lewat portal." : "Penawaran menyesuaikan kebutuhan, progres transparan, pembayaran mudah lewat portal."}
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
@@ -115,17 +115,17 @@ export default async function JasaPage({ searchParams }: { searchParams: Promise
             <aside id="masuk" className="card h-fit scroll-mt-24 p-7 md:p-8">
               {user ? (
                 <>
-                  <p className="eyebrow">Akun Anda</p>
-                  <h2 className="font-serif mt-2 text-2xl font-semibold text-[var(--navy)]">Halo, {user.name.split(" ")[0]}</h2>
+                  <p className="eyebrow">{portalLabel === "Panel Admin" ? "Masuk sebagai admin" : "Akun pelanggan"}</p>
+                  <h2 className="font-serif mt-2 text-2xl font-semibold text-[var(--navy)]">Halo, {user.name}</h2>
                   <p className="mt-2 text-sm text-[var(--ink-2)]">Anda sudah masuk. Kelola pesanan, tagihan, dan pembayaran dari {portalLabel.toLowerCase()}.</p>
                   <Link href={homeFor(user)} className="btn-primary mt-6 w-full"><LayoutDashboard className="h-4 w-4" /> Buka {portalLabel}</Link>
                   <a href="#paket" className="btn-ghost mt-2 w-full">Pesan paket baru</a>
                 </>
               ) : (
                 <>
-                  <p className="eyebrow">Portal pelanggan</p>
+                  <p className="eyebrow">Login {brand.name}</p>
                   <h2 className="font-serif mt-2 text-2xl font-semibold text-[var(--navy)]">Masuk ke akun</h2>
-                  <p className="mb-6 mt-2 text-sm text-[var(--ink-2)]">Pantau pesanan, lihat tagihan, dan bayar via QRIS dari satu tempat.</p>
+                  <p className="mb-6 mt-2 text-sm text-[var(--ink-2)]">Pelanggan: pantau pesanan, lihat tagihan, dan bayar via QRIS. Admin: kelola paket, order, dan tagihan.</p>
                   <LoginForm next={safeNext} />
                   <p className="mt-5 text-center text-sm text-[var(--ink-3)]">
                     Belum punya akun? <Link href={safeNext ? `/register?next=${encodeURIComponent(safeNext)}` : "/register"} className="font-semibold text-[var(--navy)] hover:underline">Daftar gratis</Link>

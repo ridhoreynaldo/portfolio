@@ -152,6 +152,12 @@ async function ensureMenus() {
 async function ensureProfile() {
   await db.insert(profile).values({ id: 1 }).onConflictDoNothing();
   await db.insert(paymentSettings).values({ id: 1 }).onConflictDoNothing();
+  // nama tampilan super admin bawaan ("Super Admin") → nama pemilik dari profil, agar sapaan di halaman jasa/admin tidak "Halo, Super"
+  const [p] = await db.select({ fullName: profile.fullName }).from(profile).where(eq(profile.id, 1)).limit(1);
+  if (p?.fullName) {
+    const renamed = await db.update(users).set({ name: p.fullName }).where(eq(users.name, "Super Admin")).returning({ id: users.id });
+    if (renamed.length) log(`nama super admin → ${p.fullName}`);
+  }
 }
 
 async function main() {

@@ -25,9 +25,10 @@ const NAV = [
   ["/jasa#kontak", "Kontak"],
 ] as const;
 
-/** Header halaman jasa (tema svc, terang & klasik). Tidak memakai menu portofolio. */
+/** Header halaman jasa (tema svc, terang & klasik). Berdiri sendiri: tidak memakai menu maupun tautan ke portofolio. */
 export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: AuthUser | null }) {
-  const portal = user ? (user.isSuper || user.permissions.length > 0 ? "/admin" : "/portal") : null;
+  const staff = !!user && (user.isSuper || user.permissions.length > 0);
+  const portal = user ? (staff ? "/admin" : "/portal") : null;
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--rule)] bg-[rgba(250,247,241,0.85)] backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
@@ -36,7 +37,7 @@ export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: Auth
           <img src={SERVICE_LOGO} alt="" className="h-10 w-10" />
           <span className="leading-tight">
             <span className="font-serif block text-xl font-semibold tracking-wide text-[var(--navy)]">{brand.name}</span>
-            <span className="block text-[11px] text-[var(--ink-3)]">oleh <Link href="/" className="underline-offset-2 hover:text-[var(--navy)] hover:underline">{brand.owner}</Link></span>
+            <span className="block text-[11px] text-[var(--ink-3)]">{brand.tagline}</span>
           </span>
         </Link>
         <ul className="hidden items-center gap-6 text-sm font-medium text-[var(--ink-2)] md:flex">
@@ -44,9 +45,9 @@ export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: Auth
         </ul>
         <div className="flex items-center gap-2">
           {portal ? (
-            <Link href={portal} className="btn-ghost btn-sm"><UserRound className="h-3.5 w-3.5" /> {user!.name.split(" ")[0]}</Link>
+            <Link href={portal} className="btn-ghost btn-sm"><UserRound className="h-3.5 w-3.5" /> {staff ? "Panel Admin" : "Portal Saya"}</Link>
           ) : (
-            <Link href="/jasa#masuk" className="btn-ghost btn-sm"><LogIn className="h-3.5 w-3.5" /> Masuk</Link>
+            <Link href="/jasa#masuk" className="btn-ghost btn-sm"><LogIn className="h-3.5 w-3.5" /> Login</Link>
           )}
           <Link href="/jasa#paket" className="btn-primary btn-sm">Pesan</Link>
         </div>
@@ -64,7 +65,7 @@ export function ServiceFooter({ brand }: { brand: ServiceBrand }) {
           <img src={SERVICE_LOGO} alt="" className="h-7 w-7" />
           <span><span className="font-serif text-sm font-semibold text-[var(--navy)]">{brand.name}</span> · {brand.tagline}</span>
         </div>
-        <p>© {new Date().getFullYear()} {brand.name} · dikelola oleh <Link href="/" className="text-[var(--navy)] hover:underline">{brand.owner}</Link></p>
+        <p>© {new Date().getFullYear()} {brand.name} · {brand.owner}</p>
       </div>
     </footer>
   );
@@ -79,7 +80,7 @@ export function ServiceBrandMark({ brand, title, sub }: { brand: ServiceBrand; t
         <img src={SERVICE_LOGO} alt="" className="mx-auto h-14 w-14" />
       </Link>
       <p className="font-serif mt-3 text-lg font-semibold tracking-wide text-[var(--navy)]">{brand.name}</p>
-      <p className="text-[11px] text-[var(--ink-3)]">oleh <Link href="/" className="hover:underline">{brand.owner}</Link></p>
+      <p className="text-[11px] text-[var(--ink-3)]">{brand.tagline}</p>
       <h1 className="font-serif mt-5 text-2xl font-semibold text-[var(--ink)]">{title}</h1>
       <p className="mt-1 text-sm text-[var(--ink-3)]">{sub}</p>
     </div>

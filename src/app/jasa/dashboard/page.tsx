@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ChevronDown, CircleAlert, Printer, QrCode, Receipt } from "lucide-react";
 import { requireUser } from "@/modules/auth/guards";
-import { INVOICE_STATUS, fmtIDR, fmtPeriod, isOverdue } from "@/modules/billing/labels";
+import { INVOICE_STATUS, daysUntil, fmtIDR, fmtPeriod, isOverdue } from "@/modules/billing/labels";
 import { billingStats, getPaymentSettings, listInvoices } from "@/modules/billing/repository";
 import { fmtDate } from "@/shared/ui";
 import { Pill, PortalTitle, Stat } from "./ui";
@@ -37,18 +37,22 @@ export default async function PortalHome() {
       <section className="mt-8">
         <p className="eyebrow mb-3">Daftar tagihan · klik untuk melihat rincian</p>
         <div className="card divide-y divide-[var(--rule)] overflow-hidden p-0">
-          {invoices.map((i) => {
+          {invoices.map((i, idx) => {
             const late = isOverdue(i.dueDate, i.status);
+            const left = daysUntil(i.dueDate);
             const lines = i.items.length ? i.items : [{ description: i.title, amount: i.amount }];
             return (
               <details key={i.id} className="group" open={i.status === "unpaid"}>
-                <summary className="grid cursor-pointer grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1 px-5 py-4 hover:bg-white sm:grid-cols-[auto_1fr_auto_auto_auto] sm:gap-x-6">
+                <summary className="grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-x-4 gap-y-1 px-5 py-4 hover:bg-white sm:grid-cols-[auto_auto_1fr_auto_auto_auto] sm:gap-x-6">
+                  <span className="grid h-7 w-7 place-items-center rounded-full bg-[var(--navy)] font-mono text-xs font-semibold text-white">{idx + 1}</span>
                   <ChevronDown className="hidden h-4 w-4 text-[var(--ink-3)] transition group-open:rotate-180 sm:block" />
                   <div className="min-w-0">
                     <p className="truncate font-semibold text-[var(--navy)]">{i.title}</p>
                     <p className="font-mono text-[11px] text-[var(--ink-3)]">{i.number}{i.period && ` · ${fmtPeriod(i.period)}`} · {i.items.length || 1} baris</p>
                   </div>
-                  <p className={`text-sm ${late ? "font-semibold text-[#9b1c1c]" : "text-[var(--ink-2)]"}`}>{i.status === "paid" && i.paidAt ? `dibayar ${fmtDate(i.paidAt.toISOString().slice(0, 10))}` : `jatuh tempo ${fmtDate(i.dueDate)}${late ? " · lewat" : ""}`}</p>
+                  <p className={`col-start-2 text-sm sm:col-auto ${late ? "font-semibold text-[#9b1c1c]" : "text-[var(--ink-2)]"}`}>
+                    {i.status === "paid" && i.paidAt ? `dibayar ${fmtDate(i.paidAt.toISOString().slice(0, 10))}` : <>jatuh tempo {fmtDate(i.dueDate)}{i.status === "unpaid" && <span className={`ml-1 text-xs ${late ? "" : "text-[var(--ink-3)]"}`}>· {late ? `lewat ${Math.abs(left)} hari` : `${left} hari lagi`}</span>}</>}
+                  </p>
                   <p className="font-serif text-lg font-semibold text-[var(--navy)]">{fmtIDR(i.amount)}</p>
                   <Pill tone={INVOICE_STATUS[i.status].tone}>{INVOICE_STATUS[i.status].label}</Pill>
                 </summary>

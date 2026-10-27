@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CalendarClock, Globe, Receipt, Server } from "lucide-react";
 import { requireUser } from "@/modules/auth/guards";
-import { CYCLE, INVOICE_STATUS, ORDER_STATUS, fmtIDR, fmtPeriod } from "@/modules/billing/labels";
+import { CYCLE, INVOICE_STATUS, ORDER_STATUS, billingDayOf, daysUntil, fmtIDR, fmtPeriod, paidUntilDate } from "@/modules/billing/labels";
 import { lastPaidPeriods, listOrders, openInvoiceByOrder, orderTotal, type OrderRow } from "@/modules/billing/repository";
 import { fmtDate, fmtDateTime } from "@/shared/ui";
 import { Pill, PortalTitle, ptd, pth, type Tone } from "../ui";
@@ -10,11 +10,10 @@ export const metadata = { title: "Langganan Saya" };
 
 /** Sisa waktu sampai tanggal (YYYY-MM-DD) dalam bulan/hari yang mudah dibaca. */
 function remaining(end: string): { text: string; tone: Tone } {
-  const ms = new Date(end + "T00:00:00").getTime() - Date.now();
-  const days = Math.ceil(ms / 86_400_000);
+  const days = daysUntil(end);
   if (days < 0) return { text: `lewat ${Math.abs(days)} hari`, tone: "rose" };
-  if (days <= 30) return { text: `${days} hari lagi`, tone: "amber" };
-  return { text: `${Math.round(days / 30.4)} bulan lagi`, tone: "emerald" };
+  if (days === 0) return { text: "jatuh tempo hari ini", tone: "amber" };
+  return { text: `${days} hari lagi`, tone: days <= 30 ? "amber" : "emerald" };
 }
 
 type OpenInv = { id: string; period: string; amount: number; status: "unpaid" | "pending_verification" | "paid" | "cancelled"; dueDate: string };
@@ -23,6 +22,8 @@ function SubscriptionCard({ o, paidUntil, open }: { o: OrderRow; paidUntil?: str
   const total = orderTotal(o);
   const cycle = o.billingCycle ?? "once";
   const rem = o.endDate ? remaining(o.endDate) : null;
+  const day = billingDayOf(o.startDate);
+  const paidUntil2 = cycle === "monthly" && paidUntil ? paidUntilDate(paidUntil, day) : null;
   const Icon = /domain/i.test(o.packageName) ? Globe : Server;
   const label = o.itemLabel || "item";
   return (
@@ -38,15 +39,21 @@ function SubscriptionCard({ o, paidUntil, open }: { o: OrderRow; paidUntil?: str
         <Pill tone={ORDER_STATUS[o.status].tone}>{ORDER_STATUS[o.status].label}</Pill>
       </div>
 
-      <dl className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+      <dl className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-3 lg:grid-cols-5">
         <div><dt className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Biaya</dt><dd className="font-semibold text-[var(--navy)]">{total > 0 ? fmtIDR(total) : "sesuai kesepakatan"}</dd><dd className="text-xs text-[var(--ink-3)]">{CYCLE[cycle]}</dd></div>
         <div><dt className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Mulai</dt><dd className="text-[var(--ink)]">{o.startDate ? fmtDate(o.startDate) : "—"}</dd></div>
         {o.endDate ? (
-          <div><dt className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Berlaku s.d.</dt><dd className="text-[var(--ink)]">{fmtDate(o.endDate)}</dd>{rem && <dd className="mt-1"><Pill tone={rem.tone}>{rem.text}</Pill></dd>}</div>
+          <div><dt className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Lunas s.d.</dt><dd className="text-[var(--ink)]">{fmtDate(o.endDate)}</dd>{rem && <dd className="mt-1"><Pill tone={rem.tone}>{rem.text}</Pill></dd>}</div>
         ) : cycle === "monthly" ? (
-          <div><dt className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Pembayaran</dt><dd className="text-[var(--ink)]">{paidUntil ? `lunas s.d. ${fmtPeriod(paidUntil)}` : "belum ada pembayaran"}</dd>{open && <dd className="text-xs text-[var(--ink-3)]">tagihan berikutnya {fmtDate(open.dueDate)}</dd>}</div>
+          <div><dt className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Lunas s.d.</dt><dd className="text-[var(--ink)]">{paidUntil2 ? fmtDate(paidUntil2) : "belum ada pembayaran"}</dd>{paidUntil && <dd className="text-xs text-[var(--ink-3)]">periode {fmtPeriod(paidUntil)} lunas</dd>}</div>
         ) : null}
-        {o.endDate && cycle !== "monthly" && <div><dt className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Tagihan berikutnya</dt><dd className="text-[var(--ink)]">{fmtDate(o.endDate)}</dd><dd className="text-xs text-[var(--ink-3)]">perpanjangan {CYCLE[cycle]}</dd></div>}
+        {cycle === "monthly" && (
+          <div><dt className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Jatuh tempo</dt>
+            <dd className="text-[var(--ink)]">{open ? fmtDate(open.dueDate) : `setiap tanggal ${day}`}</dd>
+            <dd className="text-xs text-[var(--ink-3)]">{open ? <>{(() => { const n = daysUntil(open.dueDate); return n < 0 ? `lewat ${-n} hari` : `${n} hari lagi`; })()} · setiap tanggal {day}</> : "tagihan bulanan"}</dd>
+          </div>
+        )}
+        {o.endDate && cycle !== "monthly" && <div><dt className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Jatuh tempo berikutnya</dt><dd className="text-[var(--ink)]">{fmtDate(o.endDate)}</dd><dd className="text-xs text-[var(--ink-3)]">perpanjangan {CYCLE[cycle]}</dd></div>}
         {(o.items.length > 0 || o.itemLimit != null) && (
           <div>
             <dt className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Kuota {label}</dt>

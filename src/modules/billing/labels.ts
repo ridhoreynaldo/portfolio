@@ -36,6 +36,20 @@ export function fmtPeriod(p: string) {
   return new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(+m[1]!, +m[2]! - 1, 1)));
 }
 
+/** Hari penagihan dari tanggal mulai order (default 15). */
+export const billingDayOf = (startDate: string | null | undefined, fallback = 15) => (startDate && /^\d{4}-\d{2}-(\d{2})$/.exec(startDate)?.[1] ? Math.min(28, Number(startDate.slice(8, 10))) : fallback);
+
+/** Periode "YYYY-MM" yang sudah lunas + hari penagihan → lunas sampai tanggal penagihan berikutnya (bulan depan). */
+export function paidUntilDate(period: string, day: number) {
+  const m = /^(\d{4})-(\d{2})$/.exec(period);
+  if (!m) return null;
+  const d = new Date(Date.UTC(+m[1]!, +m[2]!, Math.min(day, 28))); // bulan +1 (indeks bulan 0-based → m[2] = bulan berikutnya)
+  return d.toISOString().slice(0, 10);
+}
+
+/** Sisa hari sampai tanggal (negatif = sudah lewat). */
+export const daysUntil = (date: string) => Math.ceil((new Date(date + "T00:00:00").getTime() - Date.now()) / 86_400_000);
+
 export const currentPeriod = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 
 export const isOverdue = (dueDate: string, status: InvoiceStatus) => status === "unpaid" && dueDate < new Date().toISOString().slice(0, 10);

@@ -12,7 +12,7 @@ import { slugify } from "@/modules/content/repository";
 import { revalidatePortfolio } from "@/modules/portfolio/service";
 import { findUserByEmail, getUser, saveUser } from "@/modules/users/repository";
 import { IMAGE_MIMES, readUpload } from "./files";
-import { PACKAGE_CATEGORIES } from "./labels";
+import { PACKAGE_CATEGORIES, billingDayOf } from "./labels";
 import {
   customerRoleId, deleteInvoice, deleteOrder, deleteOrphanFile, deletePackage, getInvoice, getOrder, getPackage, getPaymentSettings, insertFile, insertInvoice,
   insertOrder, insertPackage, invoiceLinesFor, monthlyOrdersWithoutInvoice, nextNumber, orderTotal, uniquePackageSlug, updateInvoice, updateOrder, updatePackage, upsertCustomerProfile, upsertPaymentSettings,
@@ -231,8 +231,17 @@ export const setInvoiceStatusAction = action(async (form: FormData) => {
   const inv = await getInvoice(d.id);
   if (!inv) throw notFound();
   await updateInvoice(d.id, { status: d.status, paidAt: d.status === "paid" ? (inv.paidAt ?? new Date()) : null });
+  // tagihan tahunan (tanpa periode) yang dilunasi = perpanjangan: masa berlaku order maju 1 tahun dari jatuh tempo bila jatuh tempo >= masa berlaku lama
+  if (d.status === "paid" && inv.orderId && !inv.period) {
+    const o = await getOrder(inv.orderId);
+    if (o && o.billingCycle === "yearly" && (!o.endDate || inv.dueDate >= o.endDate)) {
+      const [y, m, day] = inv.dueDate.split("-").map(Number);
+      await updateOrder(o.id, { endDate: `${y! + 1}-${String(m).padStart(2, "0")}-${String(day).padStart(2, "0")}` });
+    }
+  }
   revalidatePath("/admin/invoices");
   revalidatePath("/jasa/dashboard");
+  revalidatePath("/jasa/dashboard/langganan");
   await setFlash(`Tagihan ${inv.number}: ${d.status === "paid" ? "ditandai lunas" : d.status === "cancelled" ? "dibatalkan" : "status diubah"}`);
 });
 
@@ -251,14 +260,15 @@ export const deleteInvoiceAction = action(async (form: FormData) => {
 export const generateMonthlyInvoicesAction = action(async (form: FormData) => {
   await requirePermission("invoice.create");
   const d = z
-    .object({ period: z.string().regex(PERIOD, "Periode harus YYYY-MM"), dueDay: z.coerce.number().int().min(1).max(28).default(10) })
-    .parse({ period: form.get("period"), dueDay: form.get("dueDay") || 10 });
+    .object({ period: z.string().regex(PERIOD, "Periode harus YYYY-MM"), dueDay: z.coerce.number().int().min(1).max(28).default(15) })
+    .parse({ period: form.get("period"), dueDay: form.get("dueDay") || 15 });
   const candidates = await monthlyOrdersWithoutInvoice(d.period);
-  const dueDate = `${d.period}-${String(d.dueDay).padStart(2, "0")}`;
   let n = 0;
   for (const o of candidates) {
     const price = orderTotal(o);
     if (price <= 0) continue; // paket "hubungi kami" tanpa harga kesepakatan tidak ditagih otomatis
+    // jatuh tempo = hari penagihan order (tanggal mulai layanan), kalau tidak ada pakai isian form
+    const dueDate = `${d.period}-${String(o.startDate ? billingDayOf(o.startDate, d.dueDay) : d.dueDay).padStart(2, "0")}`;
     await createWithNumber({
       userId: o.userId, orderId: o.id, title: `${o.packageName}${o.quantity > 1 ? ` ×${o.quantity}` : ""} — ${o.number}`, period: d.period,
       amount: price, items: invoiceLinesFor(o), dueDate, note: "Tagihan bulanan otomatis",

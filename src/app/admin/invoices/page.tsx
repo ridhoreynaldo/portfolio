@@ -39,9 +39,9 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
         {can(user, "invoice.create") && (
           <form action={generateMonthlyInvoicesAction} className="glass flex flex-wrap items-end gap-2 rounded-lg p-4">
             <div><label className="label">Tagihan bulanan</label><input name="period" type="month" defaultValue={currentPeriod()} className="input-dark" /></div>
-            <div><label className="label">Tgl jatuh tempo</label><input name="dueDay" type="number" min={1} max={28} defaultValue={10} className="input-dark w-20" /></div>
+            <div><label className="label">Tgl jatuh tempo</label><input name="dueDay" type="number" min={1} max={28} defaultValue={15} className="input-dark w-20" /></div>
             <button className="btn-magenta btn-sm">Generate</button>
-            <p className="w-full text-[11px] text-slate-500">Membuat tagihan untuk semua order <b>aktif</b> berpaket bulanan yang belum ditagih di periode itu.</p>
+            <p className="w-full text-[11px] text-slate-500">Membuat tagihan untuk semua order <b>aktif</b> berpaket bulanan yang belum ditagih di periode itu. Jatuh tempo mengikuti tanggal mulai layanan tiap order (mis. tgl 15); isian di atas dipakai bila order tanpa tanggal mulai.</p>
           </form>
         )}
       </div>

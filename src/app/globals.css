@@ -267,42 +267,71 @@ input[type="file"].input-dark::file-selector-button {
 }
 
 /* ───────────────────────────────────────────────────────────────────────────
-   Tema SVC: halaman jasa (brand terpisah). Klasik & terang: kertas hangat,
-   navy + emas, judul serif. Berbeda total dari tema galactic di atas.
-   Kelas .input-dark/.label/.btn-* ditimpa di dalam .svc agar form login/daftar
-   (komponen bersama) ikut bertema tanpa diubah.
+   Tema SVC (Leetcloud): galaksi malam yang tenang. Latar biru tua dengan
+   cahaya biru/ungu dan bintang halus; tetap klasik: judul serif, garis emas
+   tipis, kartu kaca gelap, kontras teks tinggi. Berbeda dari tema galactic
+   portofolio (neon). Kelas .input-dark/.label/.btn-* ditimpa di dalam .svc
+   agar form login/daftar (komponen bersama) ikut bertema tanpa diubah.
+   Token --navy = warna JUDUL (terang) di tema ini, bukan latar.
    ─────────────────────────────────────────────────────────────────────────── */
 .svc {
-  --paper: #faf7f1;
-  --paper-2: #ffffff;
-  --navy: #14213d;
-  --navy-2: #1f3561;
-  --gold: #b8923a;
-  --gold-2: #e3c77a;
-  --ink: #1b2233;
-  --ink-2: #4b5567;
-  --ink-3: #7b8494;
-  --rule: #e6dfd2;
+  --paper: #050a1c;
+  --paper-2: rgba(12, 21, 52, 0.72);
+  --navy: #eaf1ff;
+  --navy-2: #9ec3ff;
+  --gold: #d9b45a;
+  --gold-2: #f0d58f;
+  --blue: #3b82ff;
+  --cyan: #38d4ff;
+  --violet: #8b7bff;
+  --ink: #e6edfb;
+  --ink-2: #b3c0de;
+  --ink-3: #8696bd;
+  --rule: rgba(130, 170, 255, 0.18);
+  --hdr: rgba(5, 10, 28, 0.78);
   color: var(--ink);
-  background: var(--paper);
+  background: transparent;
   min-height: 100vh;
   font-family: var(--font-sans);
+  color-scheme: dark;
+  isolation: isolate;
+}
+/* latar tetap: gradasi cahaya + bintang (public/galaxy-stars.svg) + lengan galaksi samar */
+.svc::before {
+  content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background:
+    url("/galaxy-stars.svg"),
+    radial-gradient(900px 520px at 80% -6%, rgba(46, 132, 255, 0.30), transparent 62%),
+    radial-gradient(760px 460px at 6% 10%, rgba(124, 92, 255, 0.22), transparent 62%),
+    radial-gradient(900px 520px at 55% 112%, rgba(0, 190, 255, 0.14), transparent 62%),
+    linear-gradient(180deg, #050a1c 0%, #07112f 55%, #050a1c 100%);
+}
+.svc::after {
+  content: ""; position: fixed; z-index: -1; pointer-events: none;
+  width: 150vmax; height: 36vmax; left: 12%; top: 2%;
+  transform: rotate(-24deg); transform-origin: center;
+  background:
+    repeating-radial-gradient(ellipse at 50% 50%, transparent 0 22px, rgba(150, 200, 255, 0.045) 23px 24px),
+    radial-gradient(ellipse at 50% 50%, rgba(110, 180, 255, 0.16), rgba(70, 110, 255, 0.07) 38%, transparent 66%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 50%, #000 0%, transparent 68%);
+  mask-image: radial-gradient(ellipse at 50% 50%, #000 0%, transparent 68%);
 }
 body:has(> .svc)::after, body:has(> .svc) { background-image: none; }
 body:has(> .svc)::after { display: none; }
-body:has(> .svc) { background-color: #faf7f1; }
+body:has(> .svc) { background-color: #050a1c; }
 
 .svc .font-serif { font-family: var(--font-serif); }
 .svc .card {
   background: var(--paper-2);
   border: 1px solid var(--rule);
   border-radius: 1rem;
-  box-shadow: 0 1px 2px rgba(20, 33, 61, 0.04), 0 12px 32px -20px rgba(20, 33, 61, 0.25);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  box-shadow: inset 0 1px 0 rgba(180, 210, 255, 0.06), 0 18px 40px -24px rgba(0, 0, 0, 0.7);
 }
-.svc .card-featured { border-color: var(--gold-2); box-shadow: 0 0 0 3px rgba(184, 146, 58, 0.12), 0 18px 40px -22px rgba(20, 33, 61, 0.35); }
+.svc .card-featured { border-color: rgba(217, 180, 90, 0.6); box-shadow: 0 0 0 3px rgba(217, 180, 90, 0.10), 0 0 44px -14px rgba(59, 130, 255, 0.45), 0 18px 40px -22px rgba(0, 0, 0, 0.7); }
 .svc .eyebrow {
   display: inline-flex; align-items: center; gap: 0.5rem;
-  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold);
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-2);
 }
 .svc .eyebrow::before { content: ""; width: 1.5rem; height: 1px; background: var(--gold); }
 .svc .rule { border: 0; border-top: 1px solid var(--rule); }
@@ -315,42 +344,67 @@ body:has(> .svc) { background-color: #faf7f1; }
   text-transform: none; letter-spacing: 0; clip-path: none; font-family: var(--font-sans);
 }
 .svc .btn-sm { padding: 0.45rem 1rem; font-size: 0.8rem; }
-.svc .btn-primary { background: var(--navy); color: #fff; box-shadow: 0 10px 24px -12px rgba(20, 33, 61, 0.7); filter: none; }
-.svc .btn-primary:hover { background: var(--navy-2); transform: translateY(-1px); filter: none; }
+.svc .btn-primary { background: linear-gradient(135deg, #2f6bff, #1fa5ff); color: #fff; box-shadow: 0 10px 26px -12px rgba(47, 107, 255, 0.9); filter: none; }
+.svc .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
 .svc .btn-primary:disabled { opacity: 0.6; transform: none; }
-.svc .btn-ghost { background: transparent; border: 1px solid #cfc6b5; color: var(--navy); box-shadow: none; }
-.svc .btn-ghost:hover { background: #fff; border-color: var(--navy); box-shadow: none; }
-.svc .btn-gold { background: linear-gradient(135deg, var(--gold-2), var(--gold)); color: #2b2104; box-shadow: 0 10px 24px -12px rgba(184, 146, 58, 0.8); }
-.svc .btn-gold:hover { filter: brightness(1.05); transform: translateY(-1px); }
+.svc .btn-ghost { background: rgba(120, 160, 255, 0.06); border: 1px solid rgba(140, 180, 255, 0.32); color: var(--navy); box-shadow: none; }
+.svc .btn-ghost:hover { background: rgba(120, 160, 255, 0.14); border-color: rgba(170, 205, 255, 0.6); box-shadow: none; }
+.svc .btn-gold { background: linear-gradient(135deg, var(--gold-2), var(--gold)); color: #231a04; box-shadow: 0 10px 24px -12px rgba(217, 180, 90, 0.7); }
+.svc .btn-gold:hover { filter: brightness(1.06); transform: translateY(-1px); }
 
 .svc .label { font-family: var(--font-sans); font-size: 0.8rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--ink-2); }
 .svc .input-dark {
-  background: #fff; border: 1px solid #d9d1c2; border-radius: 0.6rem; color: var(--ink); padding: 0.65rem 0.9rem;
+  background: rgba(5, 12, 36, 0.7); border: 1px solid rgba(140, 180, 255, 0.28); border-radius: 0.6rem; color: var(--ink); padding: 0.65rem 0.9rem;
 }
-.svc .input-dark:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(20, 33, 61, 0.12); outline: none; }
-.svc .input-dark::placeholder { color: #a39c8f; }
-.svc .alert-error { border: 1px solid #f1b8b8; background: #fff2f2; color: #9b1c1c; }
-.svc .alert-ok { border: 1px solid #bfe3c8; background: #f0faf2; color: #14532d; }
-/* pesan error/flash bawaan (kelas tailwind gelap) → warna terang */
-.svc .text-rose-200 { color: #9b1c1c; } .svc .bg-rose-500\/10 { background: #fff2f2; } .svc .border-rose-400\/40 { border-color: #f1b8b8; }
-.svc .text-emerald-200 { color: #14532d; } .svc .bg-emerald-500\/10 { background: #f0faf2; } .svc .border-emerald-400\/40 { border-color: #bfe3c8; }
+.svc .input-dark:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(56, 212, 255, 0.18); outline: none; }
+.svc .input-dark::placeholder { color: #6f7fa6; }
+.svc .alert-error { border: 1px solid rgba(255, 130, 140, 0.45); background: rgba(255, 90, 100, 0.10); color: #ffb3b9; }
+.svc .alert-ok { border: 1px solid rgba(90, 220, 150, 0.4); background: rgba(60, 200, 130, 0.10); color: #a6f0c6; }
+/* pesan error/flash bawaan (kelas tailwind) → warna untuk latar gelap */
+.svc .text-rose-200, .svc .text-\[\#9b1c1c\] { color: #ffb3b9; } .svc .bg-rose-500\/10 { background: rgba(255, 90, 100, 0.10); } .svc .border-rose-400\/40 { border-color: rgba(255, 130, 140, 0.45); }
+.svc .text-emerald-200 { color: #a6f0c6; } .svc .bg-emerald-500\/10 { background: rgba(60, 200, 130, 0.10); } .svc .border-emerald-400\/40 { border-color: rgba(90, 220, 150, 0.4); }
 .svc .text-slate-400, .svc .text-slate-500 { color: var(--ink-3); }
 .svc .text-slate-200, .svc .text-slate-300 { color: var(--ink-2); }
 .svc .text-cyan-300 { color: var(--navy-2); }
 
-.svc .tag { display: inline-flex; align-items: center; padding: 0.25rem 0.7rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; background: #f1ebdf; color: #6b5420; }
-.svc .tag-gold { background: linear-gradient(135deg, var(--gold-2), var(--gold)); color: #2b2104; }
+/* permukaan terang bawaan komponen (kelas utilitas) → kaca gelap */
+.svc .bg-white\/60, .svc .bg-white\/70 { background-color: rgba(8, 16, 42, 0.5); }
+.svc .bg-white { background-color: rgba(12, 21, 52, 0.85); }
+.svc .bg-\[\#eef3ff\] { background-color: rgba(70, 135, 255, 0.16); }
+.svc .bg-\[\#f7f9ff\] { background-color: rgba(70, 135, 255, 0.07); }
+.svc .bg-\[\#f3eee4\] { background-color: rgba(255, 255, 255, 0.05); }
+.svc .bg-\[var\(--navy\)\] { background: linear-gradient(135deg, #1e4fd8, #0e86c9); color: #fff; }
+
+.svc .tag { display: inline-flex; align-items: center; padding: 0.25rem 0.7rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; background: rgba(120, 160, 255, 0.12); color: #bcd3ff; border: 1px solid rgba(140, 180, 255, 0.2); }
+.svc .tag-gold { background: linear-gradient(135deg, var(--gold-2), var(--gold)); color: #231a04; border-color: transparent; }
 .svc .check { display: flex; gap: 0.6rem; align-items: flex-start; }
-.svc .check::before { content: "✓"; flex: none; width: 1.15rem; height: 1.15rem; border-radius: 999px; background: #eef3ff; color: var(--navy); font-size: 0.7rem; font-weight: 700; display: grid; place-items: center; margin-top: 0.1rem; }
+.svc .check::before { content: "✓"; flex: none; width: 1.15rem; height: 1.15rem; border-radius: 999px; background: rgba(56, 212, 255, 0.14); color: var(--cyan); font-size: 0.7rem; font-weight: 700; display: grid; place-items: center; margin-top: 0.1rem; }
 .svc .pill { display: inline-flex; align-items: center; padding: 0.2rem 0.65rem; border-radius: 999px; font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
-.svc .pill-slate { background: #efeae0; color: #5b6472; }
-.svc .pill-violet { background: #efe9fb; color: #5b3fa3; }
-.svc .pill-cyan { background: #e6f0fb; color: #1f3561; }
-.svc .pill-emerald { background: #e5f6ea; color: #14532d; }
-.svc .pill-rose { background: #fdeaea; color: #9b1c1c; }
-.svc .pill-amber { background: #fbf1d9; color: #7a5a0f; }
-.svc .meter { display: block; height: 6px; border-radius: 999px; background: #e9e3d7; overflow: hidden; }
-.svc .meter > span { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--navy-2), var(--gold)); }
+.svc .pill-slate { background: rgba(150, 165, 200, 0.16); color: #c0cbe4; }
+.svc .pill-violet { background: rgba(139, 123, 255, 0.18); color: #cfc6ff; }
+.svc .pill-cyan { background: rgba(56, 212, 255, 0.15); color: #9fe6ff; }
+.svc .pill-emerald { background: rgba(60, 200, 130, 0.16); color: #a6f0c6; }
+.svc .pill-rose { background: rgba(255, 90, 100, 0.16); color: #ffb3b9; }
+.svc .pill-amber { background: rgba(217, 180, 90, 0.18); color: #f0d58f; }
+.svc .meter { display: block; height: 6px; border-radius: 999px; background: rgba(140, 180, 255, 0.16); overflow: hidden; }
+.svc .meter > span { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--blue), var(--cyan), var(--gold-2)); }
 .svc input[type="file"].input-dark { padding: 0.5rem; }
 .svc details > summary { list-style: none; }
 .svc details > summary::-webkit-details-marker { display: none; }
+
+/* lembar kertas (invoice cetak): tetap terang & netral di atas latar galaksi */
+.svc .svc-paper {
+  --navy: #14213d; --navy-2: #1f3561; --gold: #b8923a; --gold-2: #8a6a1d;
+  --ink: #1b2233; --ink-2: #4b5567; --ink-3: #7b8494; --rule: #e6dfd2;
+  background: #fff; color: var(--ink); -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+.svc .svc-paper .bg-white\/60, .svc .svc-paper .bg-white\/70 { background-color: rgba(255, 255, 255, 0.6); }
+.svc .svc-paper .bg-white { background-color: #fff; }
+.svc .svc-paper .bg-\[\#eef3ff\] { background-color: #eef3ff; }
+.svc .svc-paper .bg-\[\#f7f9ff\] { background-color: #f7f9ff; }
+.svc .svc-paper .bg-\[\#f3eee4\] { background-color: #f3eee4; }
+.svc .svc-paper .meter { background: #e9e3d7; }
+@media print {
+  body:has(> .svc) { background: #fff !important; }
+  .svc::before, .svc::after { display: none; }
+}

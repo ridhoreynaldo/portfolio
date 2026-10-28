@@ -22,7 +22,7 @@ export default async function PortalLayout({ children }: { children: React.React
   const brand = SERVICE_BRAND;
   return (
     <div className="svc flex min-h-screen flex-col">
-      <header className="sticky top-0 z-40 border-b border-[var(--rule)] bg-[rgba(250,247,241,0.9)] backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-[var(--rule)] bg-[var(--hdr)] backdrop-blur">
         <nav className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-3">
           <Link href="/medan/dashboard" className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}

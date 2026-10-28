@@ -28,14 +28,8 @@ const HIGHLIGHTS = [
   [MessageCircle, "WhatsApp gateway", "API notifikasi & OTP dengan dashboard log; biaya mengikuti volume pesan."],
 ] as const;
 
-/** Dua model untuk pembuatan aplikasi: beli putus saja, atau beli putus + sewa server. */
-const APP_MODELS = [
-  { title: "Beli putus", sub: "sekali bayar · tanpa hosting", points: ["Kode & aplikasi sepenuhnya milik Anda", "Dipasang di server Anda sendiri", "Garansi bug 30 hari"] },
-  { title: "Beli putus + Sewa server", sub: "sekali bayar · lalu bulanan", points: ["Aplikasi jalan di cloud server terkelola", "Maintenance, backup, SSL & monitoring", "Biaya bulanan mengikuti jumlah pengguna"] },
-] as const;
-
 /** Proyek yang ditampilkan sebagai contoh karya (urut tampil). */
-const SHOWCASE = ["siakad-universitas-quality", "manajemen-aset-pembayaran-asrama", "bimbel-adzkia", "wa-gateway", "dss-ahp-smart", "ml-kmeans-clustering-produk", "devops-infra"];
+const SHOWCASE = ["villa-berastagi-mas", "siakad-universitas-quality", "manajemen-aset-pembayaran-asrama", "bimbel-adzkia", "wa-gateway", "dss-ahp-smart", "ml-kmeans-clustering-produk", "devops-infra"];
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
@@ -60,14 +54,16 @@ export default async function JasaPage() {
   const wa = p?.phone ? waLink(p.phone) : null;
   const showPrices = p?.showServicePrices ?? false;
   const waAsk = (pkgName: string) => (p?.phone ? waLink(p.phone, `Halo ${brand.name}, saya tertarik dengan paket "${pkgName}". Boleh minta penawaran harganya?`) : null);
-  // urutan tampil: Pembuatan Aplikasi dulu, lalu Sewa, sisanya mengikuti
-  const ORDER = ["Pembuatan Aplikasi", "Sewa"];
+  // urutan tampil: server & WhatsApp, lalu aplikasi custom, lalu katalog sistem putus
+  const ORDER = ["Sewa", "Pembuatan Aplikasi", "Katalog Sistem Putus"];
   const groups = Object.entries(packages.reduce<Record<string, typeof packages>>((acc, s) => ((acc[s.category] ??= []).push(s), acc), {}))
     .sort(([a], [b]) => (ORDER.indexOf(a) === -1 ? 99 : ORDER.indexOf(a)) - (ORDER.indexOf(b) === -1 ? 99 : ORDER.indexOf(b)));
   const GROUP_SUB: Record<string, string> = {
-    "Pembuatan Aplikasi": "Satu paket, scope mengikuti kebutuhan Anda: sistem informasi, dashboard, API, integrasi WhatsApp/pembayaran, sampai machine learning.",
-    Sewa: "Langganan bulanan atau tahunan. Biaya mengikuti skala pemakaian; harga pasti dikonfirmasi lewat WhatsApp.",
+    Sewa: "Maintenance server dan WhatsApp gateway: langganan bulanan, biaya mengikuti jumlah pengguna dan volume pesan. Harga pasti dikonfirmasi lewat WhatsApp.",
+    "Pembuatan Aplikasi": "Dua cara memiliki aplikasi: beli putus (sekali bayar) atau langganan bulanan (SaaS) tanpa biaya besar di awal.",
+    "Katalog Sistem Putus": "Sistem siap pakai untuk skripsi, penelitian, dan operasional, dengan studi kasus seperti di jurnal (mis. penilaian kinerja dan seleksi karyawan). Beli putus; harga adalah estimasi.",
   };
+  const GROUP_TITLE: Record<string, string> = { Sewa: "Server & WhatsApp Gateway", "Katalog Sistem Putus": "Katalog Sistem Putus (SPK, ML, DL & Kriptografi)" };
 
   return (
     <div className="svc">
@@ -76,7 +72,7 @@ export default async function JasaPage() {
       <main>
         {/* ── Hero ── */}
         <section className="relative overflow-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(900px_380px_at_20%_-10%,rgba(184,146,58,0.16),transparent_60%),radial-gradient(700px_320px_at_90%_10%,rgba(20,33,61,0.10),transparent_60%)]" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(900px_380px_at_20%_-10%,rgba(217,180,90,0.10),transparent_60%),radial-gradient(700px_320px_at_90%_10%,rgba(59,130,255,0.14),transparent_60%)]" />
           <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 pb-16 pt-14 md:grid-cols-[1.15fr_0.85fr] md:pb-24 md:pt-20">
             <div>
               <p className="eyebrow inline-flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> Melayani Medan & seluruh Indonesia</p>
@@ -100,7 +96,7 @@ export default async function JasaPage() {
 
             {/* Ringkasan layanan: pengganti panel akun */}
             <aside className="card relative overflow-hidden p-7 md:p-8">
-              <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(184,146,58,0.22),transparent_70%)]" />
+              <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(56,212,255,0.20),transparent_70%)]" />
               <p className="eyebrow">Yang Anda dapatkan</p>
               <ul className="mt-5 divide-y divide-[var(--rule)]">
                 {HIGHLIGHTS.map(([Icon, t, d]) => (
@@ -129,44 +125,12 @@ export default async function JasaPage() {
               <div key={cat} id={`paket-${slugify(cat)}`} className={`scroll-mt-24 ${gi ? "mt-14" : ""}`}>
                 <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
                   <div>
-                    <h3 className="font-serif flex items-center gap-3 text-2xl font-semibold text-[var(--navy)]"><span className="ornament text-xs">◆</span>{cat === "Sewa" ? "Sewa & Langganan" : cat}</h3>
+                    <h3 className="font-serif flex items-center gap-3 text-2xl font-semibold text-[var(--navy)]"><span className="ornament text-xs">◆</span>{GROUP_TITLE[cat] ?? cat}</h3>
                     {GROUP_SUB[cat] && <p className="mt-1 max-w-2xl text-sm text-[var(--ink-2)]">{GROUP_SUB[cat]}</p>}
                   </div>
                 </div>
 
-                {cat === "Pembuatan Aplikasi" ? (
-                  <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-                    {list.slice(0, 1).map((s) => (
-                      <article key={s.id} className="card card-featured flex flex-col p-7">
-                        <div className="flex items-center gap-3">
-                          <span className="grid h-11 w-11 place-items-center rounded-xl bg-[#eef3ff] text-[var(--navy)]"><Code2 className="h-5 w-5" /></span>
-                          <h4 className="font-serif text-xl font-semibold text-[var(--navy)]">{s.name}</h4>
-                        </div>
-                        <p className="mt-3 text-sm leading-relaxed text-[var(--ink-2)]">{s.description}</p>
-                        {s.features.length > 0 && <ul className="mt-4 grid gap-2 text-sm text-[var(--ink-2)] sm:grid-cols-2">{s.features.map((f) => <li key={f} className="check">{f}</li>)}</ul>}
-                        <div className="mt-auto border-t border-[var(--rule)] pt-5">
-                          <p className="font-serif text-lg font-semibold text-[var(--navy)]">{showPrices && s.price > 0 ? `mulai ${fmtIDR(s.price)}` : "Harga mengikuti scope"}</p>
-                          <p className="text-xs text-[var(--ink-3)]">penawaran tertulis sebelum pengerjaan</p>
-                          {waAsk(s.name) ? (
-                            <a href={waAsk(s.name)!} target="_blank" rel="noreferrer" className="btn-gold btn-sm mt-4 w-full"><MessageCircle className="h-3.5 w-3.5" /> Diskusikan via WhatsApp</a>
-                          ) : (
-                            <Link href={`/medan/order/${s.slug}`} className="btn-primary btn-sm mt-4 w-full">Pesan <ArrowRight className="h-3.5 w-3.5" /></Link>
-                          )}
-                          <Link href={`/medan/order/${s.slug}`} className="mt-3 block text-center text-xs text-[var(--ink-3)] hover:text-[var(--navy)] hover:underline">atau pesan lewat dashboard</Link>
-                        </div>
-                      </article>
-                    ))}
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-                      {APP_MODELS.map((m) => (
-                        <div key={m.title} className="card p-6">
-                          <p className="font-serif text-lg font-semibold text-[var(--navy)]">{m.title}</p>
-                          <p className="text-xs uppercase tracking-wider text-[var(--ink-3)]">{m.sub}</p>
-                          <ul className="mt-3 space-y-1.5 text-sm text-[var(--ink-2)]">{m.points.map((pt) => <li key={pt} className="check">{pt}</li>)}</ul>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
+                {(
                   <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                     {list.map((s) => (
                       <article key={s.id} className={`card flex flex-col p-6 ${s.isFeatured ? "card-featured" : ""}`}>
@@ -198,7 +162,7 @@ export default async function JasaPage() {
                           {waAsk(s.name) ? (
                             <a href={waAsk(s.name)!} target="_blank" rel="noreferrer" className={`${s.isFeatured ? "btn-gold" : "btn-primary"} btn-sm mt-4 w-full`}><MessageCircle className="h-3.5 w-3.5" /> {s.priceTiers.length ? "Tanya harga pasti" : "Hubungi via WhatsApp"}</a>
                           ) : (
-                            <Link href={`/medan/order/${s.slug}`} className="btn-primary btn-sm mt-4 w-full">Sewa paket ini <ArrowRight className="h-3.5 w-3.5" /></Link>
+                            <Link href={`/medan/order/${s.slug}`} className="btn-primary btn-sm mt-4 w-full">{s.billingCycle === "once" ? "Pesan paket ini" : "Sewa paket ini"} <ArrowRight className="h-3.5 w-3.5" /></Link>
                           )}
                           <Link href={`/medan/order/${s.slug}`} className="mt-3 block text-center text-xs text-[var(--ink-3)] hover:text-[var(--navy)] hover:underline">atau sewa lewat dashboard</Link>
                         </div>
@@ -216,6 +180,7 @@ export default async function JasaPage() {
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {showcase.map((x) => (
                 <article key={x.id} className="card flex flex-col p-6">
+                  {x.tags.includes("Langganan Bulanan") && <span className="tag tag-gold mb-3 self-start">Berlanjut · langganan bulanan</span>}
                   <h3 className="font-serif text-lg font-semibold text-[var(--navy)]">{x.title}</h3>
                   <p className="mt-2 line-clamp-4 text-sm leading-relaxed text-[var(--ink-2)]">{x.description}</p>
                   {x.techStack.length > 0 && <ul className="mt-4 flex flex-wrap gap-1.5">{x.techStack.slice(0, 6).map((t) => <li key={t} className="tag">{t}</li>)}</ul>}

@@ -95,6 +95,12 @@ const SKILLS: (typeof skills.$inferInsert)[] = [
 
 const PROJECTS: (typeof projects.$inferInsert)[] = [
   {
+    title: "Villa Berastagi Mas — Website & Reservasi Online", slug: "villa-berastagi-mas", year: 2024, role: "Full Stack Developer", isFeatured: true, sortOrder: -1,
+    description: "Website reservasi villa di Berastagi, Sumatera Utara: katalog villa, pilih tanggal & jumlah pengunjung, pemesanan lebih dari satu villa sekaligus. Dikelola berkelanjutan dengan langganan bulanan.",
+    detailDescription: "Website resmi Villa Berastagi Mas (villaberastagimas.com): halaman villa dengan foto, pencarian ketersediaan berdasarkan tanggal dan jumlah pengunjung (dewasa/anak), pemilihan satu atau beberapa villa untuk reservasi, dan kontak langsung ke pengelola.\n\nProyek berlanjut: server, SSL, backup, pemeliharaan, dan pembaruan fitur dikelola dengan skema langganan bulanan.",
+    tags: ["Website", "Reservasi Online", "Langganan Bulanan"], techStack: ["Bootstrap", "jQuery", "Nginx", "SSL"], demoUrl: "https://villaberastagimas.com",
+  },
+  {
     title: "SIAKAD — Portal Akademik Universitas Quality", slug: "siakad-universitas-quality", year: 2025, role: "Full Stack Engineer", isFeatured: true, sortOrder: 0,
     description: "Sistem informasi akademik universitas: data mahasiswa & dosen, KRS, jadwal, nilai/KHS, dan administrasi akademik dalam satu portal.",
     detailDescription: "Portal akademik terpadu untuk Universitas Quality. Modul: master mahasiswa/dosen/prodi, kurikulum & mata kuliah, KRS & persetujuan dosen wali, jadwal perkuliahan, input nilai & transkrip, serta role-based access untuk mahasiswa, dosen, dan bagian akademik.\n\nBackend Laravel/PHP dengan MySQL/MariaDB, di-deploy menggunakan Docker dan nginx reverse proxy dengan SSL.",
@@ -187,13 +193,73 @@ const PACKAGES: (typeof servicePackages.$inferInsert)[] = [
     description: "Aplikasi Anda berjalan di cloud server terkelola: nginx + SSL, backup database harian, monitoring, dan pembaruan keamanan. Biaya mengikuti jumlah pengguna aplikasi.",
     features: ["Cloud server terkelola + SSL", "Backup DB harian", "Monitoring uptime", "Perbaikan bug minor", "Kapasitas server naik sesuai tingkat pengguna"],
     priceTiers: SERVER_TIERS },
-  { name: "Sewa Domain", slug: "sewa-domain", category: "Sewa", price: 300_000, billingCycle: "yearly", unit: "domain", isFeatured: false, sortOrder: 8,
+  { name: "Sewa Domain", slug: "sewa-domain", category: "Sewa", price: 300_000, billingCycle: "yearly", unit: "domain", isActive: false, isFeatured: false, sortOrder: 8,
     description: "Pendaftaran & perpanjangan domain (.com/.id/.sch.id, dll) atas nama Anda, termasuk pengaturan DNS dan pengingat perpanjangan.",
     features: ["Domain atas nama pelanggan", "Pengaturan DNS & subdomain", "Pengingat sebelum kedaluwarsa"] },
   { name: "Sewa WhatsApp Gateway", slug: "sewa-whatsapp-gateway", category: "Sewa", price: 350_000, billingCycle: "monthly", unit: "nomor", isFeatured: false, sortOrder: 6,
     description: "API pengiriman pesan WhatsApp untuk notifikasi/OTP aplikasi Anda, lengkap dengan dashboard & log. Biaya mengikuti jumlah pengguna dan volume pesan per bulan.",
     features: ["REST API + API key", "Antrian & retry otomatis", "Dashboard log pengiriman", "Dukungan integrasi"],
     priceTiers: WA_TIERS },
+  { name: "Aplikasi Custom — Sistem Putus", slug: "aplikasi-custom-putus", category: "Pembuatan Aplikasi", price: 2_500_000, billingCycle: "once", unit: "", isFeatured: true, sortOrder: 1,
+    description: "Bayar sekali, kode dan aplikasi sepenuhnya milik Anda. Dipasang di server Anda sendiri, atau digabung dengan paket Sewa Server + Maintenance.",
+    features: ["Analisis kebutuhan & desain database", "Web, API & dashboard admin", "Role & permission", "Integrasi WhatsApp / pembayaran", "Serah terima kode & dokumentasi", "Garansi bug 30 hari"],
+    priceTiers: [
+      { label: "Landing page + dashboard admin", price: 2_500_000 },
+      { label: "Sistem informasi sederhana (sampai 5 modul)", price: 6_000_000 },
+      { label: "Sistem informasi menengah (6–12 modul, multi-role)", price: 12_000_000 },
+      { label: "Sistem kompleks / banyak integrasi", price: 0 },
+    ] },
+  { name: "Aplikasi Custom — Langganan Bulanan (SaaS)", slug: "aplikasi-custom-saas", category: "Pembuatan Aplikasi", price: 750_000, billingCycle: "monthly", unit: "aplikasi", isFeatured: false, sortOrder: 2,
+    description: "Tanpa beli putus: aplikasi dibangun dan dikelola oleh kami, Anda cukup berlangganan bulanan. Server, SSL, backup, maintenance, dan pengembangan berkelanjutan sudah termasuk.",
+    features: ["Biaya awal ringan", "Server, SSL, backup & monitoring termasuk", "Perbaikan bug & pembaruan fitur berkala", "Skala naik sesuai jumlah pengguna"],
+    priceTiers: [
+      { label: "Starter — sampai 50 pengguna, 1 modul utama", price: 750_000 },
+      { label: "Bisnis — sampai 200 pengguna, multi-modul", price: 1_500_000 },
+      { label: "Pro — sampai 1.000 pengguna, integrasi & laporan", price: 3_000_000 },
+      { label: "Enterprise — lebih dari 1.000 pengguna", price: 0 },
+    ] },
+  { name: "Sistem Pendukung Keputusan (SPK)", slug: "katalog-spk", category: "Katalog Sistem Putus", price: 1_500_000, billingCycle: "once", unit: "", isFeatured: false, sortOrder: 10,
+    description: "SAW, SMART, AHP, TOPSIS, WP, MOORA dan metode lain. Studi kasus seperti di jurnal & skripsi: penilaian kinerja, seleksi, dan kenaikan jabatan karyawan.",
+    features: ["Dataset & studi kasus mengikuti jurnal / skripsi", "Perhitungan transparan tiap tahap", "Laporan hasil & dokumentasi", "Bimbingan penggunaan"],
+    priceTiers: [
+      { label: "SAW — penilaian kinerja karyawan", price: 1_500_000 },
+      { label: "SMART — seleksi penerimaan karyawan", price: 1_500_000 },
+      { label: "WP — pemilihan karyawan terbaik / supplier", price: 1_500_000 },
+      { label: "MOORA — penentuan kenaikan jabatan", price: 1_750_000 },
+      { label: "TOPSIS — penerima bonus & promosi", price: 2_000_000 },
+      { label: "AHP — pembobotan kriteria (perbandingan berpasangan)", price: 2_000_000 },
+      { label: "ELECTRE / PROMETHEE / VIKOR", price: 2_500_000 },
+      { label: "Hybrid AHP + SAW / TOPSIS / SMART", price: 3_000_000 },
+    ] },
+  { name: "Machine Learning", slug: "katalog-machine-learning", category: "Katalog Sistem Putus", price: 2_000_000, billingCycle: "once", unit: "", isFeatured: false, sortOrder: 11,
+    description: "Klasifikasi, clustering, prediksi, dan pola data: dari dataset Anda sendiri atau dataset studi kasus jurnal.",
+    features: ["Dataset & studi kasus mengikuti jurnal / skripsi", "Perhitungan transparan tiap tahap", "Laporan hasil & dokumentasi", "Bimbingan penggunaan"],
+    priceTiers: [
+      { label: "K-Means — segmentasi karyawan, pelanggan, atau produk", price: 2_500_000 },
+      { label: "Naive Bayes / KNN — klasifikasi (mis. kelayakan karyawan)", price: 2_500_000 },
+      { label: "Decision Tree / Random Forest — prediksi kinerja & turnover", price: 3_000_000 },
+      { label: "Regresi (Linear / SVR) — prediksi penjualan & gaji", price: 3_000_000 },
+      { label: "Apriori / FP-Growth — pola transaksi", price: 2_000_000 },
+    ] },
+  { name: "Deep Learning", slug: "katalog-deep-learning", category: "Katalog Sistem Putus", price: 4_500_000, billingCycle: "once", unit: "", isFeatured: false, sortOrder: 12,
+    description: "Jaringan saraf untuk citra, deret waktu, dan teks, lengkap dengan antarmuka web untuk mencoba model.",
+    features: ["Dataset & studi kasus mengikuti jurnal / skripsi", "Perhitungan transparan tiap tahap", "Laporan hasil & dokumentasi", "Bimbingan penggunaan"],
+    priceTiers: [
+      { label: "CNN — klasifikasi citra (mis. absensi wajah)", price: 4_500_000 },
+      { label: "LSTM — prediksi deret waktu", price: 4_500_000 },
+      { label: "NLP / IndoBERT — analisis sentimen", price: 6_000_000 },
+      { label: "YOLO — deteksi objek", price: 6_500_000 },
+    ] },
+  { name: "Kriptografi & Keamanan Data", slug: "katalog-kriptografi", category: "Katalog Sistem Putus", price: 1_000_000, billingCycle: "once", unit: "", isFeatured: false, sortOrder: 13,
+    description: "Enkripsi, tanda tangan digital, dan steganografi yang diimplementasikan sebagai aplikasi web utuh.",
+    features: ["Dataset & studi kasus mengikuti jurnal / skripsi", "Perhitungan transparan tiap tahap", "Laporan hasil & dokumentasi", "Bimbingan penggunaan"],
+    priceTiers: [
+      { label: "Cipher klasik — Caesar, Vigenère, Playfair", price: 1_000_000 },
+      { label: "AES — enkripsi file, pesan & data karyawan", price: 2_000_000 },
+      { label: "RSA / ElGamal — kriptografi kunci publik", price: 2_500_000 },
+      { label: "Steganografi LSB + enkripsi", price: 2_500_000 },
+      { label: "Hash & tanda tangan digital — SHA, HMAC, ECDSA", price: 2_500_000 },
+    ] },
   { name: "Maintenance & Support Bulanan", slug: "maintenance-support", category: "Maintenance", price: 300_000, billingCycle: "monthly", unit: "", isFeatured: false, sortOrder: 7,
     description: "Pemeliharaan aplikasi yang sudah berjalan: perbaikan bug, update dependensi, dan dukungan prioritas via WhatsApp.",
     features: ["Respon < 24 jam", "Update keamanan rutin", "Laporan bulanan"] },
@@ -246,6 +312,11 @@ export async function seedContent(db: Db, log: (m: string) => void) {
   // paket baru yang ditambahkan belakangan (tabel sudah terisi): sisipkan per slug
   const newPk = await db.insert(servicePackages).values(PACKAGES).onConflictDoNothing({ target: servicePackages.slug }).returning({ slug: servicePackages.slug });
   if (newPk.length) log(`paket layanan baru: ${newPk.map((p) => p.slug).join(", ")}`);
+  // katalog Leetcloud (28 Okt 2026): paket lama aplikasi custom & sewa domain tidak ditawarkan lagi (data order lama tetap utuh)
+  if (newPk.some((p) => p.slug === "aplikasi-custom-putus")) {
+    const off = await db.update(servicePackages).set({ isActive: false, updatedAt: new Date() }).where(inArray(servicePackages.slug, ["pembuatan-aplikasi-web", "sewa-domain"])).returning({ slug: servicePackages.slug });
+    if (off.length) log(`paket dinonaktifkan: ${off.map((o) => o.slug).join(", ")}`);
+  }
 
   await seedAdzkiaSubscriptions(db, log);
   await fixAdzkiaOctober(db, log);

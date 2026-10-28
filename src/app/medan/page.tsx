@@ -131,7 +131,7 @@ export default async function JasaPage() {
                 </div>
 
                 {(
-                  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className={`grid gap-5 sm:grid-cols-2 ${list.length % 3 === 0 ? "lg:grid-cols-3" : ""}`}>
                     {list.map((s) => (
                       <article key={s.id} className={`card flex flex-col p-6 ${s.isFeatured ? "card-featured" : ""}`}>
                         {s.isFeatured && <span className="tag tag-gold mb-3 self-start">Paling diminati</span>}

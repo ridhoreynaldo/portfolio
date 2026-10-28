@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-// Primitif kecil portal pelanggan bertema Kodeva (klasik terang). Kelas .pill-* / .tbl ada di globals.css (blok .svc).
+// Primitif kecil portal pelanggan bertema Leetcloud (klasik terang). Kelas .pill-* / .tbl ada di globals.css (blok .svc).
 
 export type Tone = "slate" | "violet" | "cyan" | "emerald" | "rose" | "amber";
 

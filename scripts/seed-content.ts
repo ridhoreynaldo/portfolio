@@ -28,8 +28,8 @@ const PROFILE: Partial<typeof profile.$inferInsert> = {
   github: "https://github.com/ridhoreynaldo",
   linkedin: "https://www.linkedin.com/in/ridhoreynaldo",
   website: "https://ridhoreynaldo.com",
-  serviceBrand: "Kodeva",
-  serviceTagline: "Solusi software, cloud & AI untuk bisnis Anda",
+  serviceBrand: "Leetcloud",
+  serviceTagline: "Aplikasi, server & WhatsApp gateway untuk bisnis Anda",
 };
 
 /** Logo via favicon Google (tanpa kunci API, ukuran 128px); ganti lewat admin bila punya berkas logo sendiri. */
@@ -251,13 +251,14 @@ export async function seedContent(db: Db, log: (m: string) => void) {
   await fixAdzkiaOctober(db, log);
   await simplifyPackages(db, log);
 
-  // menu PUBLIC "Jasa" → halaman /jasa (dulu section #layanan di beranda; dimigrasi otomatis)
-  const migrated = await db.update(menus).set({ label: "Jasa", path: "/jasa" }).where(sql`${menus.scope} = 'PUBLIC' and ${menus.path} = '#layanan'`).returning({ id: menus.id });
-  if (migrated.length) log("menu PUBLIC Layanan (#layanan) diarahkan ke /jasa");
-  const [hasJasa] = await db.select({ id: menus.id }).from(menus).where(sql`${menus.scope} = 'PUBLIC' and ${menus.path} = '/jasa'`).limit(1);
+  // menu PUBLIC "Jasa" → halaman /medan (dulu section #layanan di beranda; dimigrasi otomatis)
+  const migrated = await db.update(menus).set({ label: "Jasa", path: "/medan" }).where(sql`${menus.scope} = 'PUBLIC' and ${menus.path} = '#layanan'`).returning({ id: menus.id });
+  if (migrated.length) log("menu PUBLIC Layanan (#layanan) diarahkan ke /medan");
+  await db.update(menus).set({ path: "/medan" }).where(sql`${menus.scope} = 'PUBLIC' and ${menus.path} = '/jasa'`); // rute lama /jasa → /medan
+  const [hasJasa] = await db.select({ id: menus.id }).from(menus).where(sql`${menus.scope} = 'PUBLIC' and ${menus.path} = '/medan'`).limit(1);
   if (!hasJasa) {
     await db.update(menus).set({ sortOrder: sql`${menus.sortOrder} + 1` }).where(sql`${menus.scope} = 'PUBLIC' and ${menus.sortOrder} >= 6`);
-    await db.insert(menus).values({ scope: "PUBLIC", label: "Jasa", path: "/jasa", icon: "Globe", sortOrder: 6 });
+    await db.insert(menus).values({ scope: "PUBLIC", label: "Jasa", path: "/medan", icon: "Globe", sortOrder: 6 });
     log("menu PUBLIC Jasa ditambahkan");
   }
 }

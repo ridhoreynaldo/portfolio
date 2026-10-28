@@ -63,7 +63,7 @@ function ServiceCard({ o, invoices }: { o: OrderRow; invoices: InvoiceRow[] }) {
         {o.adminNote && <p className="whitespace-pre-line border-l-2 border-[var(--gold)] pl-3 text-sm text-[var(--ink-2)]">{o.adminNote}</p>}
 
         {next && next.status === "unpaid" && (
-          <Link href={`/jasa/dashboard/tagihan/${next.id}`} className="btn-gold w-full sm:w-auto sm:self-start"><QrCode className="h-4 w-4" /> Bayar {fmtIDR(next.amount)} via QRIS</Link>
+          <Link href={`/medan/dashboard/tagihan/${next.id}`} className="btn-gold w-full sm:w-auto sm:self-start"><QrCode className="h-4 w-4" /> Bayar {fmtIDR(next.amount)} via QRIS</Link>
         )}
         {next && next.status === "pending_verification" && <p className="text-sm text-[var(--ink-2)]">Bukti pembayaran sudah dikirim, menunggu verifikasi.</p>}
       </div>
@@ -90,8 +90,8 @@ function ServiceCard({ o, invoices }: { o: OrderRow; invoices: InvoiceRow[] }) {
                       <Pill tone={daysTone(d)}>{fmtDate(i.dueDate)} · {daysText(d)}</Pill>
                     )}
                     <span className="ml-auto flex gap-2">
-                      {i.status === "unpaid" && <Link href={`/jasa/dashboard/tagihan/${i.id}`} className="btn-primary btn-sm">Bayar</Link>}
-                      <a href={`/jasa/invoice/${i.id}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm" title="Cetak invoice"><Printer className="h-3.5 w-3.5" /></a>
+                      {i.status === "unpaid" && <Link href={`/medan/dashboard/tagihan/${i.id}`} className="btn-primary btn-sm">Bayar</Link>}
+                      <a href={`/medan/invoice/${i.id}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm" title="Cetak invoice"><Printer className="h-3.5 w-3.5" /></a>
                     </span>
                   </div>
                   {lines.length > 0 && (
@@ -110,16 +110,16 @@ function ServiceCard({ o, invoices }: { o: OrderRow; invoices: InvoiceRow[] }) {
 }
 
 export default async function Dashboard() {
-  const user = await requireUser("/jasa/dashboard");
+  const user = await requireUser("/medan/dashboard");
   const [orders, invoices] = await Promise.all([listOrders({ userId: user.id }), listInvoices({ userId: user.id })]);
   const shown = orders.filter((o) => o.status === "active" || o.status === "pending");
 
   return (
     <>
-      <PortalTitle eyebrow={`Halo, ${user.name}`} title="Jasa yang Anda Sewa" right={<Link href="/jasa#paket" className="btn-primary btn-sm">+ Sewa / pesan layanan</Link>} />
+      <PortalTitle eyebrow={`Halo, ${user.name}`} title="Jasa yang Anda Sewa" right={<Link href="/medan#paket" className="btn-primary btn-sm">+ Sewa / pesan layanan</Link>} />
       <section className="grid gap-5 lg:grid-cols-2">
         {shown.map((o) => <ServiceCard key={o.id} o={o} invoices={invoices} />)}
-        {!shown.length && <p className="card p-6 text-sm text-[var(--ink-2)] lg:col-span-2">Belum ada jasa yang disewa. <Link href="/jasa#paket" className="font-semibold text-[var(--navy)] hover:underline">Lihat paket →</Link></p>}
+        {!shown.length && <p className="card p-6 text-sm text-[var(--ink-2)] lg:col-span-2">Belum ada jasa yang disewa. <Link href="/medan#paket" className="font-semibold text-[var(--navy)] hover:underline">Lihat paket →</Link></p>}
       </section>
     </>
   );

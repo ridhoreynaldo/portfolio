@@ -90,7 +90,7 @@ export async function registerAction(_: RegisterState, form: FormData): Promise<
     return u!.id;
   });
   await createSession(userId, { ip, userAgent: (await headers()).get("user-agent") ?? undefined });
-  redirect(safeNext(form.get("next"), "/jasa/dashboard"));
+  redirect(safeNext(form.get("next"), "/medan/dashboard"));
 }
 
 export async function logoutAction() {
@@ -100,7 +100,7 @@ export async function logoutAction() {
 
 export async function logoutToHomeAction() {
   await destroySession();
-  redirect("/jasa");
+  redirect("/medan");
 }
 
 const changeInput = z
@@ -117,5 +117,5 @@ export const changePasswordAction = action(async (form: FormData) => {
   await db().update(users).set({ passwordHash: await hashPassword(data.next), updatedAt: new Date() }).where(eq(users.id, me.id));
   await revokeUserSessions(me.id);
   await setFlash("Password diubah. Silakan login lagi.");
-  redirect(isStaff(me) ? "/login" : "/jasa/login");
+  redirect(isStaff(me) ? "/login" : "/medan/login");
 });

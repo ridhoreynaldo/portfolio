@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Send } from "lucide-react";
-import { PriceTierTable, ServiceFooter, ServiceHeader, serviceBrandOf } from "@/components/service-shell";
+import { PriceTierTable, ServiceFooter, ServiceHeader, SERVICE_BRAND } from "@/components/service-shell";
 import { requireUser } from "@/modules/auth/guards";
 import { placeOrderAction } from "@/modules/billing/customer-actions";
 import { CYCLE, fmtIDR, tierRange } from "@/modules/billing/labels";
@@ -18,15 +18,15 @@ export default async function OrderFormPage({ params }: { params: Promise<{ slug
   const { slug } = await params;
   const pkg = await getPackageBySlug(slug);
   if (!pkg) notFound();
-  const user = await requireUser(`/jasa/order/${slug}`); // belum login → /login?next=… (ada tautan daftar)
+  const user = await requireUser(`/medan/order/${slug}`); // belum login → /login?next=… (ada tautan daftar)
   const [{ profile }, flash] = await Promise.all([getPortfolio(), readFlash()]);
-  const brand = serviceBrandOf(profile);
+  const brand = SERVICE_BRAND;
 
   return (
     <div className="svc">
       <ServiceHeader brand={brand} user={user} />
       <main className="mx-auto max-w-4xl px-5 py-12">
-        <Link href="/jasa#paket" className="inline-flex items-center gap-1 text-sm text-[var(--ink-3)] hover:text-[var(--navy)]"><ArrowLeft className="h-3.5 w-3.5" /> Kembali ke paket</Link>
+        <Link href="/medan#paket" className="inline-flex items-center gap-1 text-sm text-[var(--ink-3)] hover:text-[var(--navy)]"><ArrowLeft className="h-3.5 w-3.5" /> Kembali ke paket</Link>
         <p className="eyebrow mt-5">Form pemesanan</p>
         <h1 className="font-serif mt-2 text-3xl font-semibold text-[var(--navy)] md:text-4xl">{pkg.name}</h1>
         <div className="mt-4"><Flash flash={flash} /></div>
@@ -47,7 +47,7 @@ export default async function OrderFormPage({ params }: { params: Promise<{ slug
               <label className="label" htmlFor="notes">Ceritakan kebutuhan Anda</label>
               <textarea id="notes" name="notes" rows={7} maxLength={3000} className="input-dark" placeholder={pkg.priceTiers.length > 0 ? "Perkiraan jumlah pengguna / volume pesan per bulan, tujuan aplikasi, tenggat waktu, dan cara terbaik menghubungi Anda (WhatsApp/email)." : "Tujuan aplikasi/layanan, fitur utama, tenggat waktu, referensi, dan cara terbaik menghubungi Anda (WhatsApp/email)."} />
             </div>
-            <p className="text-xs text-[var(--ink-3)]">Setelah dikirim, pesanan berstatus <b>menunggu konfirmasi</b>. Saya akan menghubungi Anda sebelum tagihan dibuat.</p>
+            <p className="text-xs text-[var(--ink-3)]">Setelah dikirim, pesanan berstatus <b>menunggu konfirmasi</b>. Kami akan menghubungi Anda sebelum tagihan dibuat.</p>
             <button className="btn-primary">Kirim pesanan <Send className="h-4 w-4" /></button>
           </form>
           <aside className="card h-fit p-6">

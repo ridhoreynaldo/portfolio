@@ -7,7 +7,7 @@ import { Starfield } from "@/components/starfield";
 import { ProjectGrid } from "@/components/project-grid";
 import { ExpIcon } from "@/components/exp-icon";
 import { OrgLogo } from "@/components/org-logo";
-import { SERVICE_BRAND_FALLBACK, SERVICE_LOGO } from "@/components/service-shell";
+import { SERVICE_BRAND, SERVICE_LOGO } from "@/components/service-shell";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
 import { getCurrentUser } from "@/modules/auth/session";
 import { getPortfolio } from "@/modules/portfolio/service";
@@ -104,7 +104,7 @@ export default async function HomePage() {
               </h1>
               {p?.summary && <p className="mt-5 max-w-2xl text-base text-slate-300/85 md:text-lg">{p.summary}</p>}
               <div className="mt-8 flex flex-wrap justify-center gap-3 md:justify-start">
-                <Link href="/jasa" className="btn-primary">Jasa & Layanan <ArrowRight className="h-4 w-4" /></Link>
+                <Link href="/medan" className="btn-primary">Jasa & Layanan <ArrowRight className="h-4 w-4" /></Link>
                 {show("proyek") && <a href="#proyek" className="btn-ghost"><Rocket className="h-4 w-4" /> Lihat Proyek</a>}
                 {github && <a href={github} target="_blank" rel="noreferrer" className="btn-ghost"><SiGithub className="h-4 w-4" /> GitHub</a>}
                 {linkedin && <a href={linkedin} target="_blank" rel="noreferrer" className="btn-ghost"><FaLinkedin className="h-4 w-4" /> LinkedIn</a>}
@@ -225,19 +225,19 @@ export default async function HomePage() {
             </Section>
           )}
 
-          {/* Detail jasa & paket ada di halaman /jasa — di sini hanya ajakan singkat. */}
+          {/* Detail jasa & paket ada di halaman /medan — di sini hanya ajakan singkat. */}
           <section id="layanan" className="mx-auto max-w-4xl scroll-mt-28 px-5 py-10">
             <div className="hud flex flex-col items-center justify-between gap-5 p-7 text-center md:flex-row md:text-left">
               <div className="flex items-start gap-4">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={SERVICE_LOGO} alt="" className="mt-0.5 hidden h-12 w-12 shrink-0 md:block" />
                 <div>
-                  <p className="hud-label mb-1"><span className="text-magenta">[{(p?.serviceBrand || SERVICE_BRAND_FALLBACK).toLowerCase()}]</span> // butuh bantuan teknis?</p>
-                  <p className="font-display text-lg font-bold text-white"><span className="text-gradient">{p?.serviceBrand || SERVICE_BRAND_FALLBACK}</span> <Handshake className="mx-1 inline h-5 w-5 text-cyan-300" /> layanan jasa saya: konsultasi, pembuatan aplikasi, sewa server & WA gateway, maintenance, mentoring.</p>
-                  <p className="mt-1 text-sm text-slate-400">Paket, harga, cara kerja, dan portal pelanggan ada di halaman {p?.serviceBrand || SERVICE_BRAND_FALLBACK}.</p>
+                  <p className="hud-label mb-1"><span className="text-magenta">[{SERVICE_BRAND.name.toLowerCase()}]</span> // butuh bantuan teknis?</p>
+                  <p className="font-display text-lg font-bold text-white"><span className="text-gradient">{SERVICE_BRAND.name}</span> <Handshake className="mx-1 inline h-5 w-5 text-cyan-300" /> layanan jasa saya: konsultasi, pembuatan aplikasi, sewa server & WA gateway, maintenance, mentoring.</p>
+                  <p className="mt-1 text-sm text-slate-400">Paket, harga, cara kerja, dan portal pelanggan ada di halaman {SERVICE_BRAND.name}.</p>
                 </div>
               </div>
-              <Link href="/jasa" className="btn-primary shrink-0">Buka {p?.serviceBrand || SERVICE_BRAND_FALLBACK} <ArrowRight className="h-4 w-4" /></Link>
+              <Link href="/medan" className="btn-primary shrink-0">Buka {SERVICE_BRAND.name} <ArrowRight className="h-4 w-4" /></Link>
             </div>
           </section>
 
@@ -251,7 +251,7 @@ export default async function HomePage() {
                   {github && <a href={github} target="_blank" rel="noreferrer" className="btn-ghost"><SiGithub className="h-4 w-4" /> GitHub</a>}
                   {linkedin && <a href={linkedin} target="_blank" rel="noreferrer" className="btn-ghost"><FaLinkedin className="h-4 w-4" /> LinkedIn</a>}
                   {website && <a href={website} target="_blank" rel="noreferrer" className="btn-ghost"><Globe className="h-4 w-4" /> Website</a>}
-                  <Link href="/jasa" className="btn-magenta">Lihat Jasa</Link>
+                  <Link href="/medan" className="btn-magenta">Lihat Jasa</Link>
                 </div>
               </div>
             </Section>

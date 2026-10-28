@@ -14,8 +14,6 @@ ENVF="/etc/$APP/app.env"
 PORT=3200
 DOMAIN=ridhoreynaldo.com
 COMMIT="${1:?pakai: release.sh <commit>}"
-NGX_AVAIL=/etc/nginx/sites-available/$DOMAIN
-NGX_ENABLED=/etc/nginx/sites-enabled/$DOMAIN
 
 exec 8>/run/$APP-release.lock
 flock 8
@@ -59,20 +57,26 @@ ln -sfn "$REL" "$BASE/current.new"
 mv -Tf "$BASE/current.new" "$BASE/current"
 systemctl restart $APP.service
 
-echo ">> nginx: vhost $DOMAIN saja (situs lain tidak disentuh)"
-if ! cmp -s deploy/nginx/$DOMAIN.conf "$NGX_AVAIL"; then
-  [ -f "$NGX_AVAIL" ] && cp -a "$NGX_AVAIL" "$NGX_AVAIL.prev"
-  install -m 0644 deploy/nginx/$DOMAIN.conf "$NGX_AVAIL"
-  ln -sfn "$NGX_AVAIL" "$NGX_ENABLED"
-  if nginx -t 2>/tmp/$APP-nginx-test.log; then
-    systemctl reload nginx
-  else
-    cat /tmp/$APP-nginx-test.log >&2
-    echo "!! vhost ditolak nginx; dikembalikan ke versi sebelumnya" >&2
-    if [ -f "$NGX_AVAIL.prev" ]; then mv -f "$NGX_AVAIL.prev" "$NGX_AVAIL"; else rm -f "$NGX_AVAIL" "$NGX_ENABLED"; fi
-    nginx -t >/dev/null 2>&1 && systemctl reload nginx
+echo ">> nginx: vhost portfolio saja (situs lain tidak disentuh)"
+for VHOST in $DOMAIN leetcloud.my.id; do
+  [ -f deploy/nginx/$VHOST.conf ] || continue
+  [ -f /etc/ssl/cloudflare/$VHOST.key ] || { echo "   lewati $VHOST: sertifikat /etc/ssl/cloudflare/$VHOST.key belum ada"; continue; }
+  NGX_AVAIL=/etc/nginx/sites-available/$VHOST
+  NGX_ENABLED=/etc/nginx/sites-enabled/$VHOST
+  if ! cmp -s deploy/nginx/$VHOST.conf "$NGX_AVAIL"; then
+    [ -f "$NGX_AVAIL" ] && cp -a "$NGX_AVAIL" "$NGX_AVAIL.prev"
+    install -m 0644 deploy/nginx/$VHOST.conf "$NGX_AVAIL"
+    ln -sfn "$NGX_AVAIL" "$NGX_ENABLED"
+    if nginx -t 2>/tmp/$APP-nginx-test.log; then
+      systemctl reload nginx
+    else
+      cat /tmp/$APP-nginx-test.log >&2
+      echo "!! vhost $VHOST ditolak nginx; dikembalikan ke versi sebelumnya" >&2
+      if [ -f "$NGX_AVAIL.prev" ]; then mv -f "$NGX_AVAIL.prev" "$NGX_AVAIL"; else rm -f "$NGX_AVAIL" "$NGX_ENABLED"; fi
+      nginx -t >/dev/null 2>&1 && systemctl reload nginx
+    fi
   fi
-fi
+done
 
 echo ">> cek kesehatan"
 ok=0

@@ -16,7 +16,7 @@ export default async function PackagesPage({ searchParams }: { searchParams: Pro
 
   return (
     <>
-      <PageTitle sub="Katalog jasa yang tampil di /jasa dan /jasa/order. Harga 0 = “Hubungi”. Harga bertingkat (bila diisi) tampil sebagai tabel estimasi; harga pasti tetap lewat WhatsApp.">Paket Layanan</PageTitle>
+      <PageTitle sub="Katalog jasa yang tampil di /medan dan /medan/order. Harga 0 = “Hubungi”. Harga bertingkat (bila diisi) tampil sebagai tabel estimasi; harga pasti tetap lewat WhatsApp.">Paket Layanan</PageTitle>
       {canWrite && (
         <Card title={p ? `Edit: ${p.name}` : "Tambah paket"} right={p && <Link href="/admin/packages" className="btn-ghost btn-sm">Batal</Link>}>
           <form action={savePackageAction} className="space-y-4" key={p?.id ?? "new"}>
@@ -55,7 +55,7 @@ export default async function PackagesPage({ searchParams }: { searchParams: Pro
           <tbody>
             {rows.map((r) => (
               <tr key={r.id} className={`hover:bg-white/5 ${r.isActive ? "" : "opacity-50"}`}>
-                <td className={td}><div className="font-medium text-white">{r.name}</div><div className="text-xs text-slate-500">/jasa/order/{r.slug}</div></td>
+                <td className={td}><div className="font-medium text-white">{r.name}</div><div className="text-xs text-slate-500">/medan/order/{r.slug}</div></td>
                 <td className={td}>{r.category}</td>
                 <td className={td}>
                   {r.priceTiers.length > 0 ? tierRange(r.priceTiers) : r.price > 0 ? fmtIDR(r.price) : "Hubungi"}

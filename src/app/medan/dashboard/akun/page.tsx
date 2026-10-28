@@ -7,7 +7,7 @@ import { PortalTitle } from "../ui";
 export const metadata = { title: "Akun Saya" };
 
 export default async function PortalAccount() {
-  const user = await requireUser("/jasa/dashboard/akun");
+  const user = await requireUser("/medan/dashboard/akun");
   const cp = await getCustomerProfile(user.id);
   return (
     <>

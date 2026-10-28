@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { LayoutDashboard, LogOut, Server, UserRound } from "lucide-react";
-import { SERVICE_LOGO, serviceBrandOf, ServiceFooter } from "@/components/service-shell";
-import { getPortfolio } from "@/modules/portfolio/service";
+import { SERVICE_LOGO, SERVICE_BRAND, ServiceFooter } from "@/components/service-shell";
 import { logoutToHomeAction } from "@/modules/auth/actions";
 import { requireUser } from "@/modules/auth/guards";
 import { isStaff } from "@/modules/auth/session";
@@ -12,20 +11,20 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Dashboard Pelanggan" };
 
 const NAV = [
-  ["/jasa/dashboard", "Langganan", Server],
-  ["/jasa/dashboard/akun", "Akun", UserRound],
+  ["/medan/dashboard", "Langganan", Server],
+  ["/medan/dashboard/akun", "Akun", UserRound],
 ] as const;
 
-/** Dashboard pelanggan Kodeva (tema klasik terang, sama dengan halaman jasa): langganan, tagihan, pembayaran. Staf juga bisa membuka untuk uji coba. */
+/** Dashboard pelanggan Leetcloud (tema klasik terang, sama dengan halaman layanan): langganan, tagihan, pembayaran. Staf juga bisa membuka untuk uji coba. */
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
-  const user = await requireUser("/jasa/dashboard");
-  const [flash, { profile }] = await Promise.all([readFlash(), getPortfolio()]);
-  const brand = serviceBrandOf(profile);
+  const user = await requireUser("/medan/dashboard");
+  const flash = await readFlash();
+  const brand = SERVICE_BRAND;
   return (
     <div className="svc flex min-h-screen flex-col">
       <header className="sticky top-0 z-40 border-b border-[var(--rule)] bg-[rgba(250,247,241,0.9)] backdrop-blur">
         <nav className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-3">
-          <Link href="/jasa/dashboard" className="flex items-center gap-3">
+          <Link href="/medan/dashboard" className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={SERVICE_LOGO} alt="" className="h-9 w-9" />
             <span className="leading-tight">
@@ -39,7 +38,7 @@ export default async function PortalLayout({ children }: { children: React.React
                 <Link href={href} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium text-[var(--ink-2)] transition hover:bg-white hover:text-[var(--navy)]"><Icon className="h-4 w-4" />{label}</Link>
               </li>
             ))}
-            <li><Link href="/jasa#paket" className="btn-primary btn-sm ml-1">+ Sewa / pesan</Link></li>
+            <li><Link href="/medan#paket" className="btn-primary btn-sm ml-1">+ Sewa / pesan</Link></li>
           </ul>
           <div className="flex items-center gap-2 text-xs text-[var(--ink-3)]">
             <span className="hidden sm:inline">{user.name}</span>

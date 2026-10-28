@@ -7,16 +7,16 @@ import { can, getCurrentUser, isStaff, type AuthUser } from "./session";
 export async function requireUser(next?: string): Promise<AuthUser> {
   const user = await getCurrentUser();
   if (!user) {
-    const login = next?.startsWith("/jasa") ? "/jasa/login" : "/login"; // area Kodeva punya halaman login sendiri
+    const login = next?.startsWith("/medan") ? "/medan/login" : "/login"; // area Leetcloud punya halaman login sendiri
     redirect(next ? `${login}?next=${encodeURIComponent(next)}` : login);
   }
   return user;
 }
 
-/** Halaman panel admin: wajib login DAN staf (super admin / punya permission). Pelanggan diarahkan ke dashboard Kodeva. */
+/** Halaman panel admin: wajib login DAN staf (super admin / punya permission). Pelanggan diarahkan ke dashboard Leetcloud. */
 export async function requireStaff(): Promise<AuthUser> {
   const user = await requireUser();
-  if (!isStaff(user)) redirect("/jasa/dashboard");
+  if (!isStaff(user)) redirect("/medan/dashboard");
   return user;
 }
 

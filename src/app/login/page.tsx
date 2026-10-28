@@ -11,7 +11,7 @@ import { LoginForm } from "./login-form";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Masuk Admin" };
 
-/** Masuk panel admin portofolio (tema galactic). Pelanggan Kodeva login di /jasa/login. */
+/** Masuk panel admin portofolio (tema galactic). Pelanggan Leetcloud login di /medan/login. */
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const user = await getCurrentUser();
   if (user) redirect(homeFor(user));

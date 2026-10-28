@@ -6,7 +6,7 @@ type Menu = { id: string; label: string; path: string };
 
 /** Header HUD halaman portofolio: brand, menu dinamis (path "#section" relatif ke beranda, "/path" absolut), tombol Jasa & Masuk/Portal. */
 export function SiteHeader({ brand, menus, user, home = "/" }: { brand: string; menus: Menu[]; user: AuthUser | null; home?: string }) {
-  const portal = user && (user.isSuper || user.permissions.length > 0) ? "/admin" : null; // akun pelanggan Kodeva tidak ditampilkan di portofolio
+  const portal = user && (user.isSuper || user.permissions.length > 0) ? "/admin" : null; // akun pelanggan Leetcloud tidak ditampilkan di portofolio
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[rgba(3,6,18,0.72)] backdrop-blur-xl">
       <div className="overflow-hidden border-b border-white/5 bg-black/30">
@@ -17,7 +17,7 @@ export function SiteHeader({ brand, menus, user, home = "/" }: { brand: string; 
               <span>// BACK-END · MACHINE LEARNING · CLOUD</span>
               <span>// JASA KONSULTASI · PEMBUATAN APLIKASI · SEWA & MAINTENANCE</span>
               <span>// MEDAN · INDONESIA · UTC+7</span>
-              <span>// JASA & ORDER → /jasa</span>
+              <span>// JASA & ORDER → /medan</span>
             </span>
           ))}
         </div>
@@ -36,7 +36,7 @@ export function SiteHeader({ brand, menus, user, home = "/" }: { brand: string; 
           ))}
         </ul>
         <div className="flex items-center gap-2">
-          <Link href="/jasa" className="btn-primary btn-sm"><ShoppingCart className="h-3.5 w-3.5" /> Jasa</Link>
+          <Link href="/medan" className="btn-primary btn-sm"><ShoppingCart className="h-3.5 w-3.5" /> Jasa</Link>
           {portal ? (
             <Link href={portal} className="btn-ghost btn-sm"><UserRound className="h-3.5 w-3.5" /> Admin</Link>
           ) : !user ? (

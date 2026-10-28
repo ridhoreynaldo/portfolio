@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
-import { SERVICE_LOGO, serviceBrandOf } from "@/components/service-shell";
+import { SERVICE_LOGO, SERVICE_BRAND } from "@/components/service-shell";
 import { requireUser } from "@/modules/auth/guards";
 import { isStaff } from "@/modules/auth/session";
 import { INVOICE_STATUS, fmtIDR, fmtPeriod } from "@/modules/billing/labels";
@@ -18,11 +18,11 @@ export const metadata: Metadata = { title: "Invoice" };
 export default async function InvoicePrintPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!z.string().uuid().safeParse(id).success) notFound();
-  const user = await requireUser(`/jasa/invoice/${id}`);
+  const user = await requireUser(`/medan/invoice/${id}`);
   const inv = await getInvoice(id);
   if (!inv || (inv.userId !== user.id && !isStaff(user))) notFound();
   const [{ profile }, pay, cust, order] = await Promise.all([getPortfolio(), getPaymentSettings(), getCustomerProfile(inv.userId), inv.orderId ? getOrder(inv.orderId) : Promise.resolve(undefined)]);
-  const brand = serviceBrandOf(profile);
+  const brand = SERVICE_BRAND;
   const lines = inv.items.length ? inv.items : [{ description: inv.title, amount: inv.amount }];
   const st = INVOICE_STATUS[inv.status];
   const paidDate = inv.paidAt ? fmtDate(new Date(inv.paidAt.getTime() + 7 * 3600_000).toISOString().slice(0, 10)) : null;
@@ -30,7 +30,7 @@ export default async function InvoicePrintPage({ params }: { params: Promise<{ i
   return (
     <div className="svc min-h-screen print:bg-white">
       <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-6 pt-6 print:hidden">
-        <Link href={isStaff(user) && inv.userId !== user.id ? "/admin/invoices" : `/jasa/dashboard/tagihan/${inv.id}`} className="text-sm text-[var(--ink-3)] hover:text-[var(--navy)]">← Kembali</Link>
+        <Link href={isStaff(user) && inv.userId !== user.id ? "/admin/invoices" : `/medan/dashboard/tagihan/${inv.id}`} className="text-sm text-[var(--ink-3)] hover:text-[var(--navy)]">← Kembali</Link>
         <PrintButton />
       </div>
 
@@ -42,7 +42,7 @@ export default async function InvoicePrintPage({ params }: { params: Promise<{ i
             <div>
               <p className="font-serif text-2xl font-semibold tracking-wide text-[var(--navy)]">{brand.name}</p>
               <p className="text-xs text-[var(--ink-3)]">{brand.tagline}</p>
-              <p className="mt-1 text-xs text-[var(--ink-2)]">{brand.owner}{profile?.location ? ` · ${profile.location}` : ""}{profile?.phone ? ` · ${profile.phone}` : ""}{profile?.email ? ` · ${profile.email}` : ""}</p>
+              <p className="mt-1 text-xs text-[var(--ink-2)]">{brand.area}{profile?.phone ? ` · ${profile.phone}` : ""}</p>
             </div>
           </div>
           <div className="text-right">
@@ -122,7 +122,7 @@ export default async function InvoicePrintPage({ params }: { params: Promise<{ i
         )}
 
         <footer className="mt-10 border-t border-[var(--rule)] pt-4 text-center text-[11px] text-[var(--ink-3)]">
-          {brand.name} · dikelola oleh {brand.owner} · Invoice ini dibuat otomatis dari dashboard pelanggan dan sah tanpa tanda tangan.
+          {brand.name} · {brand.area} · Invoice ini dibuat otomatis dari dashboard pelanggan dan sah tanpa tanda tangan.
         </footer>
       </article>
     </div>

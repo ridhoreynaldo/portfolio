@@ -4,40 +4,37 @@ import type { AuthUser } from "@/modules/auth/session";
 import { fmtIDR } from "@/modules/billing/labels";
 import type { PriceTier } from "@/modules/billing/schema";
 
-/** Halaman portofolio pemilik (domain yang sama, ridhoreynaldo.com). */
-export const PORTFOLIO_URL = "/";
-/** Logo brand jasa (SVG di public/). */
+/** Logo brand (SVG di public/). */
 export const SERVICE_LOGO = "/service-logo.svg";
-/** Nama & tagline brand jasa cadangan bila kolom profil masih kosong (ubah di Admin > Profil). */
-export const SERVICE_BRAND_FALLBACK = "Kodeva";
-export const SERVICE_TAGLINE_FALLBACK = "Solusi software, cloud & AI untuk bisnis Anda";
 
-export type ServiceBrand = { name: string; tagline: string; owner: string };
-export const serviceBrandOf = (p: { serviceBrand?: string; serviceTagline?: string; fullName?: string } | null | undefined): ServiceBrand => ({
-  name: p?.serviceBrand || SERVICE_BRAND_FALLBACK,
-  tagline: p?.serviceTagline || SERVICE_TAGLINE_FALLBACK,
-  owner: p?.fullName || "Pemilik",
-});
+export type ServiceBrand = { name: string; tagline: string; area: string };
+/** Identitas brand tetap (tidak diambil dari profil pribadi). */
+export const SERVICE_BRAND: ServiceBrand = {
+  name: "Leetcloud",
+  tagline: "Aplikasi, server & WhatsApp gateway untuk bisnis Anda",
+  area: "Medan",
+};
 
 const NAV = [
-  ["/jasa#paket", "Paket"],
-  ["/jasa#cara-kerja", "Cara Kerja"],
-  ["/jasa#kontak", "Kontak"],
+  ["/medan#paket", "Paket"],
+  ["/medan#proyek", "Proyek"],
+  ["/medan#cara-kerja", "Cara Kerja"],
+  ["/medan#kontak", "Kontak"],
 ] as const;
 
-/** Header halaman jasa (tema svc, terang & klasik). Menu sendiri; nama pemilik menaut ke portofolio agar jelas siapa di balik jasa ini. */
+/** Header halaman layanan (tema svc, terang & klasik). */
 export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: AuthUser | null }) {
   const staff = !!user && (user.isSuper || user.permissions.length > 0);
-  const portal = user ? (staff ? "/admin" : "/jasa/dashboard") : null;
+  const portal = user ? (staff ? "/admin" : "/medan/dashboard") : null;
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--rule)] bg-[rgba(250,247,241,0.85)] backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
-        <Link href="/jasa" className="flex items-center gap-3">
+        <Link href="/medan" className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={SERVICE_LOGO} alt="" className="h-10 w-10" />
           <span className="leading-tight">
             <span className="font-serif block text-xl font-semibold tracking-wide text-[var(--navy)]">{brand.name}</span>
-            <span className="block text-[11px] text-[var(--ink-3)]">oleh <Link href={PORTFOLIO_URL} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-2 hover:text-[var(--gold-2)]" title={`Lihat portofolio ${brand.owner}`}>{brand.owner} ↗</Link></span>
+            <span className="block text-[11px] text-[var(--ink-3)]">Layanan IT · {brand.area}</span>
           </span>
         </Link>
         <ul className="hidden items-center gap-6 text-sm font-medium text-[var(--ink-2)] md:flex">
@@ -47,9 +44,9 @@ export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: Auth
           {portal ? (
             <Link href={portal} className="btn-ghost btn-sm" title={staff ? "Dashboard admin" : "Dashboard pelanggan"}><UserRound className="h-3.5 w-3.5" /> Dashboard</Link>
           ) : (
-            <Link href="/jasa/login" className="btn-ghost btn-sm"><LogIn className="h-3.5 w-3.5" /> Login</Link>
+            <Link href="/medan/login" className="btn-ghost btn-sm"><LogIn className="h-3.5 w-3.5" /> Login</Link>
           )}
-          <Link href="/jasa#paket" className="btn-primary btn-sm">Pesan</Link>
+          <Link href="/medan#paket" className="btn-primary btn-sm">Pesan</Link>
         </div>
       </nav>
     </header>
@@ -65,7 +62,7 @@ export function ServiceFooter({ brand }: { brand: ServiceBrand }) {
           <img src={SERVICE_LOGO} alt="" className="h-7 w-7" />
           <span><span className="font-serif text-sm font-semibold text-[var(--navy)]">{brand.name}</span> · {brand.tagline}</span>
         </div>
-        <p>© {new Date().getFullYear()} {brand.name} · dikelola oleh <Link href={PORTFOLIO_URL} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2 hover:text-[var(--gold-2)]">{brand.owner} ↗</Link></p>
+        <p>© {new Date().getFullYear()} {brand.name} · {brand.area}, Indonesia</p>
       </div>
     </footer>
   );
@@ -75,12 +72,12 @@ export function ServiceFooter({ brand }: { brand: ServiceBrand }) {
 export function ServiceBrandMark({ brand, title, sub }: { brand: ServiceBrand; title: string; sub: string }) {
   return (
     <div className="mb-6 text-center">
-      <Link href="/jasa" className="inline-block">
+      <Link href="/medan" className="inline-block">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={SERVICE_LOGO} alt="" className="mx-auto h-14 w-14" />
       </Link>
       <p className="font-serif mt-3 text-lg font-semibold tracking-wide text-[var(--navy)]">{brand.name}</p>
-      <p className="text-[11px] text-[var(--ink-3)]">oleh <Link href={PORTFOLIO_URL} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2 hover:text-[var(--gold-2)]">{brand.owner} ↗</Link></p>
+      <p className="text-[11px] text-[var(--ink-3)]">Layanan IT · {brand.area}</p>
       <h1 className="font-serif mt-5 text-2xl font-semibold text-[var(--ink)]">{title}</h1>
       <p className="mt-1 text-sm text-[var(--ink-3)]">{sub}</p>
     </div>

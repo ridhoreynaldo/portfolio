@@ -9,7 +9,7 @@ const config: NextConfig = {
   // Layanan Leetcloud hidup di leetcloud.my.id/medan. Domain portofolio meneruskan /jasa & /medan ke sana;
   // domain Leetcloud tidak menampilkan portofolio (beranda & /login diarahkan ke /medan).
   async redirects() {
-    const leet = [{ type: "host" as const, value: "leetcloud.my.id" }, { type: "host" as const, value: "www.leetcloud.my.id" }];
+    const leet = [{ type: "host" as const, value: "(www\.)?leetcloud\.my\.id" }];
     const portfolioHost = [{ type: "host" as const, value: "(www\\.)?ridhoreynaldo\\.com" }];
     return [
       { source: "/", has: leet, destination: "/medan", permanent: false },

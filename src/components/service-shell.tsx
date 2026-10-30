@@ -27,7 +27,7 @@ export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: Auth
   const staff = !!user && (user.isSuper || user.permissions.length > 0);
   const portal = user ? (staff ? "/admin" : "/medan/dashboard") : null;
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--rule)] bg-[var(--hdr)] backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-[var(--rule)] bg-[rgba(250,247,241,0.85)] backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
         <Link href="/medan" className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -72,7 +72,7 @@ export default async function JasaPage() {
       <main>
         {/* ── Hero ── */}
         <section className="relative overflow-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(900px_380px_at_20%_-10%,rgba(217,180,90,0.10),transparent_60%),radial-gradient(700px_320px_at_90%_10%,rgba(59,130,255,0.14),transparent_60%)]" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(900px_380px_at_20%_-10%,rgba(184,146,58,0.16),transparent_60%),radial-gradient(700px_320px_at_90%_10%,rgba(20,33,61,0.10),transparent_60%)]" />
           <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 pb-16 pt-14 md:grid-cols-[1.15fr_0.85fr] md:pb-24 md:pt-20">
             <div>
               <p className="eyebrow inline-flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> Melayani Medan & seluruh Indonesia</p>
@@ -96,7 +96,7 @@ export default async function JasaPage() {
 
             {/* Ringkasan layanan: pengganti panel akun */}
             <aside className="card relative overflow-hidden p-7 md:p-8">
-              <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(56,212,255,0.20),transparent_70%)]" />
+              <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(184,146,58,0.22),transparent_70%)]" />
               <p className="eyebrow">Yang Anda dapatkan</p>
               <ul className="mt-5 divide-y divide-[var(--rule)]">
                 {HIGHLIGHTS.map(([Icon, t, d]) => (

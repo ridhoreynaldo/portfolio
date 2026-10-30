@@ -320,6 +320,7 @@ export async function seedContent(db: Db, log: (m: string) => void) {
 
   await seedAdzkiaSubscriptions(db, log);
   await fixAdzkiaOctober(db, log);
+  await adzkiaCrmAndAbsensi(db, log);
   await simplifyPackages(db, log);
 
   // menu PUBLIC "Jasa" → halaman /medan (dulu section #layanan di beranda; dimigrasi otomatis)
@@ -404,6 +405,34 @@ async function fixAdzkiaOctober(db: Db, log: (m: string) => void) {
     await db.update(invoices).set({ title: "Sewa Domain ×2 — periode 15 Okt 2026 s.d. 15 Okt 2027", items: domLines, dueDate: "2026-10-15", status: "paid", paidAt, note: "Dibayar 15 Oktober 2026. Perpanjangan berikutnya 15 Oktober 2027.", updatedAt: new Date() }).where(eq(invoices.id, dom.id));
   }
   log("data Adzkia dikoreksi: rincian tagihan, dibayar 15 Okt 2026, tagihan Nov 2026 dibuat (jatuh tempo 15 Nov), domain s.d. 15 Okt 2027");
+}
+
+/**
+ * 30 Okt 2026 (permintaan pemilik): tagihan Deploy Website Absensi lunas 29 Okt 2026 11:00 WIB, dan order
+ * "CRM Auto Chat" Bimbel Adzkia Kedinasan Medan (total Rp 15 jt) dengan tagihan DP Rp 5 jt belum lunas (sisa Rp 10 jt).
+ * Tidak menimpa data yang sudah diubah admin: absensi hanya bila masih belum dibayar, CRM hanya bila belum ada.
+ */
+async function adzkiaCrmAndAbsensi(db: Db, log: (m: string) => void) {
+  const [cust] = await db.select({ id: users.id }).from(users).where(eq(users.email, "adzkia@adzkia.com")).limit(1);
+  if (!cust) return;
+  const paid = await db.update(invoices).set({ status: "paid", paidAt: new Date("2026-10-29T11:00:00+07:00"), note: "Dibayar 29 Oktober 2026 pukul 11.00 WIB.", updatedAt: new Date() })
+    .where(and(eq(invoices.number, "INV-202610-0002"), eq(invoices.userId, cust.id), eq(invoices.status, "unpaid"))).returning({ id: invoices.id });
+  if (paid.length) log("INV-202610-0002 (Deploy Website Absensi) ditandai lunas 29 Okt 2026 11:00 WIB");
+
+  const [has] = await db.select({ id: orders.id }).from(orders).where(and(eq(orders.userId, cust.id), sql`${orders.packageName} ilike '%CRM Auto Chat%'`)).limit(1);
+  if (has) return;
+  const [ord] = await db.insert(orders).values({
+    number: "ORD-202610-0003", userId: cust.id, packageName: "CRM Auto Chat — Bimbel Adzkia Kedinasan Medan", quantity: 1, status: "active",
+    startDate: "2026-10-30", unitPrice: 15_000_000,
+    adminNote: "Sekali bayar Rp 15.000.000: DP Rp 5.000.000, sisa Rp 10.000.000 dibayar kemudian.",
+  }).onConflictDoNothing({ target: orders.number }).returning({ id: orders.id });
+  if (!ord) return;
+  await db.insert(invoices).values({
+    number: "INV-202610-0003", userId: cust.id, orderId: ord.id, title: "DP (panjar) CRM Auto Chat — Bimbel Adzkia Kedinasan Medan",
+    period: "", amount: 5_000_000, items: [{ description: "DP CRM Auto Chat (sisa Rp 10.000.000)", amount: 5_000_000 }], dueDate: "2026-11-05", status: "unpaid",
+    note: "DP Rp 5.000.000 dari total Rp 15.000.000; sisa Rp 10.000.000. Bayar via QRIS lalu unggah bukti.",
+  }).onConflictDoNothing({ target: invoices.number });
+  log("order CRM Auto Chat + tagihan DP Rp 5 jt dibuat");
 }
 
 

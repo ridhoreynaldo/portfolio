@@ -37,15 +37,21 @@ function ServiceRow({ o, invoices, no }: { o: OrderRow; invoices: InvoiceRow[]; 
       </td>
       <td className={ptd}>
         {mine.length === 0 ? <Pill tone={ORDER_STATUS[o.status].tone}>{ORDER_STATUS[o.status].label}</Pill>
+          : next?.status === "pending_verification" ? <Pill tone="cyan">Menunggu verifikasi</Pill>
           : !next ? (
             <>
-              <Pill tone="emerald">Lunas</Pill>
+              <Pill tone="emerald">Sudah bayar</Pill>
               {lastPaid?.paidAt && <p className="mt-1 text-xs text-[var(--ink-3)]">{fmtDateTime(lastPaid.paidAt)} WIB</p>}
             </>
-          ) : next.status === "pending_verification" ? <Pill tone="cyan">Menunggu verifikasi</Pill>
-          : (
+          ) : cycle !== "once" && left != null && left >= 0 ? (
+            // langganan: selama belum jatuh tempo, periode berjalan sudah dibayar
             <>
-              <Pill tone="amber">Belum lunas</Pill>
+              <Pill tone="emerald">Sudah bayar</Pill>
+              {lastPaid?.paidAt && <p className="mt-1 text-xs text-[var(--ink-3)]">{fmtDateTime(lastPaid.paidAt)} WIB</p>}
+            </>
+          ) : (
+            <>
+              <Pill tone={cycle === "once" ? "amber" : "rose"}>{cycle === "once" ? "Belum bayar" : "Lewat jatuh tempo"}</Pill>
               <p className="mt-1 text-xs text-[var(--ink-2)]">{next.title}: {fmtIDR(next.amount)}</p>
             </>
           )}
@@ -57,10 +63,10 @@ function ServiceRow({ o, invoices, no }: { o: OrderRow; invoices: InvoiceRow[]; 
             {left != null && <Pill tone={daysTone(left)}>{daysText(left)}</Pill>}
           </>
         ) : cycle === "yearly" && o.endDate ? <p>{fmtDate(o.endDate)}</p> : <span className="text-[var(--ink-3)]">—</span>}
-        {paidUntil && <p className="mt-1 text-xs text-[var(--ink-3)]">lunas s.d. {fmtDate(paidUntil)}</p>}
+        {paidUntil && <p className="mt-1 text-xs text-[var(--ink-3)]">berlaku s.d. {fmtDate(paidUntil)}</p>}
       </td>
       <td className={`${ptd} whitespace-nowrap text-right`}>
-        {next?.status === "unpaid" && <Link href={`/medan/dashboard/tagihan/${next.id}`} className="btn-gold btn-sm"><QrCode className="h-3.5 w-3.5" /> Bayar</Link>}
+        {next?.status === "unpaid" && (cycle === "once" || (left ?? 0) <= 7) && <Link href={`/medan/dashboard/tagihan/${next.id}`} className="btn-gold btn-sm"><QrCode className="h-3.5 w-3.5" /> Bayar</Link>}
       </td>
     </tr>
   );
@@ -71,6 +77,7 @@ export default async function Dashboard() {
   const [orders, invoices] = await Promise.all([listOrders({ userId: user.id }), listInvoices({ userId: user.id })]);
   const shown = orders.filter((o) => o.status === "active" || o.status === "pending");
   const orderName = new Map(orders.map((o) => [o.id, o.packageName]));
+  const recurring = new Set(orders.filter((o) => (o.billingCycle ?? "once") !== "once").map((o) => o.id));
   const history = invoices.filter((i) => i.status !== "cancelled").sort((a, b) => b.dueDate.localeCompare(a.dueDate));
 
   return (
@@ -117,9 +124,10 @@ export default async function Dashboard() {
                       <td className={`${ptd} whitespace-nowrap font-semibold text-[var(--navy)]`}>{fmtIDR(i.amount)}</td>
                       <td className={`${ptd} whitespace-nowrap`}>{fmtDate(i.dueDate)}</td>
                       <td className={ptd}>
-                        {i.status === "paid" ? (<><Pill tone="emerald">Lunas</Pill>{i.paidAt && <p className="mt-1 text-xs text-[var(--ink-3)]">{fmtDateTime(i.paidAt)} WIB</p>}</>)
+                        {i.status === "paid" ? (<><Pill tone="emerald">Sudah bayar</Pill>{i.paidAt && <p className="mt-1 text-xs text-[var(--ink-3)]">{fmtDateTime(i.paidAt)} WIB</p>}</>)
                           : i.status === "pending_verification" ? <Pill tone="cyan">Menunggu verifikasi</Pill>
-                          : <Pill tone="amber">Belum lunas</Pill>}
+                          : i.orderId && recurring.has(i.orderId) && daysUntil(i.dueDate) >= 0 ? <Pill tone="slate">Belum jatuh tempo</Pill>
+                          : <Pill tone="amber">Belum bayar</Pill>}
                       </td>
                       <td className={`${ptd} whitespace-nowrap text-right`}>
                         <span className="inline-flex gap-2">

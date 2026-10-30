@@ -56,7 +56,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
       </section>
 
       {inv.status === "paid" && (
-        <div className="alert-ok mt-6 flex items-center gap-3 rounded-xl p-5"><CircleCheck className="h-6 w-6" /> Lunas{inv.paidAt && ` · dikonfirmasi ${fmtDateTime(inv.paidAt)}`}. Terima kasih!</div>
+        <div className="alert-ok mt-6 flex items-center gap-3 rounded-xl p-5"><CircleCheck className="h-6 w-6" /> Sudah bayar{inv.paidAt && ` · dikonfirmasi ${fmtDateTime(inv.paidAt)}`}. Terima kasih!</div>
       )}
       {inv.status === "cancelled" && <div className="card mt-6 p-5 text-[var(--ink-3)]">Tagihan ini dibatalkan.</div>}
 

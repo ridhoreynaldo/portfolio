@@ -9,9 +9,9 @@ export const ORDER_STATUS: Record<OrderStatus, { label: string; tone: "amber" | 
 };
 
 export const INVOICE_STATUS: Record<InvoiceStatus, { label: string; tone: "amber" | "emerald" | "cyan" | "rose" | "slate" }> = {
-  unpaid: { label: "Belum dibayar", tone: "amber" },
+  unpaid: { label: "Belum bayar", tone: "amber" },
   pending_verification: { label: "Menunggu verifikasi", tone: "cyan" },
-  paid: { label: "Lunas", tone: "emerald" },
+  paid: { label: "Sudah bayar", tone: "emerald" },
   cancelled: { label: "Dibatalkan", tone: "slate" },
 };
 

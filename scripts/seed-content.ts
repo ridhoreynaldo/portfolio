@@ -324,6 +324,7 @@ export async function seedContent(db: Db, log: (m: string) => void) {
   await adzkiaSubdomainDeploy(db, log);
   await adzkiaBillToAndWording(db, log);
   await renameCrm(db, log);
+  await tidyDeployOrders(db, log);
   await simplifyPackages(db, log);
 
   // menu PUBLIC "Jasa" → halaman /medan (dulu section #layanan di beranda; dimigrasi otomatis)
@@ -445,20 +446,20 @@ async function adzkiaCrmAndAbsensi(db: Db, log: (m: string) => void) {
 async function adzkiaSubdomainDeploy(db: Db, log: (m: string) => void) {
   const [cust] = await db.select({ id: users.id }).from(users).where(eq(users.email, "adzkia@adzkia.com")).limit(1);
   if (!cust) return;
-  const name = "Deployment Server + Subdomain Yayasan Adzkia Internasional";
-  const [has] = await db.select({ id: orders.id }).from(orders).where(and(eq(orders.userId, cust.id), eq(orders.packageName, name))).limit(1);
+  const name = "Deployment Server + Subdomain";
+  const [has] = await db.select({ id: orders.id }).from(orders).where(and(eq(orders.userId, cust.id), eq(orders.number, "ORD-202610-0004"))).limit(1);
   if (has) return;
   const subs = ["adzset", "am", "digilib", "grafo", "roda"].map((s) => `${s}.yayasanadzkiainternasional.com`);
   const lines = subs.map((d) => ({ description: `Deployment server + subdomain ${d}`, amount: 510_000 }));
   const paidAt = new Date("2026-10-16T12:00:00+07:00");
   const [ord] = await db.insert(orders).values({
     number: "ORD-202610-0004", userId: cust.id, packageName: name, quantity: 1, status: "active", startDate: "2026-10-16",
-    itemLabel: "subdomain", itemLimit: 5, items: subs, breakdown: lines,
+    itemLabel: "subdomain", items: subs, breakdown: lines,
     adminNote: "Sekali bayar (bukan bulanan) Rp 2.550.000 untuk 5 subdomain, Rp 510.000 per subdomain.", createdAt: paidAt,
   }).onConflictDoNothing({ target: orders.number }).returning({ id: orders.id });
   if (!ord) return;
   await db.insert(invoices).values({
-    number: "INV-202610-0004", userId: cust.id, orderId: ord.id, title: "Deployment Server + 5 Subdomain — yayasanadzkiainternasional.com",
+    number: "INV-202610-0004", userId: cust.id, orderId: ord.id, title: "Deployment Server + Subdomain",
     period: "", amount: 2_550_000, items: lines, dueDate: "2026-10-16", status: "paid", paidAt, note: "Sekali bayar. Dibayar 16 Oktober 2026.", createdAt: paidAt,
   }).onConflictDoNothing({ target: invoices.number });
   log("order deployment server + 5 subdomain dibuat (sudah bayar 16 Okt 2026)");
@@ -488,6 +489,20 @@ async function renameCrm(db: Db, log: (m: string) => void) {
   await db.execute(sql`update orders set package_name = ${rep("package_name")}, admin_note = ${rep("admin_note")} where package_name like '%CRM Auto Chat%'`);
   await db.execute(sql`update invoices set title = ${rep("title")}, note = ${rep("note")}, items = ${rep("items::text")}::jsonb where title like '%CRM Auto Chat%' or items::text like '%CRM Auto Chat%'`);
   log("nama jasa CRM diperbarui");
+}
+
+/**
+ * 30 Okt 2026: nama jasa deployment dipendekkan jadi "Deployment Server + Subdomain" (absensi & 5 subdomain), daftar subdomain
+ * tampil di bawahnya tanpa limit; subdomain absensi juga masuk cakupan langganan Layanan Server & Aplikasi.
+ */
+async function tidyDeployOrders(db: Db, log: (m: string) => void) {
+  const abs = "absensi.yayasanadzkiainternasional.com";
+  const n = "Deployment Server + Subdomain";
+  await db.execute(sql`update orders set package_name = ${n}, item_label = 'subdomain', item_limit = null, items = ${JSON.stringify([abs])}::jsonb where number = 'ORD-202610-0002' and package_name <> ${n}`);
+  await db.execute(sql`update invoices set title = ${n} where number in ('INV-202610-0002','INV-202610-0004') and title <> ${n}`);
+  await db.execute(sql`update orders set package_name = ${n}, item_limit = null where number = 'ORD-202610-0004' and package_name <> ${n}`);
+  await db.execute(sql`update orders set items = items || ${JSON.stringify([abs])}::jsonb where number = 'ORD-202610-0001' and not (items ? ${abs})`);
+  log("nama jasa deployment dirapikan, absensi masuk cakupan Layanan Server & Aplikasi");
 }
 
 

@@ -96,6 +96,7 @@ export const deletePackageAction = action(async (form: FormData) => {
 /** Field langganan yang diisi admin (dipakai form proses & order manual). */
 const subscriptionInput = z.object({
   status: z.enum(orderStatus.enumValues),
+  billTo: z.string().trim().max(160).default(""),
   adminNote: z.string().trim().max(2000).default(""),
   startDate: z.string().trim().default(""),
   endDate: z.string().trim().default(""),
@@ -105,7 +106,7 @@ const subscriptionInput = z.object({
 });
 const readSubscription = (form: FormData) => {
   const d = subscriptionInput.parse({
-    status: form.get("status"), adminNote: form.get("adminNote") ?? "", startDate: form.get("startDate") ?? "", endDate: form.get("endDate") ?? "",
+    status: form.get("status"), billTo: form.get("billTo") ?? "", adminNote: form.get("adminNote") ?? "", startDate: form.get("startDate") ?? "", endDate: form.get("endDate") ?? "",
     unitPrice: String(form.get("unitPrice") ?? "").trim(), itemLabel: form.get("itemLabel") ?? "", itemLimit: String(form.get("itemLimit") ?? "").trim(),
   });
   if (d.startDate && !DATE.test(d.startDate)) throw new AppError("Tanggal mulai tidak valid");
@@ -113,7 +114,7 @@ const readSubscription = (form: FormData) => {
   const items = String(form.get("items") ?? "").split(/[\r\n,]+/).map((x) => x.trim().toLowerCase()).filter(Boolean).slice(0, 200);
   if (d.itemLimit != null && items.length > d.itemLimit) throw new AppError(`Jumlah ${d.itemLabel || "item"} (${items.length}) melebihi limit ${d.itemLimit}`);
   const breakdown = lineItems(form.get("breakdown"));
-  return { status: d.status, adminNote: d.adminNote, startDate: d.startDate || null, endDate: d.endDate || null, unitPrice: d.unitPrice, itemLabel: d.itemLabel, itemLimit: d.itemLimit, items, breakdown };
+  return { status: d.status, billTo: d.billTo, adminNote: d.adminNote, startDate: d.startDate || null, endDate: d.endDate || null, unitPrice: d.unitPrice, itemLabel: d.itemLabel, itemLimit: d.itemLimit, items, breakdown };
 };
 
 export const updateOrderAction = action(async (form: FormData) => {
@@ -172,6 +173,7 @@ const invoiceInput = z.object({
   userId: uuid,
   orderId: z.union([z.literal(""), uuid]).transform((v) => v || null),
   title: z.string().trim().min(2).max(255),
+  billTo: z.string().trim().max(160).default(""),
   period: z.string().trim().default(""),
   amount: money,
   dueDate: z.string().regex(DATE, "Jatuh tempo tidak valid"),
@@ -183,7 +185,7 @@ export const saveInvoiceAction = action(async (form: FormData) => {
   const id = String(form.get("id") || "") || undefined;
   await requirePermission(`invoice.${id ? "update" : "create"}`);
   const { paidAt, ...d } = invoiceInput.parse({
-    userId: form.get("userId"), orderId: form.get("orderId") ?? "", title: form.get("title"), period: form.get("period") ?? "",
+    userId: form.get("userId"), orderId: form.get("orderId") ?? "", title: form.get("title"), billTo: form.get("billTo") ?? "", period: form.get("period") ?? "",
     amount: form.get("amount") || 0, dueDate: form.get("dueDate"), note: form.get("note") ?? "", paidAt: form.get("paidAt") ?? "",
   });
   if (d.period && !PERIOD.test(d.period)) throw new AppError("Periode harus format YYYY-MM");
@@ -195,6 +197,7 @@ export const saveInvoiceAction = action(async (form: FormData) => {
   if (d.orderId) {
     const o = await getOrder(d.orderId);
     if (!o || o.userId !== d.userId) throw new AppError("Order tidak cocok dengan pelanggan");
+    if (!d.billTo) d.billTo = o.billTo; // tujuan tagihan ikut order bila tidak diisi
   }
   const paidPatch = paidAt ? { status: "paid" as const, paidAt: new Date(`${paidAt}T12:00:00+07:00`) } : {};
   if (id) {
@@ -270,7 +273,7 @@ export const generateMonthlyInvoicesAction = action(async (form: FormData) => {
     // jatuh tempo = hari penagihan order (tanggal mulai layanan), kalau tidak ada pakai isian form
     const dueDate = `${d.period}-${String(o.startDate ? billingDayOf(o.startDate, d.dueDay) : d.dueDay).padStart(2, "0")}`;
     await createWithNumber({
-      userId: o.userId, orderId: o.id, title: `${o.packageName}${o.quantity > 1 ? ` ×${o.quantity}` : ""} — ${o.number}`, period: d.period,
+      userId: o.userId, orderId: o.id, billTo: o.billTo, title: `${o.packageName}${o.quantity > 1 ? ` ×${o.quantity}` : ""} — ${o.number}`, period: d.period,
       amount: price, items: invoiceLinesFor(o), dueDate, note: "Tagihan bulanan otomatis",
     });
     n++;

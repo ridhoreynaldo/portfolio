@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: { absolute: "Leetcloud · Jasa Pembuatan Aplikasi, Sewa Server & WhatsApp Gateway di Medan" },
-  description: "Leetcloud melayani bisnis di Medan dan seluruh Indonesia: aplikasi custom (beli putus atau plus sewa server), sewa server + maintenance, WhatsApp gateway, dan domain.",
+  description: "Leetcloud melayani bisnis di Medan dan seluruh Indonesia: aplikasi custom (beli putus atau plus sewa server), layanan server & aplikasi, WhatsApp gateway, dan domain.",
 };
 
 /** Tiga langkah saja: cukup untuk tahu apa yang terjadi setelah menghubungi. */
@@ -24,7 +24,7 @@ const STEPS = [
 /** Tiga sorotan di hero. */
 const HIGHLIGHTS = [
   [Code2, "Aplikasi custom", "Beli putus (kode milik Anda) atau sekaligus dihosting di server terkelola."],
-  [Server, "Server & maintenance", "Cloud server, SSL, backup harian, monitoring, perbaikan bug — satu langganan."],
+  [Server, "Server & aplikasi", "Cloud server, SSL, backup harian, pemantauan, dan perawatan aplikasi — satu langganan."],
   [MessageCircle, "WhatsApp gateway", "API notifikasi & OTP dengan dashboard log; biaya mengikuti volume pesan."],
 ] as const;
 
@@ -59,7 +59,7 @@ export default async function JasaPage() {
   const groups = Object.entries(packages.reduce<Record<string, typeof packages>>((acc, s) => ((acc[s.category] ??= []).push(s), acc), {}))
     .sort(([a], [b]) => (ORDER.indexOf(a) === -1 ? 99 : ORDER.indexOf(a)) - (ORDER.indexOf(b) === -1 ? 99 : ORDER.indexOf(b)));
   const GROUP_SUB: Record<string, string> = {
-    Sewa: "Maintenance server dan WhatsApp gateway: langganan bulanan, biaya mengikuti jumlah pengguna dan volume pesan. Harga pasti dikonfirmasi lewat WhatsApp.",
+    Sewa: "Layanan server, aplikasi, dan WhatsApp gateway: langganan bulanan, biaya mengikuti jumlah pengguna dan volume pesan. Harga pasti dikonfirmasi lewat WhatsApp.",
     "Pembuatan Aplikasi": "Dua cara memiliki aplikasi: beli putus (sekali bayar) atau langganan bulanan (SaaS) tanpa biaya besar di awal.",
     "Katalog Sistem Putus": "Sistem siap pakai untuk skripsi, penelitian, dan operasional, dengan studi kasus seperti di jurnal (mis. penilaian kinerja dan seleksi karyawan). Beli putus; harga adalah estimasi.",
   };
@@ -84,7 +84,7 @@ export default async function JasaPage() {
                 Aplikasi dibuat sesuai kebutuhan, bisa beli putus atau sekaligus disewakan servernya. Tatap muka untuk wilayah Medan dan sekitarnya, pengerjaan jarak jauh untuk seluruh Indonesia.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-primary"><MessageCircle className="h-4 w-4" /> Konsultasi Gratis via WhatsApp</a>}
+                {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-primary"><MessageCircle className="h-4 w-4" /> Diskusi Gratis via WhatsApp</a>}
                 <a href="#paket" className="btn-ghost"><Package className="h-4 w-4" /> Lihat Paket</a>
               </div>
               <ul className="mt-10 grid grid-cols-3 gap-4 border-t border-[var(--rule)] pt-6 text-sm">
@@ -207,7 +207,7 @@ export default async function JasaPage() {
         </div>
 
         {/* ── Kontak ── */}
-        <Section id="kontak" eyebrow="Mari berdiskusi" title="Masih ragu? Konsultasi dulu, gratis." sub="Ceritakan kebutuhan Anda. Kami bantu tentukan paket dan estimasi yang paling masuk akal." narrow>
+        <Section id="kontak" eyebrow="Mari berdiskusi" title="Masih ragu? Diskusi dulu, gratis." sub="Ceritakan kebutuhan Anda. Kami bantu tentukan paket dan estimasi yang paling masuk akal." narrow>
           <div className="card flex flex-col items-center gap-4 p-8 text-center md:flex-row md:justify-between md:text-left">
             <div className="flex items-center gap-4">
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[var(--navy)] text-white"><Headset className="h-6 w-6" /></span>

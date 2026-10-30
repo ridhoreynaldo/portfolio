@@ -64,6 +64,8 @@ export const orders = pgTable(
     quantity: integer("quantity").default(1).notNull(),
     /** Brief kebutuhan dari pelanggan. */
     notes: text("notes").default("").notNull(),
+    /** Tujuan tagihan (nama pihak yang ditagih); kosong = nama akun/perusahaan. Satu akun bisa punya banyak tujuan. */
+    billTo: varchar("bill_to", { length: 160 }).default("").notNull(),
     adminNote: text("admin_note").default("").notNull(),
     status: orderStatus("status").default("pending").notNull(),
     startDate: date("start_date", { mode: "string" }),
@@ -106,6 +108,8 @@ export const invoices = pgTable(
     userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     orderId: uuid("order_id").references(() => orders.id, { onDelete: "set null" }),
     title: varchar("title", { length: 255 }).notNull(),
+    /** Tujuan tagihan ("Kepada"); kosong = nama akun/perusahaan. */
+    billTo: varchar("bill_to", { length: 160 }).default("").notNull(),
     /** Periode tagihan "YYYY-MM" (kosong untuk tagihan sekali). */
     period: varchar("period", { length: 7 }).default("").notNull(),
     amount: integer("amount").notNull(),

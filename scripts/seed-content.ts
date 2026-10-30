@@ -189,7 +189,7 @@ const PACKAGES: (typeof servicePackages.$inferInsert)[] = [
   { name: "Mentoring Tugas Akhir (CS / ML)", slug: "mentoring-tugas-akhir", category: "Mentoring", price: 500_000, billingCycle: "monthly", unit: "", isFeatured: false, sortOrder: 4,
     description: "Pendampingan bulanan menyelesaikan skripsi/tugas akhir bidang Computer Science dan algoritma Machine Learning.",
     features: ["4 sesi bimbingan per bulan", "Review kode & bab metodologi", "Simulasi sidang"] },
-  { name: "Sewa Server + Maintenance Aplikasi", slug: "sewa-server-maintenance", category: "Sewa", price: 2_500_000, billingCycle: "monthly", unit: "aplikasi", isFeatured: true, sortOrder: 5,
+  { name: "Layanan Server & Aplikasi", slug: "sewa-server-maintenance", category: "Sewa", price: 2_500_000, billingCycle: "monthly", unit: "aplikasi", isFeatured: true, sortOrder: 5,
     description: "Aplikasi Anda berjalan di cloud server terkelola: nginx + SSL, backup database harian, monitoring, dan pembaruan keamanan. Biaya mengikuti jumlah pengguna aplikasi.",
     features: ["Cloud server terkelola + SSL", "Backup DB harian", "Monitoring uptime", "Perbaikan bug minor", "Kapasitas server naik sesuai tingkat pengguna"],
     priceTiers: SERVER_TIERS },
@@ -201,7 +201,7 @@ const PACKAGES: (typeof servicePackages.$inferInsert)[] = [
     features: ["REST API + API key", "Antrian & retry otomatis", "Dashboard log pengiriman", "Dukungan integrasi"],
     priceTiers: WA_TIERS },
   { name: "Aplikasi Custom — Sistem Putus", slug: "aplikasi-custom-putus", category: "Pembuatan Aplikasi", price: 2_500_000, billingCycle: "once", unit: "", isFeatured: true, sortOrder: 1,
-    description: "Bayar sekali, kode dan aplikasi sepenuhnya milik Anda. Dipasang di server Anda sendiri, atau digabung dengan paket Sewa Server + Maintenance.",
+    description: "Bayar sekali, kode dan aplikasi sepenuhnya milik Anda. Dipasang di server Anda sendiri, atau digabung dengan paket Layanan Server & Aplikasi.",
     features: ["Analisis kebutuhan & desain database", "Web, API & dashboard admin", "Role & permission", "Integrasi WhatsApp / pembayaran", "Serah terima kode & dokumentasi", "Garansi bug 30 hari"],
     priceTiers: [
       { label: "Landing page + dashboard admin", price: 2_500_000 },
@@ -210,7 +210,7 @@ const PACKAGES: (typeof servicePackages.$inferInsert)[] = [
       { label: "Sistem kompleks / banyak integrasi", price: 0 },
     ] },
   { name: "Aplikasi Custom — Langganan Bulanan (SaaS)", slug: "aplikasi-custom-saas", category: "Pembuatan Aplikasi", price: 750_000, billingCycle: "monthly", unit: "aplikasi", isFeatured: false, sortOrder: 2,
-    description: "Tanpa beli putus: aplikasi dibangun dan dikelola oleh kami, Anda cukup berlangganan bulanan. Server, SSL, backup, maintenance, dan pengembangan berkelanjutan sudah termasuk.",
+    description: "Tanpa beli putus: aplikasi dibangun dan dikelola oleh kami, Anda cukup berlangganan bulanan. Server, SSL, backup, perawatan, dan pengembangan berkelanjutan sudah termasuk.",
     features: ["Biaya awal ringan", "Server, SSL, backup & monitoring termasuk", "Perbaikan bug & pembaruan fitur berkala", "Skala naik sesuai jumlah pengguna"],
     priceTiers: [
       { label: "Starter — sampai 50 pengguna, 1 modul utama", price: 750_000 },
@@ -322,6 +322,7 @@ export async function seedContent(db: Db, log: (m: string) => void) {
   await fixAdzkiaOctober(db, log);
   await adzkiaCrmAndAbsensi(db, log);
   await adzkiaSubdomainDeploy(db, log);
+  await adzkiaBillToAndWording(db, log);
   await simplifyPackages(db, log);
 
   // menu PUBLIC "Jasa" → halaman /medan (dulu section #layanan di beranda; dimigrasi otomatis)
@@ -460,6 +461,24 @@ async function adzkiaSubdomainDeploy(db: Db, log: (m: string) => void) {
     period: "", amount: 2_550_000, items: lines, dueDate: "2026-10-16", status: "paid", paidAt, note: "Sekali bayar. Dibayar 16 Oktober 2026.", createdAt: paidAt,
   }).onConflictDoNothing({ target: invoices.number });
   log("order deployment server + 5 subdomain dibuat (sudah bayar 16 Okt 2026)");
+}
+
+/**
+ * 30 Okt 2026: tujuan tagihan per order/invoice (satu akun, banyak tujuan) + bahasa layanan yang netral
+ * ("Layanan Server & Aplikasi", bukan "Maintenance"). Adzkia Smart untuk server/domain/absensi/subdomain; CRM untuk Bimbel Adzkia Kedinasan.
+ * Hanya mengisi bill_to yang masih kosong; ganti teks hanya bila masih memuat kata lama.
+ */
+async function adzkiaBillToAndWording(db: Db, log: (m: string) => void) {
+  const [cust] = await db.select({ id: users.id }).from(users).where(eq(users.email, "adzkia@adzkia.com")).limit(1);
+  if (!cust) return;
+  const smart = sql`case when ${orders.packageName} ilike '%CRM Auto Chat%' then 'Bimbel Adzkia Kedinasan' else 'Adzkia Smart' end`;
+  await db.update(orders).set({ billTo: smart }).where(and(eq(orders.userId, cust.id), eq(orders.billTo, "")));
+  await db.execute(sql`update invoices i set bill_to = o.bill_to from orders o where i.order_id = o.id and i.user_id = ${cust.id} and i.bill_to = ''`);
+  const rep = (col: ReturnType<typeof sql.raw>) => sql`replace(replace(replace(${col}, 'Sewa Server + Maintenance Aplikasi', 'Layanan Server & Aplikasi'), 'Maintenance Aplikasi', 'Layanan Aplikasi'), 'maintenance aplikasi', 'layanan aplikasi')`;
+  await db.execute(sql`update orders set package_name = ${rep(sql.raw("package_name"))}, admin_note = ${rep(sql.raw("admin_note"))}, breakdown = ${rep(sql.raw("breakdown::text"))}::jsonb where user_id = ${cust.id} and (package_name ilike '%maintenance%' or admin_note ilike '%maintenance%' or breakdown::text ilike '%maintenance%')`);
+  await db.execute(sql`update invoices set title = ${rep(sql.raw("title"))}, note = ${rep(sql.raw("note"))}, items = ${rep(sql.raw("items::text"))}::jsonb where user_id = ${cust.id} and (title ilike '%maintenance%' or note ilike '%maintenance%' or items::text ilike '%maintenance%')`);
+  await db.execute(sql`update service_packages set name = 'Layanan Server & Aplikasi' where slug = 'sewa-server-maintenance' and name = 'Sewa Server + Maintenance Aplikasi'`);
+  log("tujuan tagihan (bill_to) Adzkia diisi, teks layanan dinetralkan");
 }
 
 

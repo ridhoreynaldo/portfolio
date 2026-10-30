@@ -19,6 +19,7 @@ function SubscriptionFields({ o }: { o?: OrderRow }) {
       <div><label className="label">Limit item</label><input name="itemLimit" type="number" min={0} max={100000} defaultValue={o?.itemLimit ?? ""} placeholder="kosong = tanpa batas" className="input-dark" /></div>
       <div className="sm:col-span-3"><label className="label">Rincian biaya per siklus (opsional, satu per baris: <code>deskripsi | nominal</code>) — jadi baris tagihan & menimpa total</label><textarea name="breakdown" rows={3} defaultValue={(o?.breakdown ?? []).map((b) => `${b.description} | ${b.amount}`).join("\n")} className="input-dark font-mono text-xs" placeholder={"Sewa Server | 2000000\nMaintenance Aplikasi | 2500000"} /></div>
       <div className="sm:col-span-3"><label className="label">Daftar item (satu per baris, mis. subdomain yang di-host)</label><textarea name="items" rows={4} defaultValue={(o?.items ?? []).join("\n")} className="input-dark font-mono text-xs" placeholder={"app.contoh.com\napi.contoh.com"} /></div>
+      <div className="sm:col-span-3"><label className="label">Ditagihkan kepada (tujuan invoice; kosong = nama akun)</label><input name="billTo" maxLength={160} defaultValue={o?.billTo ?? ""} placeholder="mis. Adzkia Smart / Bimbel Adzkia Kedinasan" className="input-dark" /></div>
       <div className="sm:col-span-3"><label className="label">Catatan untuk pelanggan (tampil di portal)</label><textarea name="adminNote" rows={3} maxLength={2000} defaultValue={o?.adminNote ?? ""} className="input-dark" /></div>
     </>
   );

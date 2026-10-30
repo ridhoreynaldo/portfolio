@@ -21,6 +21,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
     userId: inv?.userId ?? q.userId ?? "",
     orderId: inv?.orderId ?? q.orderId ?? "",
     title: inv?.title ?? q.title ?? "",
+    billTo: inv?.billTo ?? "",
     amount: inv?.amount ?? (q.amount ? Number(q.amount) : ""),
     period: inv?.period ?? q.period ?? "",
     dueDate: inv?.dueDate ?? due.toISOString().slice(0, 10),
@@ -74,6 +75,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
                 </select>
               </div>
               <div><label className="label">Periode (YYYY-MM, kosong = sekali)</label><input name="period" type="month" defaultValue={preset.period} className="input-dark" /></div>
+              <div className="sm:col-span-2"><label className="label">Ditagihkan kepada (kosong = ikut order / nama akun)</label><input name="billTo" maxLength={160} defaultValue={preset.billTo} placeholder="mis. Adzkia Smart / Bimbel Adzkia Kedinasan" className="input-dark" /></div>
               <div className="sm:col-span-2"><label className="label">Judul tagihan *</label><input name="title" required minLength={2} maxLength={255} defaultValue={preset.title} placeholder="Sewa Server — Oktober 2026" className="input-dark" /></div>
               <div className="sm:col-span-2 lg:col-span-3"><label className="label">Rincian baris (opsional, satu per baris: <code>deskripsi | nominal</code>; nominal tagihan otomatis = jumlahnya)</label><textarea name="items" rows={3} defaultValue={preset.items} className="input-dark font-mono text-xs" placeholder={"Sewa Server | 2000000\nMaintenance Aplikasi | 2500000"} /></div>
               <div><label className="label">Nominal (Rp){" "}<span className="text-slate-500">(diabaikan bila ada rincian)</span></label><input name="amount" type="number" min={0} step={1000} defaultValue={preset.amount} className="input-dark" /></div>

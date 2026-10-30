@@ -12,7 +12,7 @@ const daysText = (d: number) => (d < 0 ? `lewat ${-d} hari` : d === 0 ? "hari in
 const daysTone = (d: number): Tone => (d < 0 ? "rose" : d <= 7 ? "amber" : "emerald");
 
 /** Satu baris tabel jasa: biaya, status bayar, jatuh tempo, dan tagihan yang sedang terbuka. */
-function ServiceRow({ o, invoices, no }: { o: OrderRow; invoices: InvoiceRow[]; no: number }) {
+function ServiceRow({ o, invoices, no, user }: { o: OrderRow; invoices: InvoiceRow[]; no: number; user: string }) {
   const cycle = o.billingCycle ?? "once";
   const total = orderTotal(o);
   const day = billingDayOf(o.startDate);
@@ -29,9 +29,9 @@ function ServiceRow({ o, invoices, no }: { o: OrderRow; invoices: InvoiceRow[]; 
       <td className={ptd}>
         <p className="font-semibold text-[var(--navy)]">{o.packageName}{o.quantity > 1 && <span className="text-[var(--ink-3)]"> ×{o.quantity}</span>}</p>
         <p className="font-mono text-[11px] text-[var(--ink-3)]">{o.number}</p>
-        {o.billTo && <p className="text-xs text-[var(--ink-2)]">Kepada: <span className="font-semibold">{o.billTo}</span></p>}
         {o.items.length > 0 && <p className="mt-1 text-xs text-[var(--ink-2)]">{label} ({o.items.length}{o.itemLimit != null && `/${o.itemLimit}`}): {o.items.join(", ")}</p>}
       </td>
+      <td className={ptd}>{o.billTo || user}</td>
       <td className={`${ptd} whitespace-nowrap`}>
         <p className="font-semibold text-[var(--navy)]">{total > 0 ? fmtIDR(total) : "—"}</p>
         <p className="text-xs text-[var(--ink-3)]">{CYCLE[cycle]}</p>
@@ -87,16 +87,16 @@ export default async function Dashboard() {
 
       <section className="card overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] border-collapse">
+          <table className="w-full min-w-[900px] border-collapse">
             <thead className="bg-[#f3eee4]">
               <tr>
-                <th className={pth}>No</th><th className={pth}>Jasa</th><th className={pth}>Biaya</th>
+                <th className={pth}>No</th><th className={pth}>Jasa</th><th className={pth}>Kepada</th><th className={pth}>Biaya</th>
                 <th className={pth}>Status Bayar</th><th className={pth}>Jatuh Tempo</th><th className={pth} />
               </tr>
             </thead>
             <tbody>
-              {shown.map((o, k) => <ServiceRow key={o.id} o={o} invoices={invoices} no={k + 1} />)}
-              {!shown.length && <tr><td colSpan={6} className={`${ptd} text-[var(--ink-2)]`}>Belum ada jasa yang disewa. <Link href="/medan#paket" className="font-semibold text-[var(--navy)] hover:underline">Lihat paket →</Link></td></tr>}
+              {shown.map((o, k) => <ServiceRow key={o.id} o={o} invoices={invoices} no={k + 1} user={user.name} />)}
+              {!shown.length && <tr><td colSpan={7} className={`${ptd} text-[var(--ink-2)]`}>Belum ada jasa yang disewa. <Link href="/medan#paket" className="font-semibold text-[var(--navy)] hover:underline">Lihat paket →</Link></td></tr>}
             </tbody>
           </table>
         </div>
@@ -107,10 +107,10 @@ export default async function Dashboard() {
           <h2 className="font-serif mb-3 text-xl font-semibold text-[var(--navy)]">Riwayat Tagihan</h2>
           <div className="card overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[760px] border-collapse">
+              <table className="w-full min-w-[900px] border-collapse">
                 <thead className="bg-[#f3eee4]">
                   <tr>
-                    <th className={pth}>Tagihan</th><th className={pth}>Jasa / Periode</th><th className={pth}>Jumlah</th>
+                    <th className={pth}>Tagihan</th><th className={pth}>Jasa / Periode</th><th className={pth}>Kepada</th><th className={pth}>Jumlah</th>
                     <th className={pth}>Jatuh Tempo</th><th className={pth}>Status</th><th className={pth} />
                   </tr>
                 </thead>
@@ -120,8 +120,9 @@ export default async function Dashboard() {
                       <td className={`${ptd} whitespace-nowrap font-mono text-xs`}>{i.number}</td>
                       <td className={ptd}>
                         <p className="text-[var(--navy)]">{i.title}</p>
-                        <p className="text-xs text-[var(--ink-3)]">{i.billTo ? `Kepada ${i.billTo} · ` : ""}{(i.orderId && orderName.get(i.orderId)) || ""}{i.period && ` · ${fmtPeriod(i.period)}`}</p>
+                        <p className="text-xs text-[var(--ink-3)]">{(i.orderId && orderName.get(i.orderId)) || ""}{i.period && ` · ${fmtPeriod(i.period)}`}</p>
                       </td>
+                      <td className={ptd}>{i.billTo || user.name}</td>
                       <td className={`${ptd} whitespace-nowrap font-semibold text-[var(--navy)]`}>{fmtIDR(i.amount)}</td>
                       <td className={`${ptd} whitespace-nowrap`}>{fmtDate(i.dueDate)}</td>
                       <td className={ptd}>

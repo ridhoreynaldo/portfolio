@@ -48,7 +48,7 @@ export default async function InvoicePrintPage({ params }: { params: Promise<{ i
           <div className="text-right">
             <p className="font-serif text-3xl font-semibold uppercase tracking-widest text-[var(--navy)]">Invoice</p>
             <p className="font-mono text-sm text-[var(--ink-2)]">{inv.number}</p>
-            <p className={`mt-2 inline-block rounded-full px-3 py-0.5 text-xs font-semibold ${inv.status === "paid" ? "bg-[#e5f6ea] text-[#14532d]" : inv.status === "cancelled" ? "bg-[#efeae0] text-[#5b6472]" : "bg-[#fbf1d9] text-[#7a5a0f]"}`}>{inv.status === "paid" && paidDate ? `LUNAS · ${paidDate}` : st.label.toUpperCase()}</p>
+            <p className={`mt-2 inline-block rounded-full px-3 py-0.5 text-xs font-semibold ${inv.status === "paid" ? "bg-[#e5f6ea] text-[#14532d]" : inv.status === "cancelled" ? "bg-[#efeae0] text-[#5b6472]" : "bg-[#fbf1d9] text-[#7a5a0f]"}`}>{inv.status === "paid" && paidDate ? `SUDAH BAYAR · ${paidDate}` : st.label.toUpperCase()}</p>
           </div>
         </header>
 

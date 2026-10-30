@@ -323,6 +323,7 @@ export async function seedContent(db: Db, log: (m: string) => void) {
   await adzkiaCrmAndAbsensi(db, log);
   await adzkiaSubdomainDeploy(db, log);
   await adzkiaBillToAndWording(db, log);
+  await renameCrm(db, log);
   await simplifyPackages(db, log);
 
   // menu PUBLIC "Jasa" → halaman /medan (dulu section #layanan di beranda; dimigrasi otomatis)
@@ -421,17 +422,17 @@ async function adzkiaCrmAndAbsensi(db: Db, log: (m: string) => void) {
     .where(and(eq(invoices.number, "INV-202610-0002"), eq(invoices.userId, cust.id), eq(invoices.status, "unpaid"))).returning({ id: invoices.id });
   if (paid.length) log("INV-202610-0002 (Deploy Website Absensi) ditandai lunas 29 Okt 2026 11:00 WIB");
 
-  const [has] = await db.select({ id: orders.id }).from(orders).where(and(eq(orders.userId, cust.id), sql`${orders.packageName} ilike '%CRM Auto Chat%'`)).limit(1);
+  const [has] = await db.select({ id: orders.id }).from(orders).where(and(eq(orders.userId, cust.id), sql`${orders.packageName} ilike '%CRM%'`)).limit(1);
   if (has) return;
   const [ord] = await db.insert(orders).values({
-    number: "ORD-202610-0003", userId: cust.id, packageName: "CRM Auto Chat — Bimbel Adzkia Kedinasan Medan", quantity: 1, status: "active",
+    number: "ORD-202610-0003", userId: cust.id, packageName: "Sistem CRM (Bot/AI) + Broadcast", quantity: 1, status: "active",
     startDate: "2026-10-30", unitPrice: 15_000_000,
     adminNote: "Sekali bayar Rp 15.000.000: DP Rp 5.000.000, sisa Rp 10.000.000 dibayar kemudian.",
   }).onConflictDoNothing({ target: orders.number }).returning({ id: orders.id });
   if (!ord) return;
   await db.insert(invoices).values({
-    number: "INV-202610-0003", userId: cust.id, orderId: ord.id, title: "DP (panjar) CRM Auto Chat — Bimbel Adzkia Kedinasan Medan",
-    period: "", amount: 5_000_000, items: [{ description: "DP CRM Auto Chat (sisa Rp 10.000.000)", amount: 5_000_000 }], dueDate: "2026-11-05", status: "unpaid",
+    number: "INV-202610-0003", userId: cust.id, orderId: ord.id, title: "DP (panjar) Sistem CRM (Bot/AI) + Broadcast",
+    period: "", amount: 5_000_000, items: [{ description: "DP Sistem CRM (Bot/AI) + Broadcast (sisa Rp 10.000.000)", amount: 5_000_000 }], dueDate: "2026-11-05", status: "unpaid",
     note: "DP Rp 5.000.000 dari total Rp 15.000.000; sisa Rp 10.000.000. Bayar via QRIS lalu unggah bukti.",
   }).onConflictDoNothing({ target: invoices.number });
   log("order CRM Auto Chat + tagihan DP Rp 5 jt dibuat");
@@ -471,7 +472,7 @@ async function adzkiaSubdomainDeploy(db: Db, log: (m: string) => void) {
 async function adzkiaBillToAndWording(db: Db, log: (m: string) => void) {
   const [cust] = await db.select({ id: users.id }).from(users).where(eq(users.email, "adzkia@adzkia.com")).limit(1);
   if (!cust) return;
-  const smart = sql`case when ${orders.packageName} ilike '%CRM Auto Chat%' then 'Bimbel Adzkia Kedinasan' else 'Adzkia Smart' end`;
+  const smart = sql`case when ${orders.packageName} ilike '%CRM%' then 'Bimbel Adzkia Kedinasan' else 'Adzkia Smart' end`;
   await db.update(orders).set({ billTo: smart }).where(and(eq(orders.userId, cust.id), eq(orders.billTo, "")));
   await db.execute(sql`update invoices i set bill_to = o.bill_to from orders o where i.order_id = o.id and i.user_id = ${cust.id} and i.bill_to = ''`);
   const rep = (col: ReturnType<typeof sql.raw>) => sql`replace(replace(replace(${col}, 'Sewa Server + Maintenance Aplikasi', 'Layanan Server & Aplikasi'), 'Maintenance Aplikasi', 'Layanan Aplikasi'), 'maintenance aplikasi', 'layanan aplikasi')`;
@@ -479,6 +480,14 @@ async function adzkiaBillToAndWording(db: Db, log: (m: string) => void) {
   await db.execute(sql`update invoices set title = ${rep(sql.raw("title"))}, note = ${rep(sql.raw("note"))}, items = ${rep(sql.raw("items::text"))}::jsonb where user_id = ${cust.id} and (title ilike '%maintenance%' or note ilike '%maintenance%' or items::text ilike '%maintenance%')`);
   await db.execute(sql`update service_packages set name = 'Layanan Server & Aplikasi' where slug = 'sewa-server-maintenance' and name = 'Sewa Server + Maintenance Aplikasi'`);
   log("tujuan tagihan (bill_to) Adzkia diisi, teks layanan dinetralkan");
+}
+
+/** 30 Okt 2026: nama jasa CRM diperbaiki menjadi "Sistem CRM (Bot/AI) + Broadcast" (nama lama memuat "CRM Auto Chat"). */
+async function renameCrm(db: Db, log: (m: string) => void) {
+  const rep = (col: string) => sql.raw(`replace(replace(${col}, 'CRM Auto Chat — Bimbel Adzkia Kedinasan Medan', 'Sistem CRM (Bot/AI) + Broadcast'), 'CRM Auto Chat', 'Sistem CRM (Bot/AI) + Broadcast')`);
+  await db.execute(sql`update orders set package_name = ${rep("package_name")}, admin_note = ${rep("admin_note")} where package_name like '%CRM Auto Chat%'`);
+  await db.execute(sql`update invoices set title = ${rep("title")}, note = ${rep("note")}, items = ${rep("items::text")}::jsonb where title like '%CRM Auto Chat%' or items::text like '%CRM Auto Chat%'`);
+  log("nama jasa CRM diperbarui");
 }
 
 

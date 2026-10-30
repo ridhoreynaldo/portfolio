@@ -321,6 +321,7 @@ export async function seedContent(db: Db, log: (m: string) => void) {
   await seedAdzkiaSubscriptions(db, log);
   await fixAdzkiaOctober(db, log);
   await adzkiaCrmAndAbsensi(db, log);
+  await adzkiaSubdomainDeploy(db, log);
   await simplifyPackages(db, log);
 
   // menu PUBLIC "Jasa" → halaman /medan (dulu section #layanan di beranda; dimigrasi otomatis)
@@ -433,6 +434,32 @@ async function adzkiaCrmAndAbsensi(db: Db, log: (m: string) => void) {
     note: "DP Rp 5.000.000 dari total Rp 15.000.000; sisa Rp 10.000.000. Bayar via QRIS lalu unggah bukti.",
   }).onConflictDoNothing({ target: invoices.number });
   log("order CRM Auto Chat + tagihan DP Rp 5 jt dibuat");
+}
+
+/**
+ * 30 Okt 2026 (permintaan pemilik): deployment server + 5 subdomain Yayasan Adzkia, sekali bayar Rp 2.550.000
+ * (Rp 510.000 per subdomain), sudah dibayar 16 Okt 2026. Jam bayar tidak disebut; dipakai 12.00 WIB. Hanya dibuat bila belum ada.
+ */
+async function adzkiaSubdomainDeploy(db: Db, log: (m: string) => void) {
+  const [cust] = await db.select({ id: users.id }).from(users).where(eq(users.email, "adzkia@adzkia.com")).limit(1);
+  if (!cust) return;
+  const name = "Deployment Server + Subdomain Yayasan Adzkia Internasional";
+  const [has] = await db.select({ id: orders.id }).from(orders).where(and(eq(orders.userId, cust.id), eq(orders.packageName, name))).limit(1);
+  if (has) return;
+  const subs = ["adzset", "am", "digilib", "grafo", "roda"].map((s) => `${s}.yayasanadzkiainternasional.com`);
+  const lines = subs.map((d) => ({ description: `Deployment server + subdomain ${d}`, amount: 510_000 }));
+  const paidAt = new Date("2026-10-16T12:00:00+07:00");
+  const [ord] = await db.insert(orders).values({
+    number: "ORD-202610-0004", userId: cust.id, packageName: name, quantity: 1, status: "active", startDate: "2026-10-16",
+    itemLabel: "subdomain", itemLimit: 5, items: subs, breakdown: lines,
+    adminNote: "Sekali bayar (bukan bulanan) Rp 2.550.000 untuk 5 subdomain, Rp 510.000 per subdomain.", createdAt: paidAt,
+  }).onConflictDoNothing({ target: orders.number }).returning({ id: orders.id });
+  if (!ord) return;
+  await db.insert(invoices).values({
+    number: "INV-202610-0004", userId: cust.id, orderId: ord.id, title: "Deployment Server + 5 Subdomain — yayasanadzkiainternasional.com",
+    period: "", amount: 2_550_000, items: lines, dueDate: "2026-10-16", status: "paid", paidAt, note: "Sekali bayar. Dibayar 16 Oktober 2026.", createdAt: paidAt,
+  }).onConflictDoNothing({ target: invoices.number });
+  log("order deployment server + 5 subdomain dibuat (sudah bayar 16 Okt 2026)");
 }
 
 

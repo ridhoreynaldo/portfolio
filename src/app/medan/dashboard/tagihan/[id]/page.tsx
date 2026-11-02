@@ -44,7 +44,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
           <thead className="bg-[#f3eee4]"><tr><th className="px-5 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Rincian</th><th className="px-5 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Nominal</th></tr></thead>
           <tbody>
             {(inv.items.length ? inv.items : [{ description: inv.title, amount: inv.amount }]).map((l, k) => (
-              <tr key={k} className="border-t border-[var(--rule)]"><td className="px-5 py-2.5 text-[var(--ink)]">{l.description}</td><td className="px-5 py-2.5 text-right text-[var(--ink-2)]">{fmtIDR(l.amount)}</td></tr>
+              <tr key={k} className="border-t border-[var(--rule)]"><td className="px-5 py-2.5 text-[var(--ink)]"><span className="mr-1.5 text-[var(--ink-3)]">{k + 1}.</span>{l.description}{"note" in l && l.note && <span className="mt-0.5 block text-xs text-[var(--ink-3)]">{l.note}</span>}</td><td className="px-5 py-2.5 text-right text-[var(--ink-2)]">{fmtIDR(l.amount)}</td></tr>
             ))}
             <tr className="border-t-2 border-[var(--navy)]"><td className="px-5 py-3 font-semibold text-[var(--navy)]">Total</td><td className="px-5 py-3 text-right font-serif text-lg font-semibold text-[var(--navy)]">{fmtIDR(inv.amount)}</td></tr>
           </tbody>

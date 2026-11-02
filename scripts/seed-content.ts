@@ -326,6 +326,7 @@ export async function seedContent(db: Db, log: (m: string) => void) {
   await renameCrm(db, log);
   await tidyDeployOrders(db, log);
   await adzkiaZabica(db, log);
+  await adzkiaZabicaOneInvoice(db, log);
   await simplifyPackages(db, log);
 
   // menu PUBLIC "Jasa" → halaman /medan (dulu section #layanan di beranda; dimigrasi otomatis)
@@ -566,6 +567,40 @@ async function adzkiaZabica(db: Db, log: (m: string) => void) {
       note: "Tagihan bulanan (periode November 2026). Bayar via QRIS lalu unggah bukti." },
   );
   log("tagihan zabica.id dibuat (domain, deployment, server + maintenance) untuk Zabica");
+}
+/**
+ * 2 Nov 2026 (permintaan pemilik): 3 tagihan zabica.id digabung jadi SATU invoice berisi 3 baris terpisah (domain,
+ * deployment, server + maintenance), tiap baris diberi keterangan siklus bayar & jatuh tempo. Ketiga order tetap
+ * (siklus masing-masing); invoice dikaitkan ke order server bulanan periode 2026-11 supaya tagihan otomatis Desember
+ * dst. hanya berisi server + maintenance. Hanya jalan bila tagihan zabica masih terpisah (lebih dari satu).
+ */
+async function adzkiaZabicaOneInvoice(db: Db, log: (m: string) => void) {
+  const [cust] = await db.select({ id: users.id }).from(users).where(eq(users.email, "adzkia@adzkia.com")).limit(1);
+  if (!cust) return;
+  const old = await db.select({ id: invoices.id, status: invoices.status }).from(invoices)
+    .where(and(eq(invoices.userId, cust.id), eq(invoices.billToEmail, "zabica@gmail.com"), sql`${invoices.createdAt} < '2026-11-03'`));
+  if (old.length < 2 || old.some((i) => i.status !== "unpaid")) return;
+  const [server] = await db.select({ id: orders.id }).from(orders).where(and(eq(orders.userId, cust.id), eq(orders.packageName, "Server + Maintenance zabica.id"))).limit(1);
+  if (!server) return;
+  await db.delete(invoices).where(inArray(invoices.id, old.map((i) => i.id)));
+  const [r] = await db.select({ n: sql<number>`count(*)::int` }).from(invoices).where(sql`${invoices.number} like 'INV-202611-%'`);
+  const number = `INV-202611-${String((r?.n ?? 0) + 1).padStart(4, "0")}`;
+  const items = [
+    { description: "Sewa Domain zabica.id (1 tahun)", amount: 300_000,
+      note: "Per tahun · masa berlaku 2 Nov 2026 s.d. 2 Nov 2027 · perpanjangan berikutnya jatuh tempo 2 Nov 2027" },
+    { description: "Deployment zabica.id ke server (domain, SSL, konfigurasi server)", amount: 750_000,
+      note: "Sekali bayar · tidak ditagih lagi" },
+    { description: "Server + Maintenance zabica.id — November 2026", amount: 2_500_000,
+      note: "Per bulan · server Rp 1.500.000 (kapasitas ±3.000 pengguna) + maintenance Rp 1.000.000 · berikutnya jatuh tempo tiap tanggal 2 (mulai 2 Des 2026)" },
+  ];
+  await db.insert(invoices).values({
+    number, userId: cust.id, orderId: server.id, billTo: "Zabica", billToEmail: "zabica@gmail.com",
+    title: "Tagihan zabica.id — Domain, Deployment, Server + Maintenance", period: "2026-11",
+    amount: items.reduce((t, i) => t + i.amount, 0), items, dueDate: "2026-11-09", status: "unpaid",
+    note: "Jatuh tempo pembayaran invoice ini 9 November 2026. Domain dibayar per tahun (perpanjangan 2 Nov 2027), deployment sekali bayar, server + maintenance per bulan (tagihan berikutnya tiap tanggal 2). Bayar via QRIS lalu unggah bukti.",
+    createdAt: new Date("2026-11-02T12:00:00+07:00"),
+  });
+  log(`tagihan zabica.id digabung menjadi ${number}`);
 }
 
 /**

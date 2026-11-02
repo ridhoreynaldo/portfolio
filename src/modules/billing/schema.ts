@@ -14,7 +14,8 @@ export type InvoiceStatus = (typeof invoiceStatus.enumValues)[number];
 
 /** Katalog jasa: konsultasi, pembuatan aplikasi, sewa (server/aplikasi), maintenance. */
 /** Satu baris rincian tagihan / rincian biaya langganan, mis. { description: "Sewa Server", amount: 2000000 }. */
-export type InvoiceItem = { description: string; amount: number };
+/** `note`: keterangan baris (mis. "Sekali bayar · jatuh tempo …"), tampil kecil di bawah deskripsi. */
+export type InvoiceItem = { description: string; amount: number; note?: string };
 
 /** Satu baris tabel harga bertingkat, mis. { label: "≤ 5.000 pengguna", price: 2500000 }. */
 export type PriceTier = { label: string; price: number };

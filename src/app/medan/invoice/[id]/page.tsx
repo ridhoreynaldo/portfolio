@@ -89,7 +89,10 @@ export default async function InvoicePrintPage({ params }: { params: Promise<{ i
             {lines.map((l, k) => (
               <tr key={k} className="border-b border-[var(--rule)]">
                 <td className="px-4 py-3 text-[var(--ink-3)]">{k + 1}</td>
-                <td className="px-4 py-3 text-[var(--ink)]">{l.description}</td>
+                <td className="px-4 py-3 text-[var(--ink)]">
+                  {l.description}
+                  {"note" in l && l.note && <p className="mt-0.5 text-xs text-[var(--ink-3)]">{l.note}</p>}
+                </td>
                 <td className="px-4 py-3 text-right text-[var(--ink)]">{fmtIDR(l.amount)}</td>
               </tr>
             ))}

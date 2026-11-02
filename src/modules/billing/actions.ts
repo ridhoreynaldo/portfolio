@@ -30,12 +30,13 @@ const lines = (s: unknown) =>
     .filter(Boolean)
     .slice(0, 20);
 
-/** Textarea rincian: satu baris "deskripsi | nominal" → baris tagihan / rincian biaya. */
+/** Textarea rincian: satu baris "deskripsi | nominal | keterangan (opsional)" → baris tagihan / rincian biaya. */
 const lineItems = (s: unknown) =>
   lines(s)
     .map((row) => {
-      const [description = "", raw = ""] = row.split("|").map((x) => x.trim());
-      return { description: description.slice(0, 160), amount: Math.max(0, Math.min(1_000_000_000, Math.round(Number(raw.replace(/[^\d]/g, "")) || 0))) };
+      const [description = "", raw = "", ...rest] = row.split("|").map((x) => x.trim());
+      const note = rest.join(" | ").slice(0, 240);
+      return { description: description.slice(0, 160), amount: Math.max(0, Math.min(1_000_000_000, Math.round(Number(raw.replace(/[^\d]/g, "")) || 0))), ...(note ? { note } : {}) };
     })
     .filter((t) => t.description);
 

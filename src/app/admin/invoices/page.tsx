@@ -27,7 +27,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
     period: inv?.period ?? q.period ?? "",
     dueDate: inv?.dueDate ?? due.toISOString().slice(0, 10),
     note: inv?.note ?? "",
-    items: (inv?.items ?? []).map((i) => `${i.description} | ${i.amount}`).join("\n"),
+    items: (inv?.items ?? []).map((i) => `${i.description} | ${i.amount}${i.note ? ` | ${i.note}` : ""}`).join("\n"),
     paidAt: inv?.paidAt ? new Date(inv.paidAt.getTime() + 7 * 3600_000).toISOString().slice(0, 10) : "",
   };
   const totals = { unpaid: all.filter((i) => i.status === "unpaid").reduce((s, i) => s + i.amount, 0), verifying: all.filter((i) => i.status === "pending_verification").length };
@@ -79,7 +79,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
               <div className="sm:col-span-2"><label className="label">Ditagihkan kepada (kosong = ikut order / nama akun)</label><input name="billTo" maxLength={160} defaultValue={preset.billTo} placeholder="mis. Adzkia Smart / Bimbel Adzkia Kedinasan" className="input-dark" /></div>
               <div className="sm:col-span-2"><label className="label">Email tujuan tagihan (kosong = ikut order / email akun)</label><input name="billToEmail" type="email" maxLength={160} defaultValue={preset.billToEmail} placeholder="mis. keuangan@klien.com" className="input-dark" /></div>
               <div className="sm:col-span-2"><label className="label">Judul tagihan *</label><input name="title" required minLength={2} maxLength={255} defaultValue={preset.title} placeholder="Sewa Server — Oktober 2026" className="input-dark" /></div>
-              <div className="sm:col-span-2 lg:col-span-3"><label className="label">Rincian baris (opsional, satu per baris: <code>deskripsi | nominal</code>; nominal tagihan otomatis = jumlahnya)</label><textarea name="items" rows={3} defaultValue={preset.items} className="input-dark font-mono text-xs" placeholder={"Sewa Server | 2000000\nMaintenance Aplikasi | 2500000"} /></div>
+              <div className="sm:col-span-2 lg:col-span-3"><label className="label">Rincian baris (opsional, satu per baris: <code>deskripsi | nominal | keterangan</code>; keterangan opsional, mis. &quot;Sekali bayar · jatuh tempo 9 Nov 2026&quot;; nominal tagihan otomatis = jumlahnya)</label><textarea name="items" rows={3} defaultValue={preset.items} className="input-dark font-mono text-xs" placeholder={"Sewa Server | 2000000\nMaintenance Aplikasi | 2500000"} /></div>
               <div><label className="label">Nominal (Rp){" "}<span className="text-slate-500">(diabaikan bila ada rincian)</span></label><input name="amount" type="number" min={0} step={1000} defaultValue={preset.amount} className="input-dark" /></div>
               <div><label className="label">Jatuh tempo *</label><input name="dueDate" type="date" required defaultValue={preset.dueDate} className="input-dark" /></div>
               <div><label className="label">Tanggal dibayar (isi = tandai lunas)</label><input name="paidAt" type="date" defaultValue={preset.paidAt} className="input-dark" /></div>
@@ -101,7 +101,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
                   <td className={`${td} font-mono text-xs text-cyan-300`}>{r.number}<div className="text-[10px] text-slate-500">{fmtDateTime(r.createdAt)}</div></td>
                   <td className={td}><div className="text-white">{r.customerName}</div><div className="text-xs text-slate-500">{r.customerEmail}</div></td>
                   <td className={td}>{r.title}{r.period && <div className="text-xs text-slate-500">{fmtPeriod(r.period)}</div>}
-                    {r.items.length > 0 && <ul className="mt-1 space-y-0.5 text-xs text-slate-400">{r.items.map((i, k) => <li key={k}>· {i.description} <span className="text-slate-500">{fmtIDR(i.amount)}</span></li>)}</ul>}
+                    {r.items.length > 0 && <ul className="mt-1 space-y-0.5 text-xs text-slate-400">{r.items.map((i, k) => <li key={k}>· {i.description} <span className="text-slate-500">{fmtIDR(i.amount)}</span>{i.note && <span className="text-slate-500"> — {i.note}</span>}</li>)}</ul>}
                   </td>
                   <td className={`${td} ${late ? "text-rose-300" : ""}`}>{fmtDate(r.dueDate)}{late && <div className="text-[10px]">lewat</div>}</td>
                   <td className={`${td} font-semibold text-white`}>{fmtIDR(r.amount)}</td>

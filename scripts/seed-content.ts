@@ -325,6 +325,7 @@ export async function seedContent(db: Db, log: (m: string) => void) {
   await adzkiaBillToAndWording(db, log);
   await renameCrm(db, log);
   await tidyDeployOrders(db, log);
+  await adzkiaZabica(db, log);
   await simplifyPackages(db, log);
 
   // menu PUBLIC "Jasa" → halaman /medan (dulu section #layanan di beranda; dimigrasi otomatis)
@@ -505,6 +506,67 @@ async function tidyDeployOrders(db: Db, log: (m: string) => void) {
   log("nama jasa deployment dirapikan, absensi masuk cakupan Layanan Server & Aplikasi");
 }
 
+/**
+ * 2 Nov 2026 (permintaan pemilik): tagihan zabica.id di akun Adzkia, ditagihkan ke "Zabica" <zabica@gmail.com>.
+ * Order domain zabica lama (ORD-202611-0001, item salah "zabica.com") + tagihannya dihapus, diganti 3 order + 3 tagihan
+ * belum lunas: sewa domain tahunan (2 Nov 2026 s.d. 2 Nov 2027) Rp 300.000, deployment sekali bayar Rp 750.000, dan
+ * Layanan Server & Aplikasi bulanan (server Rp 1.500.000 + maintenance Rp 1.000.000, kapasitas ±3.000 pengguna; tagihan
+ * bulan berikutnya dibuat otomatis tiap tanggal 2). Hanya jalan sekali (penanda: order "Deployment zabica.id").
+ */
+async function adzkiaZabica(db: Db, log: (m: string) => void) {
+  const [cust] = await db.select({ id: users.id }).from(users).where(eq(users.email, "adzkia@adzkia.com")).limit(1);
+  if (!cust) return;
+  const deployName = "Deployment zabica.id";
+  const [has] = await db.select({ id: orders.id }).from(orders).where(and(eq(orders.userId, cust.id), eq(orders.packageName, deployName))).limit(1);
+  if (has) return;
+  const old = await db.select({ id: orders.id }).from(orders).where(and(eq(orders.userId, cust.id), sql`${orders.items}::text ilike '%zabica%'`));
+  if (old.length) {
+    const ids = old.map((o) => o.id);
+    await db.delete(invoices).where(inArray(invoices.orderId, ids));
+    await db.delete(orders).where(inArray(orders.id, ids));
+  }
+  await db.delete(invoices).where(and(eq(invoices.userId, cust.id), sql`${invoices.items}::text ilike '%zabica%'`));
+  const pkg = async (slug: string) => (await db.select({ id: servicePackages.id }).from(servicePackages).where(eq(servicePackages.slug, slug)).limit(1))[0]?.id ?? null;
+  // nomor urut mengikuti cara aplikasi (count per bulan + 1) supaya nomor berikutnya dari admin tidak bentrok
+  const next = async (kind: "ORD" | "INV") => {
+    const t = kind === "ORD" ? orders : invoices;
+    const [r] = await db.select({ n: sql<number>`count(*)::int` }).from(t).where(sql`${t.number} like ${kind + "-202611-%"}`);
+    return `${kind}-202611-${String((r?.n ?? 0) + 1).padStart(4, "0")}`;
+  };
+  const to = { billTo: "Zabica", billToEmail: "zabica@gmail.com" };
+  const items = ["zabica.id"];
+  const at = new Date("2026-11-02T12:00:00+07:00");
+  const add = async (o: Omit<typeof orders.$inferInsert, "number" | "userId">, inv: Omit<typeof invoices.$inferInsert, "number" | "userId" | "orderId">) => {
+    const [row] = await db.insert(orders).values({ ...o, ...to, number: await next("ORD"), userId: cust.id, status: "active", createdAt: at }).returning({ id: orders.id });
+    await db.insert(invoices).values({ ...inv, ...to, number: await next("INV"), userId: cust.id, orderId: row!.id, status: "unpaid", createdAt: at });
+  };
+
+  const domain = [{ description: "Sewa Domain — zabica.id (1 tahun, 2 Nov 2026 s.d. 2 Nov 2027)", amount: 300_000 }];
+  await add(
+    { packageId: await pkg("sewa-domain"), packageName: "Sewa Domain", startDate: "2026-11-02", endDate: "2027-11-02", unitPrice: 300_000, itemLabel: "domain", items,
+      adminNote: "Sewa domain tahunan zabica.id. Masa berlaku 2 Nov 2026 s.d. 2 Nov 2027; perpanjangan berikutnya 2 Nov 2027." },
+    { title: "Sewa Domain — periode 2 Nov 2026 s.d. 2 Nov 2027", period: "", amount: 300_000, items: domain, dueDate: "2026-11-09",
+      note: "Sewa domain 1 tahun (2 Nov 2026 s.d. 2 Nov 2027), jatuh tempo perpanjangan berikutnya 2 Nov 2027. Bayar via QRIS lalu unggah bukti." },
+  );
+
+  const deploy = [{ description: "Deployment aplikasi zabica.id ke server (domain, SSL, konfigurasi server)", amount: 750_000 }];
+  await add(
+    { packageName: deployName, startDate: "2026-11-02", itemLabel: "domain", items, breakdown: deploy, adminNote: "Sekali bayar (bukan bulanan) Rp 750.000." },
+    { title: deployName, period: "", amount: 750_000, items: deploy, dueDate: "2026-11-09", note: "Sekali bayar. Bayar via QRIS lalu unggah bukti." },
+  );
+
+  const server = [
+    { description: "Sewa Server zabica.id (kapasitas ±3.000 pengguna)", amount: 1_500_000 },
+    { description: "Maintenance zabica.id (perawatan & dukungan aplikasi)", amount: 1_000_000 },
+  ];
+  await add(
+    { packageId: await pkg("sewa-server-maintenance"), packageName: "Server + Maintenance zabica.id", startDate: "2026-11-02", unitPrice: 2_500_000, itemLabel: "domain", items, breakdown: server,
+      adminNote: "Biaya server Rp 1.500.000 + maintenance Rp 1.000.000 per bulan untuk zabica.id, kapasitas ±3.000 pengguna. Ditagih tiap tanggal 2." },
+    { title: "Server + Maintenance zabica.id — November 2026", period: "2026-11", amount: 2_500_000, items: server, dueDate: "2026-11-09",
+      note: "Tagihan bulanan (periode November 2026). Bayar via QRIS lalu unggah bukti." },
+  );
+  log("tagihan zabica.id dibuat (domain, deployment, server + maintenance) untuk Zabica");
+}
 
 /**
  * Penyederhanaan katalog 27 Okt 2026 (permintaan pemilik: "sedikit tapi padat"): paket yang belum pernah diubah admin

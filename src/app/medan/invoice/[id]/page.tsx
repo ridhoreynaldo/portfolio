@@ -56,8 +56,15 @@ export default async function InvoicePrintPage({ params }: { params: Promise<{ i
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Ditagihkan kepada</p>
             <p className="mt-1 font-semibold text-[var(--navy)]">{inv.billTo || cust?.company || inv.customerName}</p>
-            <p className="text-[var(--ink-2)]">{inv.customerEmail}{cust?.phone ? ` · ${cust.phone}` : ""}</p>
-            {cust?.address && <p className="whitespace-pre-line text-[var(--ink-2)]">{cust.address}</p>}
+            {inv.billToEmail ? (
+              // tujuan tagihan pihak lain: kontak akun (email/telepon/alamat) tidak ditampilkan
+              <p className="text-[var(--ink-2)]">{inv.billToEmail}</p>
+            ) : (
+              <>
+                <p className="text-[var(--ink-2)]">{inv.customerEmail}{cust?.phone ? ` · ${cust.phone}` : ""}</p>
+                {cust?.address && <p className="whitespace-pre-line text-[var(--ink-2)]">{cust.address}</p>}
+              </>
+            )}
           </div>
           <div className="sm:text-right">
             <dl className="grid grid-cols-2 gap-x-4 gap-y-1 sm:justify-end">

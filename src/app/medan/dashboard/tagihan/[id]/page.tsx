@@ -41,7 +41,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
       </div>
       <section className="card mt-5 overflow-hidden p-0">
         <table className="w-full text-sm">
-          <thead className="bg-[#f3eee4]"><tr><th className="px-5 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Rincian</th><th className="px-5 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Nominal</th></tr></thead>
+          <thead className="bg-[var(--sand)]"><tr><th className="px-5 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Rincian</th><th className="px-5 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Nominal</th></tr></thead>
           <tbody>
             {(inv.items.length ? inv.items : [{ description: inv.title, amount: inv.amount }]).map((l, k) => (
               <tr key={k} className="border-t border-[var(--rule)]"><td className="px-5 py-2.5 text-[var(--ink)]"><span className="mr-1.5 text-[var(--ink-3)]">{k + 1}.</span>{l.description}{"note" in l && l.note && <span className="mt-0.5 block text-xs text-[var(--ink-3)]">{l.note}</span>}</td><td className="px-5 py-2.5 text-right text-[var(--ink-2)]">{fmtIDR(l.amount)}</td></tr>
@@ -49,7 +49,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             <tr className="border-t-2 border-[var(--navy)]"><td className="px-5 py-3 font-semibold text-[var(--navy)]">Total</td><td className="px-5 py-3 text-right font-serif text-lg font-semibold text-[var(--navy)]">{fmtIDR(inv.amount)}</td></tr>
           </tbody>
         </table>
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--rule)] bg-white/60 px-5 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--rule)] bg-[var(--paper-2)] px-5 py-3">
           {inv.note ? <p className="text-xs text-[var(--ink-3)]">{inv.note}</p> : <span />}
           <a href={`/medan/invoice/${inv.id}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm"><Printer className="h-3.5 w-3.5" /> Cetak / simpan PDF</a>
         </div>
@@ -65,7 +65,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
           <section className="card p-6">
             <h2 className="font-serif flex items-center gap-2 text-lg font-semibold text-[var(--navy)]"><QrCode className="h-5 w-5 text-[var(--gold)]" /> 1. Bayar</h2>
             {pay?.qrisFileId ? (
-              <div className="mt-4 rounded-xl border border-[var(--rule)] bg-white p-4">
+              <div className="mt-4 rounded-xl border border-[var(--rule)] bg-[var(--paper-2)] p-4">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={`/api/files/${pay.qrisFileId}`} alt="QRIS" className="mx-auto max-h-80 w-auto" />
                 <p className="mt-3 text-center text-xs text-[var(--ink-2)]">Scan QRIS dengan aplikasi bank / e-wallet apa pun. Nominal: <b className="text-[var(--navy)]">{fmtIDR(inv.amount)}</b></p>
@@ -74,7 +74,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               <p className="mt-3 text-sm text-[var(--ink-3)]">QRIS belum tersedia. Gunakan transfer bank di bawah atau hubungi kami.</p>
             )}
             {pay?.bankAccount && (
-              <div className="mt-4 rounded-xl border border-[var(--rule)] bg-white p-4 text-sm">
+              <div className="mt-4 rounded-xl border border-[var(--rule)] bg-[var(--paper-2)] p-4 text-sm">
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Transfer bank</p>
                 <p className="mt-1 font-semibold text-[var(--navy)]">{pay.bankName} · {pay.bankAccount}</p>
                 <p className="text-[var(--ink-2)]">a.n. {pay.bankHolder}</p>

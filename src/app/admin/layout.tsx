@@ -5,6 +5,7 @@ import { Badge, Flash } from "@/shared/ui";
 import { logoutAction } from "@/modules/auth/actions";
 import { requireStaff } from "@/modules/auth/guards";
 import { adminMenuTree } from "@/modules/menus/repository";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Sidebar } from "./sidebar";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +33,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <div className="mb-3 flex flex-wrap gap-1">
             {user.roles.map((r) => <Badge key={r.id} tone={r.isSystem ? "violet" : "cyan"}>{r.name}</Badge>)}
           </div>
-          <form action={logoutAction}>
+          <form action={logoutAction} className="flex gap-2">
+            <ThemeToggle />
             <button className="btn-ghost btn-sm w-full"><LogOut className="h-3.5 w-3.5" /> Keluar</button>
           </form>
         </div>

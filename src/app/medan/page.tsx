@@ -107,7 +107,7 @@ export default async function JasaPage() {
                   </li>
                 ))}
               </ul>
-              <div className="mt-6 flex items-center justify-between gap-3 rounded-lg bg-[var(--navy)] px-4 py-3 text-sm text-white">
+              <div className="mt-6 flex items-center justify-between gap-3 rounded-lg bg-[var(--btn)] px-4 py-3 text-sm text-white">
                 <span>Harga pasti dikonfirmasi lewat WhatsApp</span>
                 <a href="#paket" className="shrink-0 font-semibold text-[var(--gold-2)] hover:underline">Lihat paket →</a>
               </div>
@@ -116,7 +116,7 @@ export default async function JasaPage() {
         </section>
 
         {/* ── Paket ── */}
-        <div className="border-y border-[var(--rule)] bg-white">
+        <div className="border-y border-[var(--rule)] bg-[var(--paper-2)]">
           <Section id="paket" eyebrow="Pilih yang Anda butuhkan" title="Paket Layanan" sub="Sedikit pilihan, tapi jelas. Belum ada yang pas? Ceritakan saja kebutuhannya lewat WhatsApp.">
             {groups.length === 0 && <p className="card p-8 text-center text-[var(--ink-3)]">Belum ada paket layanan yang aktif.</p>}
             {groups.map(([cat, list], gi) => (
@@ -190,7 +190,7 @@ export default async function JasaPage() {
         )}
 
         {/* ── Cara kerja ── */}
-        <div className="border-y border-[var(--rule)] bg-white">
+        <div className="border-y border-[var(--rule)] bg-[var(--paper-2)]">
           <Section id="cara-kerja" eyebrow="Prosesnya sederhana" title="Cara Kerja" narrow>
             <ol className="grid gap-6 md:grid-cols-3">
               {STEPS.map(([t, d], i) => (
@@ -208,7 +208,7 @@ export default async function JasaPage() {
         <Section id="kontak" eyebrow="Mari berdiskusi" title="Masih ragu? Diskusi dulu, gratis." sub="Ceritakan kebutuhan Anda. Kami bantu tentukan paket dan estimasi yang paling masuk akal." narrow>
           <div className="card flex flex-col items-center gap-4 p-8 text-center md:flex-row md:justify-between md:text-left">
             <div className="flex items-center gap-4">
-              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[var(--navy)] text-white"><Headset className="h-6 w-6" /></span>
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[var(--btn)] text-white"><Headset className="h-6 w-6" /></span>
               <div>
                 <p className="font-serif text-lg font-semibold text-[var(--navy)]">{brand.name}</p>
                 <p className="text-sm text-[var(--ink-3)]">{brand.area}, Sumatera Utara · balas dalam 24 jam</p>

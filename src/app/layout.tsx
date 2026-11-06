@@ -14,7 +14,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" className={`${display.variable} ${body.variable} ${mono.variable} ${serif.variable}`}>
+    <html lang="id" suppressHydrationWarning className={`${display.variable} ${body.variable} ${mono.variable} ${serif.variable}`}>
+      <head><script dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem("svc-theme");if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.dataset.theme=t}catch(e){}` }} /></head>
       <body className="antialiased">{children}</body>
     </html>
   );

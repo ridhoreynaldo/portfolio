@@ -88,7 +88,7 @@ export default async function Dashboard() {
       <section className="card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] border-collapse">
-            <thead className="bg-[#f3eee4]">
+            <thead className="bg-[var(--sand)]">
               <tr>
                 <th className={pth}>No</th><th className={pth}>Jasa</th><th className={pth}>Kepada</th><th className={pth}>Biaya</th>
                 <th className={pth}>Status Bayar</th><th className={pth}>Jatuh Tempo</th><th className={pth} />
@@ -108,7 +108,7 @@ export default async function Dashboard() {
           <div className="card overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[900px] border-collapse">
-                <thead className="bg-[#f3eee4]">
+                <thead className="bg-[var(--sand)]">
                   <tr>
                     <th className={pth}>Tagihan</th><th className={pth}>Jasa / Periode</th><th className={pth}>Kepada</th><th className={pth}>Jumlah</th>
                     <th className={pth}>Jatuh Tempo</th><th className={pth}>Status</th><th className={pth} />

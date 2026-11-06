@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { LayoutDashboard, LogOut, Server, UserRound } from "lucide-react";
 import { SERVICE_LOGO, SERVICE_BRAND, ServiceFooter } from "@/components/service-shell";
 import { logoutToHomeAction } from "@/modules/auth/actions";
@@ -22,7 +23,7 @@ export default async function PortalLayout({ children }: { children: React.React
   const brand = SERVICE_BRAND;
   return (
     <div className="svc flex min-h-screen flex-col">
-      <header className="sticky top-0 z-40 border-b border-[var(--rule)] bg-white">
+      <header className="sticky top-0 z-40 border-b border-[var(--rule)] bg-[var(--paper-2)]">
         <nav className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-3">
           <Link href="/medan/dashboard" className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -35,12 +36,13 @@ export default async function PortalLayout({ children }: { children: React.React
           <ul className="order-3 flex w-full items-center gap-1 overflow-x-auto border-t border-[var(--rule)] pt-2 text-sm md:order-none md:w-auto md:border-0 md:pt-0">
             {NAV.map(([href, label, Icon]) => (
               <li key={href}>
-                <Link href={href} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium text-[var(--ink-2)] transition hover:bg-white hover:text-[var(--navy)]"><Icon className="h-4 w-4" />{label}</Link>
+                <Link href={href} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium text-[var(--ink-2)] transition hover:bg-[var(--soft)] hover:text-[var(--navy)]"><Icon className="h-4 w-4" />{label}</Link>
               </li>
             ))}
             <li><Link href="/medan#paket" className="btn-primary btn-sm ml-1">+ Sewa / pesan</Link></li>
           </ul>
           <div className="flex items-center gap-2 text-xs text-[var(--ink-3)]">
+            <ThemeToggle />
             <span className="hidden sm:inline">{user.name}</span>
             {isStaff(user) && <Link href="/admin" className="btn-ghost btn-sm"><LayoutDashboard className="h-3.5 w-3.5" /> Admin</Link>}
             <form action={logoutToHomeAction}><button className="btn-ghost btn-sm"><LogOut className="h-3.5 w-3.5" /> Keluar</button></form>

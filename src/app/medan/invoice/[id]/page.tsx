@@ -34,7 +34,7 @@ export default async function InvoicePrintPage({ params }: { params: Promise<{ i
         <PrintButton />
       </div>
 
-      <article className="mx-auto my-6 max-w-3xl bg-white p-8 shadow-[0_20px_60px_-30px_rgba(20,33,61,0.35)] print:my-0 print:max-w-none print:p-0 print:shadow-none md:p-12">
+      <article className="invoice-paper mx-auto my-6 max-w-3xl bg-white p-8 shadow-[0_20px_60px_-30px_rgba(20,33,61,0.35)] print:my-0 print:max-w-none print:p-0 print:shadow-none md:p-12">
         <header className="flex flex-wrap items-start justify-between gap-6 border-b-2 border-[var(--navy)] pb-6">
           <div className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -79,7 +79,7 @@ export default async function InvoicePrintPage({ params }: { params: Promise<{ i
 
         <table className="mt-8 w-full text-sm">
           <thead>
-            <tr className="bg-[var(--navy)] text-white">
+            <tr className="bg-[var(--btn)] text-white">
               <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider">#</th>
               <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider">Deskripsi</th>
               <th className="px-4 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wider">Nominal</th>

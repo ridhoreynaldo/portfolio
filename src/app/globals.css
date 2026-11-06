@@ -276,6 +276,7 @@ input[type="file"].input-dark::file-selector-button {
   --paper-2: #ffffff;
   --navy: #1f5f4a;      /* hijau utama */
   --navy-2: #174a3a;    /* hijau hover */
+  --btn: #1f5f4a;       /* latar tombol/blok hijau */
   --gold: #c9892f;      /* aksen hangat */
   --gold-2: #f3d9a4;
   --soft: #e8f0ec;      /* latar ikon/chip hijau muda */
@@ -309,8 +310,8 @@ body:has(.svc) { background-color: #f6f7f3; }
   text-transform: none; letter-spacing: 0; clip-path: none; font-family: var(--font-sans); box-shadow: none; filter: none; transform: none;
 }
 .svc .btn-sm { padding: 0.45rem 0.95rem; font-size: 0.82rem; min-height: 2.25rem; }
-.svc .btn-primary { background: var(--navy); color: #fff; border: 1px solid var(--navy); }
-.svc .btn-primary:hover { background: var(--navy-2); filter: none; transform: none; }
+.svc .btn-primary { background: var(--btn); color: #fff; border: 1px solid var(--btn); }
+.svc .btn-primary:hover { background: var(--btn-2, #174a3a); filter: none; transform: none; }
 .svc .btn-primary:disabled { opacity: 0.6; }
 .svc .btn-ghost { background: #fff; border: 1px solid #cdd6d0; color: var(--navy); }
 .svc .btn-ghost:hover { background: var(--soft); border-color: var(--navy); box-shadow: none; }
@@ -368,3 +369,41 @@ body:has(.svc) { background-color: #f6f7f3; }
 .svc .hud { background: #fff; border: 1px solid var(--rule); clip-path: none; box-shadow: none; }
 .svc .hud::before, .svc .hud::after { display: none; }
 .svc select.input-dark option { background: #fff; color: var(--ink); }
+
+/* ── TEMA GELAP (html[data-theme="dark"]): hijau pekat, tetap flat ── */
+html[data-theme="dark"] .svc {
+  --paper: #0f1815; --paper-2: #16231f; --soft: #1d3029; --sand: #222b24; --rule: #26382f;
+  --navy: #7fd1b0; --navy-2: #a6e3cb; --btn: #2d8a6a; --btn-2: #3a9d7b;
+  --gold: #e3a94d; --gold-2: #f0c37a;
+  --ink: #e5efe9; --ink-2: #a8bab1; --ink-3: #7b8f85;
+}
+html[data-theme="dark"] body:has(.svc), html[data-theme="dark"] body:has(.svc)::after { background-color: #0f1815; }
+html[data-theme="dark"] .svc .btn-ghost { background: transparent; border-color: #34493f; color: var(--ink); }
+html[data-theme="dark"] .svc .btn-ghost:hover { background: var(--soft); border-color: var(--navy); }
+html[data-theme="dark"] .svc .btn-gold { color: #1b1304; }
+html[data-theme="dark"] .svc .input-dark { background: #101c18; border-color: #34493f; color: var(--ink); }
+html[data-theme="dark"] .svc .input-dark::placeholder { color: #5f7369; }
+html[data-theme="dark"] .svc .input-dark:focus { border-color: var(--navy); outline-color: var(--soft); }
+html[data-theme="dark"] .svc select.input-dark option { background: #16231f; color: var(--ink); }
+html[data-theme="dark"] .svc .tag { background: var(--sand); color: #e3c98f; }
+html[data-theme="dark"] .svc .tag-gold { background: var(--gold); color: #1b1304; }
+html[data-theme="dark"] .svc .card-featured { border-color: var(--navy); }
+html[data-theme="dark"] .svc .pill-slate { background: #26332d; color: #b5c4bc; }
+html[data-theme="dark"] .svc .pill-violet { background: #2c2745; color: #c9b9f5; }
+html[data-theme="dark"] .svc .pill-cyan { background: #1b3040; color: #9ccdee; }
+html[data-theme="dark"] .svc .pill-emerald { background: #17372a; color: #8fe0b2; }
+html[data-theme="dark"] .svc .pill-rose { background: #3d1f22; color: #f4a5a5; }
+html[data-theme="dark"] .svc .pill-amber { background: #3a2f14; color: #f0cd80; }
+html[data-theme="dark"] .svc .meter { background: #26382f; }
+html[data-theme="dark"] .svc .alert-error, html[data-theme="dark"] .svc .bg-rose-500\/10 { background: #3d1f22; border-color: #6b3338; color: #f4a5a5; }
+html[data-theme="dark"] .svc .alert-ok, html[data-theme="dark"] .svc .bg-emerald-500\/10 { background: #17372a; border-color: #2c6a4f; color: #8fe0b2; }
+html[data-theme="dark"] .svc .text-rose-200, html[data-theme="dark"] .svc .text-rose-300 { color: #f4a5a5; }
+html[data-theme="dark"] .svc .text-emerald-200, html[data-theme="dark"] .svc .text-emerald-300 { color: #8fe0b2; }
+html[data-theme="dark"] .svc .text-amber-200 { color: #f0cd80; }
+html[data-theme="dark"] .svc .bg-amber-500\/10 { background: #3a2f14; }
+html[data-theme="dark"] .svc .glass, html[data-theme="dark"] .svc .hud { background: var(--paper-2); border-color: var(--rule); }
+html[data-theme="dark"] .svc .bg-white\/10 { background: #26332d; }
+html[data-theme="dark"] .svc .bg-cyan-500\/20 { background: #1b3040; } html[data-theme="dark"] .svc .bg-emerald-500\/20 { background: #17372a; }
+html[data-theme="dark"] .svc .bg-rose-500\/20 { background: #3d1f22; } html[data-theme="dark"] .svc .bg-amber-500\/20 { background: #3a2f14; }
+/* lembar invoice cetak tetap kertas putih */
+.svc .invoice-paper { --paper: #f6f7f3; --paper-2: #fff; --navy: #1f5f4a; --btn: #1f5f4a; --soft: #e8f0ec; --sand: #f1ece0; --rule: #e1e6e0; --ink: #1d2a25; --ink-2: #4a5852; --ink-3: #76847d; --gold: #c9892f; color: var(--ink); }

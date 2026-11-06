@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LogIn, UserRound } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 import type { AuthUser } from "@/modules/auth/session";
 import { fmtIDR } from "@/modules/billing/labels";
 import type { PriceTier } from "@/modules/billing/schema";
@@ -27,7 +28,7 @@ export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: Auth
   const staff = !!user && (user.isSuper || user.permissions.length > 0);
   const portal = user ? (staff ? "/admin" : "/medan/dashboard") : null;
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--rule)] bg-white">
+    <header className="sticky top-0 z-40 border-b border-[var(--rule)] bg-[var(--paper-2)]">
       <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 md:px-5">
         <Link href="/medan" className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -41,6 +42,7 @@ export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: Auth
           {NAV.map(([href, label]) => <li key={href}><a href={href} className="transition hover:text-[var(--navy)]">{label}</a></li>)}
         </ul>
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           {portal ? (
             <Link href={portal} className="btn-ghost btn-sm" title={staff ? "Dashboard admin" : "Dashboard pelanggan"}><UserRound className="h-3.5 w-3.5" /> Dashboard</Link>
           ) : (
@@ -59,7 +61,7 @@ export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: Auth
 
 export function ServiceFooter({ brand }: { brand: ServiceBrand }) {
   return (
-    <footer className="border-t border-[var(--rule)] bg-white">
+    <footer className="border-t border-[var(--rule)] bg-[var(--paper-2)]">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 py-8 text-center text-xs text-[var(--ink-3)] md:flex-row md:text-left">
         <div className="flex items-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -97,14 +99,14 @@ export function PriceTierTable({ tiers, cycle, unit, compact }: { tiers: PriceTi
       <table className="w-full">
         <tbody className="divide-y divide-[var(--rule)]">
           {tiers.map((t, i) => (
-            <tr key={`${t.label}-${i}`} className={i % 2 ? "bg-white" : "bg-[var(--paper)]"}>
+            <tr key={`${t.label}-${i}`} className={i % 2 ? "bg-[var(--paper-2)]" : "bg-[var(--paper)]"}>
               <td className="px-3 py-2 text-[var(--ink-2)]">{t.label}</td>
               <td className="whitespace-nowrap px-3 py-2 text-right font-semibold text-[var(--navy)]">{t.price > 0 ? fmtIDR(t.price) : "Hubungi"}</td>
             </tr>
           ))}
         </tbody>
       </table>
-      <p className="border-t border-[var(--rule)] bg-white px-3 py-1.5 text-[11px] text-[var(--ink-3)]">{cycle}{unit && ` / ${unit}`} · estimasi, harga pasti menyesuaikan kebutuhan</p>
+      <p className="border-t border-[var(--rule)] bg-[var(--paper-2)] px-3 py-1.5 text-[11px] text-[var(--ink-3)]">{cycle}{unit && ` / ${unit}`} · estimasi, harga pasti menyesuaikan kebutuhan</p>
     </div>
   );
 }

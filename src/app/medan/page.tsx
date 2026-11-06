@@ -106,7 +106,7 @@ export default async function LeetcloudPage() {
             </div>
 
             {/* Pratinjau dashboard pelanggan (ilustrasi) */}
-            <div aria-hidden className="card mx-auto w-full max-w-md bg-[var(--bg)] p-4 md:p-5">
+            <div aria-hidden className="card mx-auto hidden w-full max-w-md bg-[var(--bg)] p-4 md:block md:p-5">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-bold text-[var(--ink)]">Dashboard pelanggan</p>
                 <span className="pill pill-emerald">Aktif</span>

@@ -51,11 +51,12 @@ export function Stat({ label, value, sub, href, icon }: { label: ReactNode; valu
         <p className="text-xs font-semibold text-[var(--ink-3)]">{label}</p>
         {icon && <span className="icon-box !h-8 !w-8">{icon}</span>}
       </div>
-      <p className="mt-2 text-2xl font-bold text-[var(--ink)]">{value}</p>
+      {/* ukuran font menyesuaikan lebar kotak & panjang teks (lihat .stat-value di globals.css) */}
+      <p className="stat-value mt-2 font-bold text-[var(--ink)]" style={{ "--len": typeof value === "string" || typeof value === "number" ? String(value).length : 8 } as React.CSSProperties} title={typeof value === "string" ? value : undefined}>{value}</p>
       {sub && <p className="mt-1 text-xs text-[var(--ink-3)]">{sub}</p>}
     </>
   );
-  return href ? <a href={href} className="card card-link block p-4 md:p-5">{body}</a> : <div className="card p-4 md:p-5">{body}</div>;
+  return href ? <a href={href} className="stat-box card card-link block p-4 md:p-5">{body}</a> : <div className="stat-box card p-4 md:p-5">{body}</div>;
 }
 
 /** Tabel: wadah gulir horizontal + gaya .tbl. Kelas th/td dibiarkan untuk kompatibilitas. */

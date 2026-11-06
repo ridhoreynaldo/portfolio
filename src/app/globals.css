@@ -475,3 +475,8 @@ html[data-theme="dark"] body:has(.svc) { background-color: #070b1a; }
 @media (prefers-reduced-motion: no-preference) {
   html[data-theme="dark"] .svc .nav-item[aria-current="page"] { box-shadow: inset 2px 0 0 var(--brand); }
 }
+
+/* Angka di kartu statistik: font mengecil otomatis bila teks panjang / kotak sempit.
+   100cqi = lebar isi kotak; ~0.62em per karakter (tebal) → muat 1 baris, min 0.95rem, maks 1.5rem. */
+.svc .stat-box { container-type: inline-size; }
+.svc .stat-value { font-size: clamp(0.95rem, calc(100cqi / (var(--len, 8) * 0.62)), 1.5rem); line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

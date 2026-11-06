@@ -39,7 +39,8 @@ const SHOWCASE = ["villa-berastagi-mas", "manajemen-aset-pembayaran-asrama", "bi
 function Title({ children, sub }: { children: React.ReactNode; sub?: string }) {
   return (
     <div className="mb-8 text-center">
-      <h2 className="text-2xl font-bold text-[var(--ink)] md:text-3xl">{children}</h2>
+      <h2 className="font-cyber text-xl font-bold uppercase text-[var(--ink)] md:text-2xl">{children}</h2>
+      <span className="mx-auto mt-3 block h-[3px] w-12 rounded-full bg-[linear-gradient(90deg,var(--brand),var(--accent))]" />
       {sub && <p className="mx-auto mt-2 max-w-xl text-[var(--ink-3)]">{sub}</p>}
     </div>
   );
@@ -74,17 +75,17 @@ export default async function LeetcloudPage() {
 
       <main>
         {/* ── Hero ── */}
-        <section className="bg-[var(--brand-deep)] px-4 pb-16 pt-14 text-center text-[#fff] md:pb-24 md:pt-24">
-          <p className="mx-auto inline-flex items-center rounded-full bg-[rgba(255,255,255,0.12)] px-3 py-1 text-xs font-bold uppercase tracking-wider text-[rgba(255,255,255,0.9)]">Medan · Sumatera Utara</p>
-          <h1 className="mx-auto mt-4 max-w-3xl text-[2rem] font-extrabold leading-[1.15] md:text-5xl md:leading-[1.1]">
-            Aplikasi & server untuk <span className="text-[var(--accent)]">bisnis</span> Anda
+        <section className="hero-galaxy px-4 pb-20 pt-16 text-center md:pb-28 md:pt-24">
+          <p className="mx-auto inline-flex items-center gap-2 rounded-full border border-[rgba(0,240,255,0.35)] px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-[#9ff7ff]"><span className="h-1.5 w-1.5 rounded-full bg-[#00f0ff]" /> Medan · Sumatera Utara</p>
+          <h1 className="font-cyber mx-auto mt-5 max-w-3xl text-[1.8rem] font-bold uppercase leading-[1.2] text-[#fff] md:text-5xl md:leading-[1.15]">
+            Aplikasi & server untuk <span className="text-[#00f0ff]">bisnis</span> <span className="text-[#ff5ce1]">Anda</span>
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-[rgba(255,255,255,0.85)] md:text-lg">
+          <p className="mx-auto mt-5 max-w-xl text-[#c7d2f0] md:text-lg">
             Website, sistem informasi, dan WhatsApp gateway. Dibuat sesuai kebutuhan, dikelola sampai jalan. Melayani Medan & seluruh Indonesia.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-gold"><MessageCircle className="h-4 w-4" /> Konsultasi gratis</a>}
-            <a href="#paket" className="inline-flex min-h-[2.75rem] items-center justify-center rounded-[10px] border border-[rgba(255,255,255,0.4)] px-5 font-semibold text-[#fff] transition hover:bg-[rgba(255,255,255,0.1)]">Lihat paket</a>
+            {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-neon"><MessageCircle className="h-4 w-4" /> Konsultasi gratis</a>}
+            <a href="#paket" className="btn-outline-neon">Lihat paket</a>
           </div>
         </section>
 
@@ -122,7 +123,7 @@ export default async function LeetcloudPage() {
             <ol className="grid gap-6 text-center md:grid-cols-3">
               {STEPS.map(([t, d], i) => (
                 <li key={t}>
-                  <span className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-[var(--soft)] font-bold text-[var(--brand-ink)]">{i + 1}</span>
+                  <span className="font-cyber mx-auto grid h-11 w-11 place-items-center rounded-full border border-[var(--brand)] font-bold text-[var(--brand-ink)]">{String(i + 1).padStart(2, "0")}</span>
                   <h3 className="mt-3 font-bold text-[var(--ink)]">{t}</h3>
                   <p className="mt-1 text-sm text-[var(--ink-3)]">{d}</p>
                 </li>
@@ -151,7 +152,7 @@ export default async function LeetcloudPage() {
 
         {/* ── Kontak ── */}
         <section id="kontak" className="scroll-mt-20 bg-[var(--surface)] px-4 py-14 text-center md:py-20">
-          <h2 className="text-2xl font-bold text-[var(--ink)] md:text-3xl">Diskusi dulu, gratis</h2>
+          <h2 className="font-cyber text-xl font-bold uppercase text-[var(--ink)] md:text-2xl">Diskusi dulu, <span className="text-neon-m">gratis</span></h2>
           <p className="mx-auto mt-2 max-w-md text-[var(--ink-3)]">Ceritakan kebutuhan Anda, kami balas dalam 24 jam.</p>
           {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-primary mt-6"><MessageCircle className="h-4 w-4" /> Chat WhatsApp</a>}
         </section>

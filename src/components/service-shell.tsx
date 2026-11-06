@@ -28,7 +28,7 @@ function Logo({ brand }: { brand: ServiceBrand }) {
     <Link href="/medan" className="flex min-w-0 items-center gap-2.5">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={SERVICE_LOGO} alt="" className="h-8 w-8 shrink-0 rounded-lg" />
-      <span className="text-lg font-bold text-[var(--ink)]">{brand.name}</span>
+      <span className="font-cyber text-base font-bold tracking-wider text-[var(--ink)]">{brand.name}</span>
     </Link>
   );
 }

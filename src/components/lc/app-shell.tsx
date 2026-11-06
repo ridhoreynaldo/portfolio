@@ -60,7 +60,7 @@ export function AppShell({ brand, groups, tabs, user, footer, topActions, childr
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={brand.logo} alt="" className="h-8 w-8 shrink-0 rounded-lg" />
       <span className="min-w-0 leading-tight">
-        <span className="block truncate text-[0.95rem] font-bold text-[var(--ink)]">{brand.name}</span>
+        <span className="font-cyber block truncate text-[0.85rem] font-bold tracking-wider text-[var(--ink)]">{brand.name}</span>
         <span className="block truncate text-[11px] text-[var(--ink-3)]">{brand.sub}</span>
       </span>
     </Link>

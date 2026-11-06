@@ -272,20 +272,23 @@ input[type="file"].input-dark::file-selector-button {
    Token warna di .svc; tema gelap lewat html[data-theme="dark"].
    ─────────────────────────────────────────────────────────────────────────── */
 .svc {
-  --bg: #f2f5f8;        /* latar halaman (abu kebiruan) */
+  /* TERANG (cyber light): putih kebiruan, aksen teal-cyan & fuchsia */
+  --bg: #f3f5fb;        /* latar halaman */
   --surface: #ffffff;   /* kartu, panel */
-  --surface-2: #eef3f8; /* latar sekunder: kepala tabel, input disabled */
-  --soft: #e6f2fa;      /* sorotan biru muda */
-  --line: #e2e8f0;
-  --line-2: #cbd5e1;
-  --ink: #0f1d2a;
-  --ink-2: #475569;
-  --ink-3: #64748b;
-  --brand: #085c8c;     /* biru utama: tombol, link aktif */
-  --brand-ink: #085c8c; /* teks berwarna brand (judul, harga) */
-  --brand-hover: #064a71;
-  --brand-deep: #064a71;/* blok hero */
-  --accent: #f3a054;    /* aksen oranye */
+  --surface-2: #edf1f9; /* latar sekunder: kepala tabel, input disabled */
+  --soft: #e0f7fb;      /* sorotan cyan muda */
+  --line: #e1e6f2;
+  --line-2: #c9d1e4;
+  --ink: #0b1026;
+  --ink-2: #434d6b;
+  --ink-3: #69739a;
+  --brand: #0e7490;     /* cyan tua: tombol (kontras putih aman) */
+  --brand-ink: #0e7490; /* teks berwarna brand */
+  --brand-hover: #0b5d74;
+  --on-brand: #ffffff;  /* teks di atas tombol brand */
+  --accent: #c026d3;    /* magenta/fuchsia */
+  --on-accent: #ffffff;
+  --glow: transparent;  /* cahaya kartu saat disorot (hanya tema gelap) */
   --ok-bg: #e2f3e8; --ok: #17643a;
   --warn-bg: #fbf0d6; --warn: #7a5a0f;
   --bad-bg: #fde7e7; --bad: #a12020;
@@ -293,7 +296,7 @@ input[type="file"].input-dark::file-selector-button {
   --violet-bg: #eee9fa; --violet: #5a40a0;
   /* alias lama, agar halaman lama tetap benar */
   --paper: var(--bg); --paper-2: var(--surface); --rule: var(--line); --sand: var(--surface-2);
-  --navy: var(--brand-ink); --navy-2: var(--brand-hover); --btn: var(--brand); --gold: var(--accent); --gold-2: #f8c48f;
+  --navy: var(--brand-ink); --navy-2: var(--brand-hover); --btn: var(--brand); --gold: var(--accent); --gold-2: #f0abfc;
   color: var(--ink);
   background: var(--bg);
   min-height: 100vh;
@@ -301,29 +304,36 @@ input[type="file"].input-dark::file-selector-button {
   -webkit-tap-highlight-color: transparent;
 }
 html[data-theme="dark"] .svc {
-  --bg: #0b1520; --surface: #111e2b; --surface-2: #172736; --soft: #13304a;
-  --line: #1e3142; --line-2: #2b4258;
-  --ink: #e7eef5; --ink-2: #a7b6c6; --ink-3: #7b8ca0;
-  --brand: #0a6fa8; --brand-ink: #7cc4ef; --brand-hover: #0d80c2; --brand-deep: #0a3550; --accent: #f3a054;
-  --ok-bg: #16372a; --ok: #8fe0b2; --warn-bg: #3a2f14; --warn: #f0cd80;
-  --bad-bg: #3d1f22; --bad: #f4a5a5; --info-bg: #1a2f3f; --info: #9ccdee;
-  --violet-bg: #2b2644; --violet: #c9b9f5; --gold-2: #f8c48f;
+  /* GELAP (cyberpunk galactic): navy angkasa, cyan neon, magenta */
+  --bg: #070b1a; --surface: #0d1330; --surface-2: #121a3c; --soft: #0d2a45;
+  --line: #1c2752; --line-2: #2a3870;
+  --ink: #e8eeff; --ink-2: #aab5d8; --ink-3: #7884ae;
+  --brand: #00e5f4; --brand-ink: #5ff3ff; --brand-hover: #67f5ff; --on-brand: #041019;
+  --accent: #ff2bd6; --on-accent: #ffffff; --glow: rgba(0, 240, 255, 0.35);
+  --ok-bg: #0f3328; --ok: #7cf0b4; --warn-bg: #3a2f14; --warn: #f7d27c;
+  --bad-bg: #3f1430; --bad: #ff8cc6; --info-bg: #10284a; --info: #8fd8ff;
+  --violet-bg: #2a1f55; --violet: #cbb8ff; --gold-2: #ff8be8;
 }
 body:has(.svc), body:has(.svc)::after { background-image: none; }
 body:has(.svc)::after { display: none; }
-body:has(.svc) { background-color: #f2f5f8; }
-html[data-theme="dark"] body:has(.svc) { background-color: #0b1520; }
+body:has(.svc) { background-color: #f3f5fb; }
+html[data-theme="dark"] body:has(.svc) { background-color: #070b1a; }
 
 /* tipografi: satu keluarga sans, judul tebal */
 .svc .font-serif, .svc .font-display { font-family: var(--font-jakarta), var(--font-sans); letter-spacing: -0.01em; }
 .svc h1, .svc h2, .svc h3 { letter-spacing: -0.015em; }
+/* judul futuristik (Orbitron) hanya untuk brand & judul seksi, isi tetap sans agar mudah dibaca */
+.svc .font-cyber { font-family: var(--font-orbitron), var(--font-jakarta), sans-serif; letter-spacing: 0.02em; }
+.svc .label-cyber { font-family: var(--font-jetbrains), monospace; font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: var(--brand-ink); }
+.svc .text-neon-c { color: var(--brand-ink); }
+.svc .text-neon-m { color: var(--accent); }
 
 /* permukaan */
 .svc .card, .svc .glass, .svc .hud { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: none; backdrop-filter: none; clip-path: none; }
 .svc .hud::before, .svc .hud::after { display: none; }
 .svc .card-featured { border: 2px solid var(--brand); }
-.svc .card-link { transition: border-color .15s ease; }
-.svc .card-link:hover { border-color: var(--brand); }
+.svc .card-link { transition: border-color .15s ease, box-shadow .15s ease; }
+.svc .card-link:hover { border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand), 0 10px 30px -14px var(--glow); }
 .svc .eyebrow { display: inline-flex; align-items: center; gap: .4rem; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
 .svc .muted { color: var(--ink-3); }
 .svc .icon-box { display: grid; place-items: center; flex: none; width: 2.5rem; height: 2.5rem; border-radius: 10px; background: var(--soft); color: var(--brand-ink); }
@@ -338,10 +348,10 @@ html[data-theme="dark"] body:has(.svc) { background-color: #0b1520; }
 }
 .svc .btn-sm { padding: .4rem .85rem; min-height: 2.25rem; font-size: .82rem; }
 .svc .btn-icon { padding: 0; width: 2.25rem; }
-.svc .btn-primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+.svc .btn-primary { background: var(--brand); border-color: var(--brand); color: var(--on-brand); }
 .svc .btn-primary:hover { background: var(--brand-hover); border-color: var(--brand-hover); filter: none; transform: none; }
-.svc .btn-gold { background: var(--accent); border-color: var(--accent); color: #3b2206; }
-.svc .btn-gold:hover { filter: brightness(.95); transform: none; }
+.svc .btn-gold { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.svc .btn-gold:hover { filter: brightness(1.08); transform: none; }
 .svc .btn-ghost { background: var(--surface); border-color: var(--line-2); color: var(--ink); }
 .svc .btn-ghost:hover { background: var(--soft); border-color: var(--brand); box-shadow: none; }
 .svc .btn-danger { background: var(--bad-bg); border-color: transparent; color: var(--bad); }
@@ -364,7 +374,7 @@ html[data-theme="dark"] body:has(.svc) { background-color: #0b1520; }
 /* label status */
 .svc .pill, .svc .tag { display: inline-flex; align-items: center; gap: .25rem; padding: .2rem .55rem; border-radius: 6px; font-size: .72rem; font-weight: 600; white-space: nowrap; line-height: 1.3; }
 .svc .tag { background: var(--surface-2); color: var(--ink-2); }
-.svc .tag-gold { background: var(--accent); color: #3b2206; }
+.svc .tag-gold { background: var(--accent); color: var(--on-accent); }
 .svc .pill-slate { background: var(--surface-2); color: var(--ink-2); }
 .svc .pill-violet { background: var(--violet-bg); color: var(--violet); }
 .svc .pill-cyan { background: var(--info-bg); color: var(--info); }
@@ -379,7 +389,7 @@ html[data-theme="dark"] body:has(.svc) { background-color: #0b1520; }
 .svc .check { display: flex; gap: .6rem; align-items: flex-start; }
 .svc .check::before { content: "✓"; flex: none; width: 1.1rem; height: 1.1rem; margin-top: .12rem; border-radius: 5px; background: var(--soft); color: var(--brand-ink); font-size: .68rem; font-weight: 700; display: grid; place-items: center; }
 .svc .meter { display: block; height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
-.svc .meter > span { display: block; height: 100%; border-radius: 3px; background: var(--brand); }
+.svc .meter > span { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--brand), var(--accent)); }
 .svc .tbl { width: 100%; border-collapse: collapse; font-size: .875rem; }
 .svc .tbl th { padding: .65rem .85rem; text-align: left; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); background: var(--surface-2); white-space: nowrap; }
 .svc .tbl td { padding: .7rem .85rem; border-top: 1px solid var(--line); vertical-align: top; }
@@ -435,3 +445,33 @@ html[data-theme="dark"] body:has(.svc) { background-color: #0b1520; }
   color: var(--ink);
 }
 @media print { .svc .no-print { display: none !important; } }
+
+
+/* ── Hero galaksi: angkasa gelap + bintang + grid cyber (dipakai di tema terang & gelap) ── */
+.svc .hero-galaxy {
+  position: relative; overflow: hidden; color: #fff;
+  background:
+    radial-gradient(1px 1px at 12% 22%, #fff 99%, transparent), radial-gradient(1px 1px at 28% 68%, #cfe9ff 99%, transparent),
+    radial-gradient(1.5px 1.5px at 44% 18%, #fff 99%, transparent), radial-gradient(1px 1px at 63% 74%, #fff 99%, transparent),
+    radial-gradient(1.5px 1.5px at 78% 32%, #ffd6f7 99%, transparent), radial-gradient(1px 1px at 88% 62%, #fff 99%, transparent),
+    radial-gradient(1px 1px at 6% 82%, #fff 99%, transparent), radial-gradient(1px 1px at 54% 46%, #bff9ff 99%, transparent),
+    radial-gradient(700px 380px at 15% 0%, rgba(0, 240, 255, 0.16), transparent 70%),
+    radial-gradient(640px 360px at 90% 10%, rgba(255, 43, 214, 0.14), transparent 70%),
+    #070b1a;
+}
+.svc .hero-galaxy::after {
+  content: ""; position: absolute; inset: auto 0 0 0; height: 45%; pointer-events: none;
+  background-image: linear-gradient(rgba(0, 240, 255, 0.10) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 240, 255, 0.10) 1px, transparent 1px);
+  background-size: 40px 40px;
+  -webkit-mask-image: linear-gradient(to top, #000, transparent); mask-image: linear-gradient(to top, #000, transparent);
+}
+.svc .hero-galaxy > * { position: relative; z-index: 1; }
+.svc .btn-neon { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 2.75rem; padding: .7rem 1.25rem; border-radius: 10px; font-weight: 700; background: #00f0ff; color: #041019; box-shadow: 0 0 24px -6px rgba(0, 240, 255, .7); transition: filter .15s ease; }
+.svc .btn-neon:hover { filter: brightness(1.08); }
+.svc .btn-outline-neon { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 2.75rem; padding: .7rem 1.25rem; border-radius: 10px; font-weight: 600; color: #fff; border: 1px solid rgba(255, 43, 214, .6); transition: background .15s ease; }
+.svc .btn-outline-neon:hover { background: rgba(255, 43, 214, .12); }
+/* garis neon tipis di atas kartu unggulan */
+.svc .card-featured { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 12px 32px -18px var(--glow); }
+@media (prefers-reduced-motion: no-preference) {
+  html[data-theme="dark"] .svc .nav-item[aria-current="page"] { box-shadow: inset 2px 0 0 var(--brand); }
+}

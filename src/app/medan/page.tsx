@@ -6,6 +6,7 @@ import { getPortfolio } from "@/modules/portfolio/service";
 import { waLink } from "@/shared/url";
 import { PackageTabs, type PkgGroup } from "./package-tabs";
 import { HeroGalaxy } from "@/components/lc/hero-galaxy";
+import { NoCopy } from "@/components/lc/no-copy";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +44,7 @@ const SHOWCASE = ["villa-berastagi-mas", "manajemen-aset-pembayaran-asrama", "bi
 function Title({ children, sub }: { children: React.ReactNode; sub?: string }) {
   return (
     <div className="mb-8 text-center">
-      <h2 className="font-cyber text-xl font-bold uppercase text-[var(--ink)] md:text-2xl">{children}</h2>
+      <h2 className="font-cyber cosmic-text text-xl font-bold uppercase md:text-2xl">{children}</h2>
       <span className="mx-auto mt-3 block h-[3px] w-12 rounded-full bg-[linear-gradient(90deg,var(--brand),var(--accent))]" />
       {sub && <p className="mx-auto mt-2 max-w-xl text-[var(--ink-3)]">{sub}</p>}
     </div>
@@ -75,6 +76,7 @@ export default async function LeetcloudPage() {
 
   return (
     <div className="svc pb-20 md:pb-0">
+      <NoCopy />
       <ServiceHeader brand={brand} user={user} />
 
       <main>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { drawBigBang, drawBlackHole, milkyWayTexture, spiralGalaxyTexture } from "./cosmos";
 
 /* ───────────────────────────────────────────────────────────────────────────
    Latar galaksi hero Leetcloud (kanvas, hanya mengisi hero):
@@ -162,6 +163,11 @@ export function HeroGalaxy() {
     const TW = tex.width / 2, TH = tex.height;
     const sprites = new Map(STAR_COLS.map((s) => [s.c, glowSprite(s.rgb)]));
     let nebula: HTMLCanvasElement | null = null;
+    let milky: HTMLCanvasElement | null = null;
+    const spiral = spiralGalaxyTexture(220);
+    // Big Bang hanya sekali per sesi browser
+    let bang = -1; // -1 = tidak diputar; 0..1 = progres
+    try { if (!reduced && !sessionStorage.getItem("lc-bigbang")) { bang = 0; sessionStorage.setItem("lc-bigbang", "1"); } } catch { /* abaikan */ }
 
     let w = 0, h = 0, raf = 0, last = 0, visible = true, lastMeteor = 0;
     let stars: Star[] = [];
@@ -191,7 +197,15 @@ export function HeroGalaxy() {
           });
         }
       });
-      nebula = nebulaTexture(w, h);
+      {
+        const neb = nebulaTexture(w, h), mw = milkyWayTexture(w, h);
+        const bg = document.createElement("canvas");
+        bg.width = neb.width; bg.height = neb.height;
+        const b = bg.getContext("2d")!;
+        b.globalAlpha = 0.9; b.drawImage(neb, 0, 0);
+        b.globalAlpha = 0.85; b.drawImage(mw, 0, 0);
+        nebula = bg; milky = null;
+      }
     };
 
     /* ── planet ── */
@@ -255,6 +269,19 @@ export function HeroGalaxy() {
       moon(cx, cy, r, true);
     };
 
+    let bhCache: HTMLCanvasElement | null = null, bhT = -1e9, bhBoost = -1, bhR = 0;
+    function blackHole(r: number, tNow: number, boost: number) {
+      if (bhCache && bhR === r && Math.abs(tNow - bhT) < 100 && Math.abs(boost - bhBoost) < 0.05) return bhCache;
+      const size = Math.ceil(r * 10);
+      if (!bhCache || bhR !== r) { bhCache = document.createElement("canvas"); bhCache.width = bhCache.height = Math.ceil(size * dpr); }
+      bhR = r; bhT = tNow; bhBoost = boost;
+      const g = bhCache.getContext("2d")!;
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      g.clearRect(0, 0, size, size);
+      drawBlackHole(g, size / 2, size / 2, r, tNow, boost);
+      return bhCache;
+    }
+
     let bodyCache: HTMLCanvasElement | null = null, bodyRot = -1, bodyR = 0;
     function planetBody(r: number) {
       if (bodyCache && bodyR === r && Math.abs(rot - bodyRot) < 0.0009) return bodyCache;
@@ -315,13 +342,32 @@ export function HeroGalaxy() {
       if (!reduced) { rot = (rot + dt * 0.0000105) % 1; moonA = (moonA + dt * 0.00022) % (Math.PI * 2); }
       cur.x += (target.x - cur.x) * 0.05; cur.y += (target.y - cur.y) * 0.05;
       ctx.clearRect(0, 0, w, h);
+      if (bang >= 0) bang = Math.min(1, bang + dt / 1700);
+      const starFade = bang >= 0 && bang < 1 ? Math.min(1, bang * 1.4) : 1;
 
       // nebula
       if (nebula) {
         ctx.save();
-        ctx.globalAlpha = 0.9;
-        const nx = cur.x * -10 + Math.sin(now / 20000) * 20, ny = cur.y * -6;
+        ctx.globalAlpha = starFade;
+        const nx = cur.x * -12 + Math.sin(now / 20000) * 20, ny = cur.y * -7;
         ctx.drawImage(nebula, nx - 40, ny - 30);
+        ctx.restore();
+      }
+      // Bima Sakti
+      if (milky) {
+        ctx.save();
+        ctx.globalAlpha = 0.85 * starFade;
+        ctx.drawImage(milky, cur.x * -14 - 40, cur.y * -9 - 30);
+        ctx.restore();
+      }
+      // galaksi spiral jauh (miring, berputar pelan)
+      {
+        const gs = Math.min(w, h) * (w < 640 ? 0.3 : 0.24);
+        const gx = w * (w < 640 ? 0.2 : 0.62) + cur.x * 8, gy = h * (w < 640 ? 0.08 : 0.13) + cur.y * 5;
+        ctx.save();
+        ctx.globalAlpha = 0.75 * starFade;
+        ctx.translate(gx, gy); ctx.rotate(-0.5); ctx.scale(1, 0.42); ctx.rotate(reduced ? 0 : now / 60000);
+        ctx.drawImage(spiral, -gs / 2, -gs / 2, gs, gs);
         ctx.restore();
       }
 
@@ -331,7 +377,7 @@ export function HeroGalaxy() {
         const L = LAYER[s.layer];
         if (!reduced) { s.x -= L.drift * dt; if (s.x < -10) { s.x = w + 10; s.y = Math.random() * h; } }
         const x = s.x + cur.x * 34 * L.depth, y = s.y + cur.y * 22 * L.depth;
-        let a = s.a * (reduced ? 1 : 0.72 + 0.28 * Math.sin((now / 1000) * s.tw + s.ph));
+        let a = s.a * starFade * (reduced ? 1 : 0.72 + 0.28 * Math.sin((now / 1000) * s.tw + s.ph));
         if (ptr.in && s.layer > 0) {
           const d = Math.hypot(x - ptr.x, y - ptr.y);
           if (d < 160) { a = Math.min(1, a + (1 - d / 160) * 0.6); near.push({ s, x, y, d }); }
@@ -366,6 +412,17 @@ export function HeroGalaxy() {
         }
       }
 
+      // lubang hitam (kiri-bawah), menyala saat kursor mendekat
+      {
+        const br = Math.min(w, h) * (w < 640 ? 0.045 : 0.05);
+        const bx = w * (w < 640 ? 0.16 : 0.1) + cur.x * 16, by = h * (w < 640 ? 0.86 : 0.74) + cur.y * 10;
+        const boost = ptr.in ? Math.max(0, 1 - Math.hypot(ptr.x - bx, ptr.y - by) / 260) : 0;
+        const bh = blackHole(br, reduced ? 0 : now, boost);
+        const half = bh.width / dpr / 2;
+        ctx.globalAlpha = starFade;
+        ctx.drawImage(bh, bx - half, by - half, half * 2, half * 2);
+        ctx.globalAlpha = 1;
+      }
       planet(cur.x, cur.y);
 
       if (!reduced) {
@@ -396,6 +453,7 @@ export function HeroGalaxy() {
         }
       }
 
+      if (bang >= 0 && bang < 1) drawBigBang(ctx, w, h, w / 2, h * 0.42, bang);
       if (visible && !reduced) raf = requestAnimationFrame(draw);
     };
 

@@ -21,7 +21,7 @@ export function PageHeader({ eyebrow, title, sub, actions }: { eyebrow?: ReactNo
     <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         {eyebrow && <p className="eyebrow">{eyebrow}</p>}
-        <h1 className="mt-1 text-2xl font-bold text-[var(--ink)] md:text-[1.75rem]">{title}</h1>
+        <h1 className="cosmic-text mt-1 text-2xl font-bold md:text-[1.75rem]">{title}</h1>
         {sub && <p className="mt-1 text-sm text-[var(--ink-3)]">{sub}</p>}
       </div>
       {actions && <div className="flex flex-wrap gap-2">{actions}</div>}

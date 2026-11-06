@@ -578,3 +578,37 @@ html:not([data-theme="dark"]) .svc .wordmark .wm-cloud { background-image: linea
 .svc .row-no { display: grid; place-items: center; width: 2.3rem; height: 2.3rem; font-size: .72rem; font-weight: 700; color: var(--brand-ink); background: var(--soft); clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); }
 .svc .detail-section + .detail-section { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px dashed var(--line-2); }
 .svc .detail-title { margin-bottom: .75rem; font-family: var(--font-orbitron), sans-serif; font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--brand-ink); }
+
+/* ═══ Nuansa kosmik menyeluruh (tetap terbaca) ═══ */
+/* debu bintang tipis di latar semua halaman Leetcloud (tema gelap) */
+html[data-theme="dark"] .svc {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(1px 1px at 20px 30px, rgba(255, 255, 255, 0.35), transparent 60%),
+    radial-gradient(1px 1px at 140px 90px, rgba(125, 249, 255, 0.28), transparent 60%),
+    radial-gradient(1.2px 1.2px at 90px 160px, rgba(255, 158, 240, 0.22), transparent 60%),
+    radial-gradient(1px 1px at 210px 210px, rgba(255, 255, 255, 0.22), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(124, 58, 237, 0.08), transparent 70%),
+    radial-gradient(800px 500px at 0% 100%, rgba(0, 229, 244, 0.05), transparent 70%);
+  background-size: 240px 240px, 260px 260px, 300px 300px, 280px 280px, 100% 100%, 100% 100%;
+  background-attachment: fixed;
+}
+/* teks bergradasi nebula untuk judul seksi & judul halaman */
+.svc .cosmic-text {
+  background: linear-gradient(95deg, var(--ink) 0%, #9fe9ff 45%, #c4b5fd 75%, #f5a8ec 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+}
+html:not([data-theme="dark"]) .svc .cosmic-text { background-image: linear-gradient(95deg, #0b1026 0%, #0e7490 55%, #7c3aed 100%); }
+/* garis cahaya tipis di tepi atas kartu */
+.svc .card { position: relative; }
+html[data-theme="dark"] .svc .card::before {
+  content: ""; position: absolute; left: 12px; right: 12px; top: 0; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(125, 249, 255, 0.55), rgba(196, 181, 253, 0.45), transparent);
+}
+/* blok teks & scrollbar bernuansa kosmik */
+.svc ::selection { background: rgba(0, 229, 244, 0.35); color: inherit; }
+html[data-theme="dark"] .svc { scrollbar-color: #2a3870 #070b1a; }
+/* halaman utama: tidak bisa diblok/disalin (kolom isian tetap bisa) */
+.lc-nocopy body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.lc-nocopy input, .lc-nocopy textarea { -webkit-user-select: text; user-select: text; }
+.lc-nocopy img { -webkit-user-drag: none; }

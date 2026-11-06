@@ -8,7 +8,7 @@ import { INVOICE_STATUS, fmtIDR, fmtPeriod, isOverdue } from "@/modules/billing/
 import { getInvoice, getPaymentSettings } from "@/modules/billing/repository";
 import { getProfile } from "@/modules/content/repository";
 import { waLink } from "@/shared/url";
-import { fmtDate, fmtDateTime } from "@/shared/ui";
+import { fmtDate, fmtDateTime } from "@/components/lc/ui";
 import { Pill } from "../../ui";
 
 export const metadata = { title: "Detail Tagihan" };
@@ -27,66 +27,69 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
   return (
     <>
-      <Link href="/medan/dashboard" className="inline-flex items-center gap-1 text-sm text-[var(--ink-3)] hover:text-[var(--navy)]"><ArrowLeft className="h-3.5 w-3.5" /> Kembali</Link>
-      <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="font-mono text-xs text-[var(--navy-2)]">{inv.number}</p>
-          <h1 className="font-serif mt-1 text-2xl font-semibold text-[var(--navy)] md:text-3xl">{inv.title}</h1>
-          <p className="mt-2 text-sm text-[var(--ink-2)]">{inv.period ? `Periode ${fmtPeriod(inv.period)} · ` : ""}Jatuh tempo {fmtDate(inv.dueDate)}{isOverdue(inv.dueDate, inv.status) && <span className="font-semibold text-[#9b1c1c]"> · sudah lewat</span>}</p>
+      <Link href="/medan/dashboard/tagihan" className="inline-flex items-center gap-1 text-sm font-medium text-[var(--ink-3)] hover:text-[var(--brand-ink)]"><ArrowLeft className="h-3.5 w-3.5" /> Semua tagihan</Link>
+
+      <section className="card mt-4 overflow-hidden">
+        <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:justify-between md:p-6">
+          <div className="min-w-0">
+            <p className="font-mono text-xs text-[var(--ink-3)]">{inv.number}</p>
+            <h1 className="mt-1 text-xl font-bold text-[var(--ink)] md:text-2xl">{inv.title}</h1>
+            <p className="mt-1 text-sm text-[var(--ink-2)]">{inv.period ? `Periode ${fmtPeriod(inv.period)} · ` : ""}Jatuh tempo {fmtDate(inv.dueDate)}{isOverdue(inv.dueDate, inv.status) && <span className="font-semibold text-[var(--bad)]"> · sudah lewat</span>}</p>
+          </div>
+          <div className="sm:text-right">
+            <p className="text-2xl font-bold text-[var(--ink)] md:text-3xl">{fmtIDR(inv.amount)}</p>
+            <div className="mt-1"><Pill tone={st.tone}>{st.label}</Pill></div>
+          </div>
         </div>
-        <div className="text-right">
-          <p className="font-serif text-3xl font-semibold text-[var(--navy)]">{fmtIDR(inv.amount)}</p>
-          <div className="mt-1"><Pill tone={st.tone}>{st.label}</Pill></div>
+        <div className="overflow-x-auto">
+          <table className="tbl">
+            <thead><tr><th>Rincian</th><th className="!text-right">Nominal</th></tr></thead>
+            <tbody>
+              {(inv.items.length ? inv.items : [{ description: inv.title, amount: inv.amount }]).map((l, k) => (
+                <tr key={k}><td className="text-[var(--ink)]"><span className="mr-1.5 text-[var(--ink-3)]">{k + 1}.</span>{l.description}{"note" in l && l.note && <span className="mt-0.5 block text-xs text-[var(--ink-3)]">{l.note}</span>}</td><td className="whitespace-nowrap text-right text-[var(--ink-2)]">{fmtIDR(l.amount)}</td></tr>
+              ))}
+              <tr><td className="font-bold text-[var(--ink)]">Total</td><td className="whitespace-nowrap text-right text-base font-bold text-[var(--ink)]">{fmtIDR(inv.amount)}</td></tr>
+            </tbody>
+          </table>
         </div>
-      </div>
-      <section className="card mt-5 overflow-hidden p-0">
-        <table className="w-full text-sm">
-          <thead className="bg-[var(--sand)]"><tr><th className="px-5 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Rincian</th><th className="px-5 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Nominal</th></tr></thead>
-          <tbody>
-            {(inv.items.length ? inv.items : [{ description: inv.title, amount: inv.amount }]).map((l, k) => (
-              <tr key={k} className="border-t border-[var(--rule)]"><td className="px-5 py-2.5 text-[var(--ink)]"><span className="mr-1.5 text-[var(--ink-3)]">{k + 1}.</span>{l.description}{"note" in l && l.note && <span className="mt-0.5 block text-xs text-[var(--ink-3)]">{l.note}</span>}</td><td className="px-5 py-2.5 text-right text-[var(--ink-2)]">{fmtIDR(l.amount)}</td></tr>
-            ))}
-            <tr className="border-t-2 border-[var(--navy)]"><td className="px-5 py-3 font-semibold text-[var(--navy)]">Total</td><td className="px-5 py-3 text-right font-serif text-lg font-semibold text-[var(--navy)]">{fmtIDR(inv.amount)}</td></tr>
-          </tbody>
-        </table>
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--rule)] bg-[var(--paper-2)] px-5 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--line)] px-4 py-3 md:px-6">
           {inv.note ? <p className="text-xs text-[var(--ink-3)]">{inv.note}</p> : <span />}
-          <a href={`/medan/invoice/${inv.id}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm"><Printer className="h-3.5 w-3.5" /> Cetak / simpan PDF</a>
+          <a href={`/medan/invoice/${inv.id}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm"><Printer className="h-3.5 w-3.5" /> Cetak / PDF</a>
         </div>
       </section>
 
       {inv.status === "paid" && (
-        <div className="alert-ok mt-6 flex items-center gap-3 rounded-xl p-5"><CircleCheck className="h-6 w-6" /> Sudah bayar{inv.paidAt && ` · dikonfirmasi ${fmtDateTime(inv.paidAt)}`}. Terima kasih!</div>
+        <div className="alert-ok mt-6 flex items-center gap-3 p-4"><CircleCheck className="h-6 w-6" /> Sudah bayar{inv.paidAt && ` · dikonfirmasi ${fmtDateTime(inv.paidAt)}`}. Terima kasih!</div>
       )}
       {inv.status === "cancelled" && <div className="card mt-6 p-5 text-[var(--ink-3)]">Tagihan ini dibatalkan.</div>}
 
       {open && (
         <div className="mt-6 grid gap-6 md:grid-cols-2">
-          <section className="card p-6">
-            <h2 className="font-serif flex items-center gap-2 text-lg font-semibold text-[var(--navy)]"><QrCode className="h-5 w-5 text-[var(--gold)]" /> 1. Bayar</h2>
+          <section className="card p-4 md:p-6">
+            <h2 className="flex items-center gap-2 text-base font-bold text-[var(--ink)]"><QrCode className="h-5 w-5 text-[var(--brand-ink)]" /> 1. Bayar</h2>
             {pay?.qrisFileId ? (
-              <div className="mt-4 rounded-xl border border-[var(--rule)] bg-[var(--paper-2)] p-4">
+              <div className="mt-4 rounded-xl border border-[var(--line)] bg-white p-4">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={`/api/files/${pay.qrisFileId}`} alt="QRIS" className="mx-auto max-h-80 w-auto" />
-                <p className="mt-3 text-center text-xs text-[var(--ink-2)]">Scan QRIS dengan aplikasi bank / e-wallet apa pun. Nominal: <b className="text-[var(--navy)]">{fmtIDR(inv.amount)}</b></p>
+                <p className="mt-3 text-center text-xs text-[#46544d]">Scan QRIS dengan aplikasi bank / e-wallet apa pun. Nominal: <b className="text-[#17231e]">{fmtIDR(inv.amount)}</b></p>
               </div>
             ) : (
               <p className="mt-3 text-sm text-[var(--ink-3)]">QRIS belum tersedia. Gunakan transfer bank di bawah atau hubungi kami.</p>
             )}
             {pay?.bankAccount && (
-              <div className="mt-4 rounded-xl border border-[var(--rule)] bg-[var(--paper-2)] p-4 text-sm">
+              <div className="mt-4 rounded-xl bg-[var(--surface-2)] p-4 text-sm">
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">Transfer bank</p>
-                <p className="mt-1 font-semibold text-[var(--navy)]">{pay.bankName} · {pay.bankAccount}</p>
+                <p className="mt-1 font-semibold text-[var(--ink)]">{pay.bankName} · {pay.bankAccount}</p>
                 <p className="text-[var(--ink-2)]">a.n. {pay.bankHolder}</p>
               </div>
             )}
             {pay?.instructions && <p className="mt-4 whitespace-pre-line text-xs text-[var(--ink-3)]">{pay.instructions}</p>}
           </section>
 
-          <section className="card p-6">
-            <h2 className="font-serif flex items-center gap-2 text-lg font-semibold text-[var(--navy)]"><FileUp className="h-5 w-5 text-[var(--gold)]" /> 2. Unggah bukti</h2>
+          <section className="card p-4 md:p-6">
+            <h2 className="flex items-center gap-2 text-base font-bold text-[var(--ink)]"><FileUp className="h-5 w-5 text-[var(--brand-ink)]" /> 2. Unggah bukti</h2>
             {inv.proofFileId && (
-              <p className="mt-3 text-sm text-[var(--navy-2)]">
+              <p className="mt-3 text-sm text-[var(--brand-ink)]">
                 Bukti terkirim {inv.proofUploadedAt && fmtDateTime(inv.proofUploadedAt)} · <a href={`/api/files/${inv.proofFileId}`} target="_blank" rel="noreferrer" className="underline">lihat</a>
                 {inv.status === "pending_verification" && <span className="text-[var(--ink-3)]"> — menunggu verifikasi admin. Anda bisa mengunggah ulang bila salah.</span>}
               </p>

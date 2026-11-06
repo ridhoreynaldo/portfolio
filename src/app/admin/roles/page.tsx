@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Badge, Card, PageTitle, Table, td, th } from "@/shared/ui";
+import { Badge, Card, PageTitle, Table, td, th } from "@/components/lc/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
 import { deleteRoleAction, saveRoleAction } from "@/modules/rbac/actions";
@@ -32,10 +32,10 @@ export default async function RolesPage({ searchParams }: { searchParams: Promis
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {Object.entries(modules).map(([mod, list]) => (
-                  <fieldset key={mod} className="rounded-xl border border-white/10 p-3">
-                    <legend className="px-1 text-[11px] uppercase tracking-wider text-cyan-300">{mod}</legend>
+                  <fieldset key={mod} className="rounded-xl border border-[var(--line)] p-3">
+                    <legend className="px-1 text-[11px] uppercase tracking-wider text-[var(--brand-ink)]">{mod}</legend>
                     {list.map((p) => (
-                      <label key={p.key} className={`flex items-center gap-2 py-0.5 text-sm ${grantable(p.key) ? "text-slate-300" : "text-slate-600"}`} title={grantable(p.key) ? "" : "Anda tidak memiliki permission ini"}>
+                      <label key={p.key} className={`flex items-center gap-2 py-0.5 text-sm ${grantable(p.key) ? "text-[var(--ink-2)]" : "text-[var(--ink-3)]"}`} title={grantable(p.key) ? "" : "Anda tidak memiliki permission ini"}>
                         <input type="checkbox" name="permissions" value={p.key} defaultChecked={granted.has(p.key)} disabled={!grantable(p.key)} className="accent-violet-500" />
                         {p.key.split(".")[1]}
                       </label>
@@ -48,14 +48,14 @@ export default async function RolesPage({ searchParams }: { searchParams: Promis
           </form>
         </Card>
       )}
-      <Card>
+      <Card flush>
         <Table>
           <thead><tr><th className={th}>Role</th><th className={th}>Deskripsi</th><th className={th}>Permission</th><th className={th}>User</th><th className={th} /></tr></thead>
           <tbody>
             {roles.map((r) => (
-              <tr key={r.id} className="hover:bg-white/5">
+              <tr key={r.id} className="hover:bg-[var(--surface-2)]">
                 <td className={td}><Badge tone={r.isSystem ? "violet" : "cyan"}>{r.name}</Badge>{r.isSystem && " 🔒"}</td>
-                <td className={`${td} text-slate-400`}>{r.description}</td>
+                <td className={`${td} text-[var(--ink-3)]`}>{r.description}</td>
                 <td className={td}>{r.isSystem ? "semua" : r.permissionCount}</td>
                 <td className={td}>{r.userCount}</td>
                 <td className={`${td} text-right`}>

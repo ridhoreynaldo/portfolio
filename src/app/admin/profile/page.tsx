@@ -1,5 +1,5 @@
 import { FieldInputs } from "@/components/field-inputs";
-import { Card, PageTitle } from "@/shared/ui";
+import { Card, PageTitle } from "@/components/lc/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
 import { saveProfileAction } from "@/modules/content/actions";

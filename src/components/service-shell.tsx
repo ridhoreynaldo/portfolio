@@ -17,59 +17,77 @@ export const SERVICE_BRAND: ServiceBrand = {
 };
 
 const NAV = [
+  ["/medan#layanan", "Layanan"],
   ["/medan#paket", "Paket"],
   ["/medan#proyek", "Proyek"],
-  ["/medan#cara-kerja", "Cara Kerja"],
+  ["/medan#faq", "FAQ"],
   ["/medan#kontak", "Kontak"],
 ] as const;
 
-/** Header halaman layanan (tema svc, terang & klasik). */
+function Logo({ brand, sub }: { brand: ServiceBrand; sub: string }) {
+  return (
+    <Link href="/medan" className="flex min-w-0 items-center gap-2.5">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={SERVICE_LOGO} alt="" className="h-9 w-9 shrink-0 rounded-lg" />
+      <span className="min-w-0 leading-tight">
+        <span className="block text-lg font-bold text-[var(--ink)]">{brand.name}</span>
+        <span className="block truncate text-[11px] text-[var(--ink-3)]">{sub}</span>
+      </span>
+    </Link>
+  );
+}
+
+/** Header halaman publik Leetcloud: logo, menu, tema, login. Di HP menu jadi baris yang bisa digeser. */
 export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: AuthUser | null }) {
   const staff = !!user && (user.isSuper || user.permissions.length > 0);
   const portal = user ? (staff ? "/admin" : "/medan/dashboard") : null;
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--rule)] bg-[var(--paper-2)]">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 md:px-5">
-        <Link href="/medan" className="flex items-center gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={SERVICE_LOGO} alt="" className="h-9 w-9 rounded-lg" />
-          <span className="leading-tight">
-            <span className="block text-xl font-bold text-[var(--navy)]">{brand.name}</span>
-            <span className="block text-[11px] text-[var(--ink-3)]">Layanan IT · {brand.area}</span>
-          </span>
-        </Link>
-        <ul className="hidden items-center gap-6 text-sm font-medium text-[var(--ink-2)] md:flex">
-          {NAV.map(([href, label]) => <li key={href}><a href={href} className="transition hover:text-[var(--navy)]">{label}</a></li>)}
+    <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--surface)]">
+      <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 md:px-6" aria-label="Menu utama">
+        <Logo brand={brand} sub={`Layanan IT · ${brand.area}`} />
+        <ul className="hidden items-center gap-1 text-sm font-medium text-[var(--ink-2)] md:flex">
+          {NAV.map(([href, label]) => <li key={href}><a href={href} className="rounded-lg px-3 py-2 transition hover:bg-[var(--surface-2)] hover:text-[var(--ink)]">{label}</a></li>)}
         </ul>
         <div className="flex items-center gap-2">
-          <ThemeToggle />
+          <ThemeToggle className="btn-icon" />
           {portal ? (
-            <Link href={portal} className="btn-ghost btn-sm" title={staff ? "Dashboard admin" : "Dashboard pelanggan"}><UserRound className="h-3.5 w-3.5" /> Dashboard</Link>
+            <Link href={portal} className="btn-primary btn-sm"><UserRound className="h-3.5 w-3.5" /> Dashboard</Link>
           ) : (
-            <Link href="/medan/login" className="btn-ghost btn-sm"><LogIn className="h-3.5 w-3.5" /> Login</Link>
+            <Link href="/medan/login" className="btn-primary btn-sm"><LogIn className="h-3.5 w-3.5" /> Login</Link>
           )}
-          <Link href="/medan#paket" className="btn-primary btn-sm">Pesan</Link>
         </div>
       </nav>
-      {/* navigasi HP: baris tautan yang bisa digeser */}
-      <ul className="flex gap-1 overflow-x-auto border-t border-[var(--rule)] px-4 py-2 text-sm font-medium text-[var(--ink-2)] md:hidden">
-        {NAV.map(([href, label]) => <li key={href} className="shrink-0"><a href={href} className="block rounded-lg px-3 py-1.5 hover:bg-[var(--soft)]">{label}</a></li>)}
+      <ul className="no-scrollbar flex gap-1 overflow-x-auto border-t border-[var(--line)] px-3 py-1.5 text-sm font-medium text-[var(--ink-2)] md:hidden">
+        {NAV.map(([href, label]) => <li key={href} className="shrink-0"><a href={href} className="block rounded-lg px-3 py-1.5 active:bg-[var(--surface-2)]">{label}</a></li>)}
       </ul>
     </header>
   );
 }
 
-export function ServiceFooter({ brand }: { brand: ServiceBrand }) {
+export function ServiceFooter({ brand, wa }: { brand: ServiceBrand; wa?: string | null }) {
   return (
-    <footer className="border-t border-[var(--rule)] bg-[var(--paper-2)]">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 py-8 text-center text-xs text-[var(--ink-3)] md:flex-row md:text-left">
-        <div className="flex items-center gap-2.5">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={SERVICE_LOGO} alt="" className="h-7 w-7" />
-          <span><span className="font-serif text-sm font-semibold text-[var(--navy)]">{brand.name}</span> · {brand.tagline}</span>
+    <footer className="border-t border-[var(--line)] bg-[var(--surface)]">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-[1.5fr_1fr_1fr] md:px-6">
+        <div>
+          <Logo brand={brand} sub={`Layanan IT · ${brand.area}`} />
+          <p className="mt-3 max-w-sm text-sm text-[var(--ink-3)]">{brand.tagline}.</p>
         </div>
-        <p>© {new Date().getFullYear()} {brand.name} · {brand.area}, Indonesia</p>
+        <div>
+          <p className="text-sm font-bold text-[var(--ink)]">Menu</p>
+          <ul className="mt-3 space-y-2 text-sm text-[var(--ink-2)]">
+            {NAV.map(([href, label]) => <li key={href}><a href={href} className="hover:text-[var(--brand-ink)]">{label}</a></li>)}
+          </ul>
+        </div>
+        <div>
+          <p className="text-sm font-bold text-[var(--ink)]">Pelanggan</p>
+          <ul className="mt-3 space-y-2 text-sm text-[var(--ink-2)]">
+            <li><Link href="/medan/login" className="hover:text-[var(--brand-ink)]">Login dashboard</Link></li>
+            <li><Link href="/medan/register" className="hover:text-[var(--brand-ink)]">Daftar akun</Link></li>
+            {wa && <li><a href={wa} target="_blank" rel="noreferrer" className="hover:text-[var(--brand-ink)]">WhatsApp</a></li>}
+          </ul>
+        </div>
       </div>
+      <p className="border-t border-[var(--line)] px-4 py-4 text-center text-xs text-[var(--ink-3)]">© {new Date().getFullYear()} {brand.name} · {brand.area}, Indonesia</p>
     </footer>
   );
 }
@@ -80,33 +98,31 @@ export function ServiceBrandMark({ brand, title, sub }: { brand: ServiceBrand; t
     <div className="mb-6 text-center">
       <Link href="/medan" className="inline-block">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={SERVICE_LOGO} alt="" className="mx-auto h-14 w-14" />
+        <img src={SERVICE_LOGO} alt="" className="mx-auto h-12 w-12 rounded-xl" />
       </Link>
-      <p className="font-serif mt-3 text-lg font-semibold tracking-wide text-[var(--navy)]">{brand.name}</p>
-      <p className="text-[11px] text-[var(--ink-3)]">Layanan IT · {brand.area}</p>
-      <h1 className="font-serif mt-5 text-2xl font-semibold text-[var(--ink)]">{title}</h1>
+      <p className="mt-2 text-sm font-bold text-[var(--ink)]">{brand.name}</p>
+      <h1 className="mt-5 text-2xl font-bold text-[var(--ink)]">{title}</h1>
       <p className="mt-1 text-sm text-[var(--ink-3)]">{sub}</p>
     </div>
   );
 }
 
-
 /** Tabel harga bertingkat paket (estimasi per tingkat; harga pasti lewat WhatsApp). */
 export function PriceTierTable({ tiers, cycle, unit, compact }: { tiers: PriceTier[]; cycle: string; unit?: string; compact?: boolean }) {
   if (!tiers.length) return null;
   return (
-    <div className={`overflow-hidden rounded-lg border border-[var(--rule)] ${compact ? "text-xs" : "text-sm"}`}>
+    <div className={`overflow-hidden rounded-lg border border-[var(--line)] ${compact ? "text-xs" : "text-sm"}`}>
       <table className="w-full">
-        <tbody className="divide-y divide-[var(--rule)]">
+        <tbody className="divide-y divide-[var(--line)]">
           {tiers.map((t, i) => (
-            <tr key={`${t.label}-${i}`} className={i % 2 ? "bg-[var(--paper-2)]" : "bg-[var(--paper)]"}>
+            <tr key={`${t.label}-${i}`} className={i % 2 ? "bg-[var(--surface)]" : "bg-[var(--surface-2)]"}>
               <td className="px-3 py-2 text-[var(--ink-2)]">{t.label}</td>
-              <td className="whitespace-nowrap px-3 py-2 text-right font-semibold text-[var(--navy)]">{t.price > 0 ? fmtIDR(t.price) : "Hubungi"}</td>
+              <td className="whitespace-nowrap px-3 py-2 text-right font-semibold text-[var(--ink)]">{t.price > 0 ? fmtIDR(t.price) : "Hubungi"}</td>
             </tr>
           ))}
         </tbody>
       </table>
-      <p className="border-t border-[var(--rule)] bg-[var(--paper-2)] px-3 py-1.5 text-[11px] text-[var(--ink-3)]">{cycle}{unit && ` / ${unit}`} · estimasi, harga pasti menyesuaikan kebutuhan</p>
+      <p className="border-t border-[var(--line)] bg-[var(--surface)] px-3 py-1.5 text-[11px] text-[var(--ink-3)]">{cycle}{unit && ` / ${unit}`} · estimasi, harga pasti menyesuaikan kebutuhan</p>
     </div>
   );
 }

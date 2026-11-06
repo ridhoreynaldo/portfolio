@@ -1,7 +1,6 @@
-import Link from "next/link";
 import { sql } from "drizzle-orm";
 import { db } from "@/shared/db";
-import { Card, PageTitle } from "@/shared/ui";
+import { Card, PageHeader, Stat } from "@/components/lc/ui";
 import { requireStaff } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
 import { certifications, experiences, projects, skills } from "@/modules/content/schema";
@@ -39,38 +38,40 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     ["Total lunas", fmtIDR(b.paidTotal), "/admin/invoices?status=paid", "invoice.read"],
   ];
 
+  const shownBilling = billing.filter(([, , , perm]) => can(user, perm));
+  const shownStats = stats.filter(([, , , perm]) => can(user, perm));
+
   return (
     <>
-      <PageTitle sub={`Login sebagai ${user.email}`}>Dashboard</PageTitle>
-      {denied && <div className="mb-4 rounded-xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">Akses ditolak: butuh permission <code>{denied}</code>.</div>}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {stats.filter(([, , , perm]) => can(user, perm)).map(([label, n, href]) => (
-          <Link key={label} href={href} className="glass rounded-2xl p-5 transition hover:border-violet-400/40">
-            <p className="text-[11px] uppercase tracking-wider text-violet-300">{label}</p>
-            <p className="font-display mt-1 text-4xl font-extrabold text-gradient">{n}</p>
-          </Link>
-        ))}
-      </div>
-      {billing.some(([, , , perm]) => can(user, perm)) && (
-        <>
-          <p className="hud-label mb-3 mt-8">// layanan & pembayaran</p>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {billing.filter(([, , , perm]) => can(user, perm)).map(([label, n, href]) => (
-              <Link key={label} href={href} className="hud p-5">
-                <p className="hud-label !text-[10px] !text-fuchsia-300">{label}</p>
-                <p className="font-display mt-1 text-2xl font-extrabold text-neon">{n}</p>
-              </Link>
-            ))}
+      <PageHeader eyebrow={`Halo, ${user.name}`} title="Dashboard" sub={`Login sebagai ${user.email}`} />
+      {denied && <div className="alert-warn mb-4 px-4 py-3 text-sm">Akses ditolak: butuh permission <code>{denied}</code>.</div>}
+
+      {shownBilling.length > 0 && (
+        <section className="mb-8">
+          <h2 className="mb-3 text-sm font-semibold text-[var(--ink-2)]">Layanan & pembayaran</h2>
+          <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-3">
+            {shownBilling.map(([label, n, href]) => <Stat key={label} label={label} value={n} href={href} />)}
           </div>
-        </>
+        </section>
       )}
-      <Card title="Tips" className="mt-6">
-        <ul className="list-disc space-y-1 pl-5 text-sm text-slate-400">
-          <li>Section di halaman publik mengikuti menu <b>PUBLIC</b> yang aktif (menu → Menu Dinamis).</li>
-          <li>Perubahan konten langsung memperbarui halaman publik (cache dibatalkan otomatis).</li>
-          <li>Sidebar hanya menampilkan menu yang hak aksesnya Anda miliki ({user.isSuper ? "akses penuh" : `${user.permissions.length} permission`}).</li>
-          <li>Alur jasa: pelanggan order di <b>/order</b> → Anda ubah status jadi <b>Aktif</b> → buat tagihan (atau <b>Generate</b> bulanan) → pelanggan bayar QRIS & unggah bukti → tandai <b>Lunas</b>.</li>
-        </ul>
+
+      {shownStats.length > 0 && (
+        <section className="mb-8">
+          <h2 className="mb-3 text-sm font-semibold text-[var(--ink-2)]">Konten portofolio</h2>
+          <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-3">
+            {shownStats.map(([label, n, href]) => <Stat key={label} label={label} value={n} href={href} />)}
+          </div>
+        </section>
+      )}
+
+      <Card title="Alur kerja layanan">
+        <ol className="list-decimal space-y-1.5 pl-5 text-sm text-[var(--ink-2)]">
+          <li>Pelanggan memesan paket di <b>/medan</b> (atau Anda buat <b>order manual</b>).</li>
+          <li>Ubah status order menjadi <b>Aktif</b>, lalu buat tagihan (atau <b>Generate</b> tagihan bulanan).</li>
+          <li>Pelanggan membayar via QRIS dan mengunggah bukti di dashboard.</li>
+          <li>Verifikasi bukti, lalu tandai tagihan <b>Lunas</b>.</li>
+        </ol>
+        <p className="mt-4 text-xs text-[var(--ink-3)]">Sidebar hanya menampilkan menu yang hak aksesnya Anda miliki ({user.isSuper ? "akses penuh" : `${user.permissions.length} permission`}).</p>
       </Card>
     </>
   );

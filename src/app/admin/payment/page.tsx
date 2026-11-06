@@ -1,4 +1,4 @@
-import { Card, PageTitle } from "@/shared/ui";
+import { Card, PageTitle } from "@/components/lc/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
 import { savePaymentSettingsAction } from "@/modules/billing/actions";
@@ -18,7 +18,7 @@ export default async function PaymentPage() {
               <div className="sm:col-span-2">
                 <label className="label">Gambar QRIS (PNG / JPG / WebP, maks 3 MB)</label>
                 <input name="qris" type="file" accept="image/png,image/jpeg,image/webp" disabled={!canEdit} className="input-dark" />
-                {s?.qrisFileId && <label className="mt-2 flex items-center gap-2 text-xs text-slate-400"><input type="checkbox" name="removeQris" className="accent-cyan-400" disabled={!canEdit} /> hapus QRIS yang ada</label>}
+                {s?.qrisFileId && <label className="mt-2 flex items-center gap-2 text-xs text-[var(--ink-3)]"><input type="checkbox" name="removeQris" className="accent-cyan-400" disabled={!canEdit} /> hapus QRIS yang ada</label>}
               </div>
               <div><label className="label">Bank</label><input name="bankName" maxLength={64} defaultValue={s?.bankName} placeholder="BCA / Mandiri / …" disabled={!canEdit} className="input-dark" /></div>
               <div><label className="label">Nomor rekening</label><input name="bankAccount" maxLength={64} defaultValue={s?.bankAccount} disabled={!canEdit} className="input-dark" /></div>
@@ -34,7 +34,7 @@ export default async function PaymentPage() {
             // eslint-disable-next-line @next/next/no-img-element
             <div className="bg-white p-3"><img src={`/api/files/${s.qrisFileId}`} alt="QRIS" className="mx-auto w-full" /></div>
           ) : (
-            <p className="text-sm text-slate-400">Belum ada QRIS. Unggah di formulir.</p>
+            <p className="text-sm text-[var(--ink-3)]">Belum ada QRIS. Unggah di formulir.</p>
           )}
         </Card>
       </div>

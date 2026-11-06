@@ -128,7 +128,7 @@ export const updateOrderAction = action(async (form: FormData) => {
   await updateOrder(id, v);
   revalidatePath("/admin/orders");
   revalidatePath("/medan/dashboard");
-  revalidatePath("/medan/dashboard/langganan");
+  revalidatePath("/medan/dashboard/tagihan");
   await setFlash(`Order ${o.number} diperbarui`);
   redirect("/admin/orders");
 });
@@ -155,7 +155,7 @@ export const createOrderAction = action(async (form: FormData) => {
   }
   revalidatePath("/admin/orders");
   revalidatePath("/medan/dashboard");
-  revalidatePath("/medan/dashboard/langganan");
+  revalidatePath("/medan/dashboard/tagihan");
   await setFlash(`Order ${number} dibuat untuk ${cust.name}`);
   redirect("/admin/orders");
 });
@@ -248,7 +248,7 @@ export const setInvoiceStatusAction = action(async (form: FormData) => {
   }
   revalidatePath("/admin/invoices");
   revalidatePath("/medan/dashboard");
-  revalidatePath("/medan/dashboard/langganan");
+  revalidatePath("/medan/dashboard/tagihan");
   await setFlash(`Tagihan ${inv.number}: ${d.status === "paid" ? "ditandai lunas" : d.status === "cancelled" ? "dibatalkan" : "status diubah"}`);
 });
 

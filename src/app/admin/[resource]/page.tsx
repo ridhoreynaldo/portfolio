@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FieldInputs, formatCell } from "@/components/field-inputs";
-import { Card, PageTitle, Table, td, th } from "@/shared/ui";
+import { Card, PageTitle, Table, td, th } from "@/components/lc/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
 import { deleteResourceAction, saveResourceAction } from "@/modules/content/actions";
@@ -32,12 +32,12 @@ export default async function ResourcePage({ params, searchParams }: { params: P
           </form>
         </Card>
       )}
-      <Card>
+      <Card flush>
         <Table>
           <thead><tr>{res.columns.map((c) => <th key={c} className={th}>{label(c)}</th>)}<th className={th} /></tr></thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.id} className="hover:bg-white/5">
+              <tr key={r.id} className="hover:bg-[var(--surface-2)]">
                 {res.columns.map((c) => <td key={c} className={td}>{formatCell(r[c])}</td>)}
                 <td className={`${td} text-right`}>
                   <div className="flex justify-end gap-2">

@@ -1,48 +1,49 @@
 import Link from "next/link";
-import { LogOut } from "lucide-react";
+import { ExternalLink, LogOut } from "lucide-react";
 import { readFlash } from "@/shared/action";
-import { Badge, Flash } from "@/shared/ui";
 import { logoutAction } from "@/modules/auth/actions";
 import { requireStaff } from "@/modules/auth/guards";
 import { adminMenuTree } from "@/modules/menus/repository";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { Sidebar } from "./sidebar";
+import { AppShell, type NavGroup } from "@/components/lc/app-shell";
+import { Flash } from "@/components/lc/ui";
+import { SERVICE_LOGO } from "@/components/service-shell";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Admin" };
 
+/** Panel admin: kerangka aplikasi Leetcloud (sidebar desktop, laci di HP). Menu dari tabel menu dinamis sesuai hak akses. */
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const user = await requireStaff(); // pelanggan (tanpa permission) → /portal
+  const user = await requireStaff(); // pelanggan (tanpa permission) → dashboard pelanggan
   const [tree, flash] = await Promise.all([adminMenuTree(user), readFlash()]);
 
+  // menu "#" = judul grup; menu biasa beserta anaknya masuk grup tanpa judul
+  const groups: NavGroup[] = [];
+  let loose: NavGroup | null = null;
+  for (const m of tree) {
+    const kids = m.children.map((c) => ({ label: c.label, href: c.path, icon: c.icon }));
+    if (m.path === "#") {
+      loose = null;
+      groups.push({ label: m.label, items: kids });
+    } else {
+      if (!loose) groups.push((loose = { items: [] }));
+      loose.items.push({ label: m.label, href: m.path, icon: m.icon }, ...kids);
+    }
+  }
+
   return (
-    <div className="svc flex min-h-screen flex-col md:flex-row">
-      <aside className="glass flex shrink-0 flex-col border-x-0 border-t-0 md:w-64 md:border-b-0 md:border-r md:min-h-screen">
-        <div className="flex items-center gap-3 p-5">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="" className="h-9 w-9 rounded-lg" />
-          <div className="min-w-0">
-            <Link href="/" className="font-display block truncate text-sm font-bold text-[var(--navy)]">Admin Panel</Link>
-            <p className="truncate text-[11px] text-slate-500">{user.name}</p>
-          </div>
-        </div>
-        <div className="flex-1">
-          <Sidebar tree={tree.map((m) => ({ id: m.id, label: m.label, icon: m.icon, path: m.path, children: m.children.map((c) => ({ id: c.id, label: c.label, icon: c.icon, path: c.path })) }))} />
-        </div>
-        <div className="border-t border-[var(--rule)] p-4">
-          <div className="mb-3 flex flex-wrap gap-1">
-            {user.roles.map((r) => <Badge key={r.id} tone={r.isSystem ? "violet" : "cyan"}>{r.name}</Badge>)}
-          </div>
-          <form action={logoutAction} className="flex gap-2">
-            <ThemeToggle />
-            <button className="btn-ghost btn-sm w-full"><LogOut className="h-3.5 w-3.5" /> Keluar</button>
-          </form>
-        </div>
-      </aside>
-      <main className="min-w-0 flex-1 p-5 md:p-10">
-        <Flash flash={flash} />
-        {children}
-      </main>
-    </div>
+    <AppShell
+      brand={{ name: "Admin Panel", sub: "Leetcloud · Portofolio", href: "/admin", logo: SERVICE_LOGO }}
+      groups={groups}
+      user={{ name: user.name, meta: user.roles.map((r) => r.name).join(", ") || user.email }}
+      topActions={<Link href="/medan" className="btn-ghost btn-sm hidden sm:inline-flex" target="_blank"><ExternalLink className="h-3.5 w-3.5" /> Lihat situs</Link>}
+      footer={
+        <form action={logoutAction}>
+          <button className="btn-ghost btn-sm w-full"><LogOut className="h-3.5 w-3.5" /> Keluar</button>
+        </form>
+      }
+    >
+      <Flash flash={flash} />
+      {children}
+    </AppShell>
   );
 }

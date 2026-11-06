@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Badge, Card, PageTitle, Table, td, th, fmtDateTime } from "@/shared/ui";
+import { Badge, Card, PageTitle, Table, td, th, fmtDateTime } from "@/components/lc/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
 import { listRoles } from "@/modules/rbac/repository";
@@ -32,32 +32,32 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
               <p className="label">Role</p>
               <div className="flex flex-wrap gap-3">
                 {assignable.map((r) => (
-                  <label key={r.id} className="flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-sm text-slate-300">
+                  <label key={r.id} className="flex items-center gap-2 rounded-xl border border-[var(--line)] px-3 py-2 text-sm text-[var(--ink-2)]">
                     <input type="checkbox" name="roleIds" value={r.id} defaultChecked={editingRoleIds.has(r.id)} disabled={editing?.id === me.id} className="accent-violet-500" />
                     {r.name}{r.isSystem && " 🔒"}
                   </label>
                 ))}
               </div>
-              {editing?.id === me.id && <p className="mt-1 text-xs text-slate-500">Role akun sendiri tidak bisa diubah.</p>}
+              {editing?.id === me.id && <p className="mt-1 text-xs text-[var(--ink-3)]">Role akun sendiri tidak bisa diubah.</p>}
             </div>
-            <label className="flex items-center gap-2 text-sm text-slate-300"><input type="checkbox" name="isActive" defaultChecked={editing?.isActive ?? true} disabled={editing?.id === me.id} className="accent-violet-500" /> Aktif</label>
+            <label className="flex items-center gap-2 text-sm text-[var(--ink-2)]"><input type="checkbox" name="isActive" defaultChecked={editing?.isActive ?? true} disabled={editing?.id === me.id} className="accent-violet-500" /> Aktif</label>
             {editing?.id === me.id && <input type="hidden" name="isActive" value="on" />}
             {editing?.id === me.id && editing.roles.map((r) => <input key={r.id} type="hidden" name="roleIds" value={r.id} />)}
             <button className="btn-primary">{editing ? "Simpan" : "Tambah"}</button>
           </form>
         </Card>
       )}
-      <Card>
+      <Card flush>
         <Table>
           <thead><tr><th className={th}>Nama</th><th className={th}>Email</th><th className={th}>Role</th><th className={th}>Status</th><th className={th}>Login terakhir</th><th className={th} /></tr></thead>
           <tbody>
             {users.map((u) => (
-              <tr key={u.id} className={`hover:bg-white/5 ${u.isActive ? "" : "opacity-50"}`}>
-                <td className={td}>{u.name}{u.id === me.id && <span className="ml-1 text-xs text-slate-500">(Anda)</span>}</td>
+              <tr key={u.id} className={`hover:bg-[var(--surface-2)] ${u.isActive ? "" : "opacity-50"}`}>
+                <td className={td}>{u.name}{u.id === me.id && <span className="ml-1 text-xs text-[var(--ink-3)]">(Anda)</span>}</td>
                 <td className={td}>{u.email}</td>
                 <td className={td}><div className="flex flex-wrap gap-1">{u.roles.map((r) => <Badge key={r.id} tone={r.isSystem ? "violet" : "cyan"}>{r.name}</Badge>)}</div></td>
                 <td className={td}>{u.isActive ? <Badge tone="emerald">aktif</Badge> : <Badge tone="rose">nonaktif</Badge>}</td>
-                <td className={`${td} text-xs text-slate-400`}>{fmtDateTime(u.lastLoginAt)}</td>
+                <td className={`${td} text-xs text-[var(--ink-3)]`}>{fmtDateTime(u.lastLoginAt)}</td>
                 <td className={`${td} text-right`}>
                   <div className="flex justify-end gap-2">
                     {can(me, "user.update") && (me.isSuper || !u.roles.some((r) => r.isSystem)) && <Link href={`/admin/users?edit=${u.id}`} className="btn-ghost btn-sm">Edit</Link>}

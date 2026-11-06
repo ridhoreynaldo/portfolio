@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Badge, Card, PageTitle, Table, fmtDateTime, td, th } from "@/shared/ui";
+import { Badge, Card, PageTitle, Table, fmtDateTime, td, th } from "@/components/lc/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
 import { saveCustomerAction } from "@/modules/billing/actions";
@@ -26,7 +26,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
               <div><label className="label">Password {c ? "(kosongkan jika tetap)" : "*"}</label><input name="password" type="password" minLength={8} required={!c} autoComplete="new-password" className="input-dark" /></div>
               <div><label className="label">WhatsApp</label><input name="phone" maxLength={64} defaultValue={c?.phone} className="input-dark" /></div>
               <div><label className="label">Instansi / usaha</label><input name="company" maxLength={128} defaultValue={c?.company} className="input-dark" /></div>
-              <label className="flex items-center gap-2 pt-6 text-sm text-slate-300"><input type="checkbox" name="isActive" defaultChecked={c?.isActive ?? true} className="accent-cyan-400" /> Aktif</label>
+              <label className="flex items-center gap-2 pt-6 text-sm text-[var(--ink-2)]"><input type="checkbox" name="isActive" defaultChecked={c?.isActive ?? true} className="accent-cyan-400" /> Aktif</label>
               <div className="sm:col-span-2"><label className="label">Alamat</label><textarea name="address" rows={2} maxLength={1000} defaultValue={c?.address} className="input-dark" /></div>
               <div><label className="label">Catatan internal</label><textarea name="notes" rows={2} maxLength={2000} defaultValue={c?.notes} className="input-dark" /></div>
             </div>
@@ -34,17 +34,17 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
           </form>
         </Card>
       )}
-      <Card>
+      <Card flush>
         <Table>
           <thead><tr><th className={th}>Pelanggan</th><th className={th}>Kontak</th><th className={th}>Order</th><th className={th}>Tagihan terbuka</th><th className={th}>Login terakhir</th><th className={th} /></tr></thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.id} className={`hover:bg-white/5 ${r.isActive ? "" : "opacity-50"}`}>
-                <td className={td}><div className="text-white">{r.name}</div><div className="text-xs text-slate-500">{r.email}{r.company && ` · ${r.company}`}</div></td>
-                <td className={`${td} text-xs text-slate-300`}>{r.phone || "—"}</td>
-                <td className={td}><Link href="/admin/orders" className="text-cyan-300 hover:underline">{r.orderCount}</Link></td>
+              <tr key={r.id} className={`hover:bg-[var(--surface-2)] ${r.isActive ? "" : "opacity-50"}`}>
+                <td className={td}><div className="text-[var(--ink)]">{r.name}</div><div className="text-xs text-[var(--ink-3)]">{r.email}{r.company && ` · ${r.company}`}</div></td>
+                <td className={`${td} text-xs text-[var(--ink-2)]`}>{r.phone || "—"}</td>
+                <td className={td}><Link href="/admin/orders" className="text-[var(--brand-ink)] hover:underline">{r.orderCount}</Link></td>
                 <td className={td}>{r.unpaidCount ? <Badge tone="amber">{r.unpaidCount} · {fmtIDR(r.unpaidTotal)}</Badge> : <Badge tone="emerald">lunas</Badge>}</td>
-                <td className={`${td} text-xs text-slate-400`}>{fmtDateTime(r.lastLoginAt)}</td>
+                <td className={`${td} text-xs text-[var(--ink-3)]`}>{fmtDateTime(r.lastLoginAt)}</td>
                 <td className={`${td} text-right`}>
                   <div className="flex justify-end gap-2">
                     {can(user, "customer.update") && <Link href={`/admin/customers?edit=${r.id}`} className="btn-ghost btn-sm">Edit</Link>}

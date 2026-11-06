@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { readFlash } from "@/shared/action";
-import { Flash } from "@/shared/ui";
+import { Flash } from "@/components/lc/ui";
 import { getCurrentUser, homeFor } from "@/modules/auth/session";
 import { ServiceBrandMark, SERVICE_BRAND } from "@/components/service-shell";
 import { LoginForm } from "@/app/login/login-form";
@@ -17,14 +17,14 @@ export default async function JasaLoginPage({ searchParams }: { searchParams: Pr
   const safe = next && next.startsWith("/") && !next.startsWith("//") ? next : "";
   return (
     <div className="svc grid min-h-screen place-items-center px-4 py-10">
-      <main className="card w-full max-w-sm p-8">
+      <main className="card w-full max-w-sm p-6 md:p-8">
         <ServiceBrandMark brand={SERVICE_BRAND} title="Login" sub="Masuk ke dashboard pelanggan: langganan, tagihan, dan pembayaran QRIS." />
         <Flash flash={flash} />
         <LoginForm next={safe} />
         <p className="mt-5 text-center text-sm text-[var(--ink-3)]">
-          Belum punya akun? <Link href={safe ? `/medan/register?next=${encodeURIComponent(safe)}` : "/medan/register"} className="font-semibold text-[var(--navy)] hover:underline">Daftar gratis</Link>
+          Belum punya akun? <Link href={safe ? `/medan/register?next=${encodeURIComponent(safe)}` : "/medan/register"} className="font-semibold text-[var(--brand-ink)] hover:underline">Daftar gratis</Link>
         </p>
-        <p className="mt-6 text-center text-xs text-[var(--ink-3)]"><Link href="/medan" className="hover:text-[var(--navy)]">← Halaman jasa</Link></p>
+        <p className="mt-6 text-center text-xs text-[var(--ink-3)]"><Link href="/medan" className="hover:text-[var(--brand-ink)]">← Kembali ke Leetcloud</Link></p>
       </main>
     </div>
   );

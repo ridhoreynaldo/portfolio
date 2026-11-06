@@ -13,7 +13,7 @@ export function FieldInputs({ fields, values, disabled }: { fields: Field[]; val
         const wide = f.type === "textarea" ? "sm:col-span-2" : "";
         if (f.type === "checkbox") {
           return (
-            <label key={f.name} className="flex items-center gap-2 pt-6 text-sm text-slate-300">
+            <label key={f.name} className="flex items-center gap-2 pt-6 text-sm text-[var(--ink-2)]">
               <input type="checkbox" name={f.name} defaultChecked={Boolean(v)} disabled={disabled} className="accent-violet-500" /> {f.label}
             </label>
           );
@@ -42,7 +42,7 @@ export function FieldInputs({ fields, values, disabled }: { fields: Field[]; val
                 className="input-dark"
               />
             )}
-            {f.hint && <p className="mt-1 text-xs text-slate-500">{f.hint}</p>}
+            {f.hint && <p className="mt-1 text-xs text-[var(--ink-3)]">{f.hint}</p>}
           </div>
         );
       })}

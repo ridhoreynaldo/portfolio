@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Badge, Card, PageTitle, Table, fmtDateTime, td, th } from "@/shared/ui";
+import { Badge, Card, PageTitle, Table, fmtDateTime, td, th } from "@/components/lc/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
 import { createOrderAction, deleteOrderAction, updateOrderAction } from "@/modules/billing/actions";
@@ -13,7 +13,7 @@ function SubscriptionFields({ o }: { o?: OrderRow }) {
     <>
       <div><label className="label">Status</label><select name="status" defaultValue={o?.status ?? "active"} className="input-dark">{orderStatus.enumValues.map((s) => <option key={s} value={s}>{ORDER_STATUS[s].label}</option>)}</select></div>
       <div><label className="label">Mulai layanan</label><input name="startDate" type="date" defaultValue={o?.startDate ?? ""} className="input-dark" /></div>
-      <div><label className="label">Berakhir / lunas s.d.</label><input name="endDate" type="date" defaultValue={o?.endDate ?? ""} className="input-dark" /><p className="mt-1 text-xs text-slate-500">Untuk sewa tahunan/kontrak; portal menampilkan sisa waktu.</p></div>
+      <div><label className="label">Berakhir / lunas s.d.</label><input name="endDate" type="date" defaultValue={o?.endDate ?? ""} className="input-dark" /><p className="mt-1 text-xs text-[var(--ink-3)]">Untuk sewa tahunan/kontrak; portal menampilkan sisa waktu.</p></div>
       <div><label className="label">Harga kesepakatan / unit (Rp)</label><input name="unitPrice" type="number" min={0} step={1000} defaultValue={o?.unitPrice ?? ""} placeholder={o?.price ? `kosong = harga paket ${fmtIDR(o.price)}` : "kosong = harga paket"} className="input-dark" /></div>
       <div><label className="label">Sebutan item</label><input name="itemLabel" maxLength={32} defaultValue={o?.itemLabel ?? ""} placeholder="subdomain / domain / nomor" className="input-dark" /></div>
       <div><label className="label">Limit item</label><input name="itemLimit" type="number" min={0} max={100000} defaultValue={o?.itemLimit ?? ""} placeholder="kosong = tanpa batas" className="input-dark" /></div>
@@ -73,9 +73,9 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
       {o && can(user, "order.update") && (
         <Card title={`Proses order ${o.number} — ${o.customerName}`} right={<Link href="/admin/orders" className="btn-ghost btn-sm">Tutup</Link>}>
           <div className="mb-4 grid gap-3 text-sm sm:grid-cols-2">
-            <div><span className="label">Paket</span>{o.packageName}{o.quantity > 1 && ` ×${o.quantity}`} · {orderTotal(o) > 0 ? `${fmtIDR(orderTotal(o))} ${CYCLE[o.billingCycle ?? "once"]}` : "harga sesuai kesepakatan"}{o.unitPrice != null && o.price != null && o.unitPrice !== o.price && <span className="text-xs text-slate-500"> (harga paket {fmtIDR(o.price)})</span>}</div>
+            <div><span className="label">Paket</span>{o.packageName}{o.quantity > 1 && ` ×${o.quantity}`} · {orderTotal(o) > 0 ? `${fmtIDR(orderTotal(o))} ${CYCLE[o.billingCycle ?? "once"]}` : "harga sesuai kesepakatan"}{o.unitPrice != null && o.price != null && o.unitPrice !== o.price && <span className="text-xs text-[var(--ink-3)]"> (harga paket {fmtIDR(o.price)})</span>}</div>
             <div><span className="label">Pelanggan</span>{o.customerName} · {o.customerEmail}</div>
-            <div className="sm:col-span-2"><span className="label">Brief pelanggan</span><p className="whitespace-pre-line text-slate-300">{o.notes || "—"}</p></div>
+            <div className="sm:col-span-2"><span className="label">Brief pelanggan</span><p className="whitespace-pre-line text-[var(--ink-2)]">{o.notes || "—"}</p></div>
           </div>
           <form action={updateOrderAction} className="space-y-4" key={o.id}>
             <input type="hidden" name="id" value={o.id} />
@@ -94,22 +94,22 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
           </form>
         </Card>
       )}
-      <Card>
+      <Card flush>
         <Table>
           <thead><tr><th className={th}>Nomor</th><th className={th}>Pelanggan</th><th className={th}>Paket</th><th className={th}>Langganan</th><th className={th}>Status</th><th className={th}>Dibuat</th><th className={th} /></tr></thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.id} className="hover:bg-white/5">
-                <td className={`${td} font-mono text-xs text-cyan-300`}>{r.number}</td>
-                <td className={td}><div className="text-white">{r.customerName}</div><div className="text-xs text-slate-500">{r.customerEmail}</div></td>
-                <td className={td}>{r.packageName}{r.quantity > 1 && ` ×${r.quantity}`}<div className="text-xs text-slate-500">{orderTotal(r) > 0 ? `${fmtIDR(orderTotal(r))} ${CYCLE[r.billingCycle ?? "once"]}` : "harga sesuai kesepakatan"}{r.unitPrice != null && r.quantity > 1 && ` (${fmtIDR(orderUnitPrice(r))}/unit)`}</div></td>
-                <td className={`${td} text-xs text-slate-400`}>
+              <tr key={r.id} className="hover:bg-[var(--surface-2)]">
+                <td className={`${td} font-mono text-xs text-[var(--brand-ink)]`}>{r.number}</td>
+                <td className={td}><div className="text-[var(--ink)]">{r.customerName}</div><div className="text-xs text-[var(--ink-3)]">{r.customerEmail}</div></td>
+                <td className={td}>{r.packageName}{r.quantity > 1 && ` ×${r.quantity}`}<div className="text-xs text-[var(--ink-3)]">{orderTotal(r) > 0 ? `${fmtIDR(orderTotal(r))} ${CYCLE[r.billingCycle ?? "once"]}` : "harga sesuai kesepakatan"}{r.unitPrice != null && r.quantity > 1 && ` (${fmtIDR(orderUnitPrice(r))}/unit)`}</div></td>
+                <td className={`${td} text-xs text-[var(--ink-3)]`}>
                   {r.startDate && <div>{r.startDate}{r.endDate && ` → ${r.endDate}`}</div>}
                   {(r.items.length > 0 || r.itemLimit != null) && <div>{r.items.length}{r.itemLimit != null && `/${r.itemLimit}`} {r.itemLabel || "item"}</div>}
                   {!r.startDate && !r.items.length && r.itemLimit == null && "—"}
                 </td>
                 <td className={td}><Badge tone={ORDER_STATUS[r.status].tone}>{ORDER_STATUS[r.status].label}</Badge></td>
-                <td className={`${td} text-xs text-slate-400`}>{fmtDateTime(r.createdAt)}</td>
+                <td className={`${td} text-xs text-[var(--ink-3)]`}>{fmtDateTime(r.createdAt)}</td>
                 <td className={`${td} text-right`}>
                   <div className="flex justify-end gap-2">
                     {can(user, "order.update") && <Link href={`/admin/orders?edit=${r.id}`} className="btn-ghost btn-sm">Proses</Link>}

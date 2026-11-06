@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Badge, Card, PageTitle, Table, td, th } from "@/shared/ui";
+import { Badge, Card, PageTitle, Table, td, th } from "@/components/lc/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
 import { deleteMenuAction, saveMenuAction } from "@/modules/menus/actions";
@@ -35,23 +35,23 @@ export default async function MenusPage({ searchParams }: { searchParams: Promis
               <div><label className="label">Induk / grup (ADMIN)</label>
                 <select name="parentId" defaultValue={editing?.parentId ?? ""} className="input-dark"><option value="">— tingkat atas —</option>{groups.filter((g) => g.id !== editing?.id).map((g) => <option key={g.id} value={g.id}>{g.label}</option>)}</select></div>
               <div><label className="label">Urutan</label><input name="sortOrder" type="number" min={0} defaultValue={editing?.sortOrder ?? 0} className="input-dark" /></div>
-              <label className="flex items-center gap-2 pt-6 text-sm text-slate-300"><input type="checkbox" name="isActive" defaultChecked={editing?.isActive ?? true} className="accent-violet-500" /> Aktif</label>
+              <label className="flex items-center gap-2 pt-6 text-sm text-[var(--ink-2)]"><input type="checkbox" name="isActive" defaultChecked={editing?.isActive ?? true} className="accent-violet-500" /> Aktif</label>
             </div>
-            <p className="text-xs text-slate-500">Section publik yang tersedia: #tentang, #biodata, #pengalaman, #skill, #sertifikasi, #proyek, #kontak. Nonaktifkan menu PUBLIC → section-nya hilang dari situs.</p>
+            <p className="text-xs text-[var(--ink-3)]">Section publik yang tersedia: #tentang, #biodata, #pengalaman, #skill, #sertifikasi, #proyek, #kontak. Nonaktifkan menu PUBLIC → section-nya hilang dari situs.</p>
             <button className="btn-primary">{editing ? "Simpan" : "Tambah"}</button>
           </form>
         </Card>
       )}
-      <Card>
+      <Card flush>
         <Table>
           <thead><tr><th className={th}>Scope</th><th className={th}>Label</th><th className={th}>Path</th><th className={th}>Permission</th><th className={th}>Urut</th><th className={th}>Aktif</th><th className={th} /></tr></thead>
           <tbody>
             {menus.map((m) => (
-              <tr key={m.id} className="hover:bg-white/5">
+              <tr key={m.id} className="hover:bg-[var(--surface-2)]">
                 <td className={td}><Badge tone={m.scope === "PUBLIC" ? "cyan" : "violet"}>{m.scope}</Badge></td>
-                <td className={td}>{m.parentId && <span className="text-slate-500">{parentLabel.get(m.parentId)} › </span>}{m.label}</td>
+                <td className={td}>{m.parentId && <span className="text-[var(--ink-3)]">{parentLabel.get(m.parentId)} › </span>}{m.label}</td>
                 <td className={`${td} font-mono text-xs`}>{m.path}</td>
-                <td className={`${td} text-xs text-slate-400`}>{m.permissionKey ?? "—"}</td>
+                <td className={`${td} text-xs text-[var(--ink-3)]`}>{m.permissionKey ?? "—"}</td>
                 <td className={td}>{m.sortOrder}</td>
                 <td className={td}>{m.isActive ? "✔" : "✘"}</td>
                 <td className={`${td} text-right`}>

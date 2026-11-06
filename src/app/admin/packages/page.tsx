@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Badge, Card, PageTitle, Table, td, th } from "@/shared/ui";
+import { Badge, Card, PageTitle, Table, td, th } from "@/components/lc/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
 import { deletePackageAction, savePackageAction } from "@/modules/billing/actions";
@@ -39,27 +39,27 @@ export default async function PackagesPage({ searchParams }: { searchParams: Pro
               <div className="sm:col-span-2 lg:col-span-3">
                 <label className="label">Harga bertingkat (opsional, satu per baris: <code>label | harga</code>)</label>
                 <textarea name="priceTiers" rows={5} defaultValue={p?.priceTiers.map((t) => `${t.label} | ${t.price}`).join("\n")} placeholder={"≤ 100 pengguna | 350000\n≤ 5.000 pengguna | 2500000\n> 5.000 pengguna | 0"} className="input-dark font-mono text-xs" />
-                <p className="mt-1 text-xs text-slate-500">Harga 0 pada satu tingkat berarti “hubungi”. Kolom Harga (Rp) di atas tetap dipakai sebagai harga dasar tagihan otomatis.</p>
+                <p className="mt-1 text-xs text-[var(--ink-3)]">Harga 0 pada satu tingkat berarti “hubungi”. Kolom Harga (Rp) di atas tetap dipakai sebagai harga dasar tagihan otomatis.</p>
               </div>
               <div><label className="label">Urutan</label><input name="sortOrder" type="number" min={0} defaultValue={p?.sortOrder ?? 0} className="input-dark" /></div>
-              <label className="flex items-center gap-2 pt-6 text-sm text-slate-300"><input type="checkbox" name="isActive" defaultChecked={p?.isActive ?? true} className="accent-cyan-400" /> Aktif (tampil & bisa dipesan)</label>
-              <label className="flex items-center gap-2 pt-6 text-sm text-slate-300"><input type="checkbox" name="isFeatured" defaultChecked={p?.isFeatured ?? false} className="accent-cyan-400" /> Unggulan</label>
+              <label className="flex items-center gap-2 pt-6 text-sm text-[var(--ink-2)]"><input type="checkbox" name="isActive" defaultChecked={p?.isActive ?? true} className="accent-cyan-400" /> Aktif (tampil & bisa dipesan)</label>
+              <label className="flex items-center gap-2 pt-6 text-sm text-[var(--ink-2)]"><input type="checkbox" name="isFeatured" defaultChecked={p?.isFeatured ?? false} className="accent-cyan-400" /> Unggulan</label>
             </div>
             <button className="btn-primary">{p ? "Simpan perubahan" : "Tambah"}</button>
           </form>
         </Card>
       )}
-      <Card>
+      <Card flush>
         <Table>
           <thead><tr><th className={th}>Paket</th><th className={th}>Kategori</th><th className={th}>Harga</th><th className={th}>Status</th><th className={th} /></tr></thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.id} className={`hover:bg-white/5 ${r.isActive ? "" : "opacity-50"}`}>
-                <td className={td}><div className="font-medium text-white">{r.name}</div><div className="text-xs text-slate-500">/medan/order/{r.slug}</div></td>
+              <tr key={r.id} className={`hover:bg-[var(--surface-2)] ${r.isActive ? "" : "opacity-50"}`}>
+                <td className={td}><div className="font-medium text-[var(--ink)]">{r.name}</div><div className="text-xs text-[var(--ink-3)]">/medan/order/{r.slug}</div></td>
                 <td className={td}>{r.category}</td>
                 <td className={td}>
                   {r.priceTiers.length > 0 ? tierRange(r.priceTiers) : r.price > 0 ? fmtIDR(r.price) : "Hubungi"}
-                  <div className="text-xs text-slate-500">{CYCLE[r.billingCycle]}{r.unit && ` / ${r.unit}`}{r.priceTiers.length > 0 && ` · ${r.priceTiers.length} tingkat`}</div>
+                  <div className="text-xs text-[var(--ink-3)]">{CYCLE[r.billingCycle]}{r.unit && ` / ${r.unit}`}{r.priceTiers.length > 0 && ` · ${r.priceTiers.length} tingkat`}</div>
                 </td>
                 <td className={td}><div className="flex gap-1">{r.isActive ? <Badge tone="emerald">aktif</Badge> : <Badge>nonaktif</Badge>}{r.isFeatured && <Badge tone="violet">unggulan</Badge>}</div></td>
                 <td className={`${td} text-right`}>

@@ -36,6 +36,17 @@ cd "$REL"
 echo ">> npm ci"
 npm ci --no-audit --no-fund --loglevel=error
 echo ">> build (standalone) + bundle migrasi"
+# Kunci aksi server TETAP antar-rilis: tanpa ini tiap build (folder baru, tanpa cache) membuat ID aksi baru,
+# sehingga form di tab yang dibuka sebelum deploy gagal ("Failed to find Server Action" / "This page couldn't load").
+# Dibuat sekali di app.env (hanya di server, tidak pernah masuk git).
+if ! grep -q '^NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=' "$ENVF"; then
+  echo "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=$(openssl rand -base64 32)" >> "$ENVF"
+  echo "   kunci aksi server dibuat di $ENVF"
+fi
+NEXT_SERVER_ACTIONS_ENCRYPTION_KEY="$(grep '^NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=' "$ENVF" | tail -n1 | cut -d= -f2-)"
+export NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
+# ID rilis untuk perlindungan beda-versi: tab lama yang bernavigasi setelah deploy dimuat ulang penuh, bukan error.
+export NEXT_DEPLOYMENT_ID="${SHA:0:12}"
 NEXT_TELEMETRY_DISABLED=1 npm run build 2>&1 | tail -n 15
 npm run build:migrate 2>&1 | tail -n 2
 # standalone butuh aset statis & public di sampingnya (sama seperti Dockerfile)

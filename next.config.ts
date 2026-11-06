@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const config: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
+  // perlindungan beda-versi setelah deploy (diisi release.sh dengan commit); kosong saat build lokal
+  deploymentId: process.env.NEXT_DEPLOYMENT_ID || undefined,
   serverExternalPackages: ["postgres"],
   // unggah QRIS / bukti bayar lewat server action (file ≤ 3 MB, lihat modules/billing/files.ts)
   experimental: { serverActions: { bodySizeLimit: "5mb" } },

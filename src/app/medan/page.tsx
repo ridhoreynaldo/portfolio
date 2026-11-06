@@ -74,16 +74,17 @@ export default async function LeetcloudPage() {
 
       <main>
         {/* ── Hero ── */}
-        <section className="px-4 pb-16 pt-14 text-center md:pb-24 md:pt-24">
-          <h1 className="mx-auto max-w-3xl text-[2rem] font-bold leading-[1.15] text-[var(--ink)] md:text-5xl md:leading-[1.1]">
-            Aplikasi & server untuk bisnis Anda
+        <section className="bg-[var(--brand-deep)] px-4 pb-16 pt-14 text-center text-white md:pb-24 md:pt-24">
+          <p className="mx-auto inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white/90">Medan · Sumatera Utara</p>
+          <h1 className="mx-auto mt-4 max-w-3xl text-[2rem] font-extrabold leading-[1.15] md:text-5xl md:leading-[1.1]">
+            Aplikasi & server untuk <span className="text-[var(--accent)]">bisnis</span> Anda
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-[var(--ink-2)] md:text-lg">
+          <p className="mx-auto mt-4 max-w-xl text-white/85 md:text-lg">
             Website, sistem informasi, dan WhatsApp gateway. Dibuat sesuai kebutuhan, dikelola sampai jalan. Melayani Medan & seluruh Indonesia.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-primary"><MessageCircle className="h-4 w-4" /> Konsultasi gratis</a>}
-            <a href="#paket" className="btn-ghost">Lihat paket</a>
+            {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-gold"><MessageCircle className="h-4 w-4" /> Konsultasi gratis</a>}
+            <a href="#paket" className="inline-flex min-h-[2.75rem] items-center justify-center rounded-[10px] border border-white/40 px-5 font-semibold text-white transition hover:bg-white/10">Lihat paket</a>
           </div>
         </section>
 
@@ -104,7 +105,8 @@ export default async function LeetcloudPage() {
                 {showcase.map((x) => (
                   <article key={x.id} className="card flex flex-col p-5">
                     <h3 className="font-bold leading-snug text-[var(--ink)]">{x.title}</h3>
-                    <p className="mt-2 line-clamp-2 flex-1 text-sm text-[var(--ink-3)]">{x.description}</p>
+                    <p className="mt-2 line-clamp-2 text-sm text-[var(--ink-3)]">{x.description}</p>
+                    <span className="flex-1" />
                     {x.demoUrl && <a href={x.demoUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[var(--brand-ink)] hover:underline">Lihat situs <ExternalLink className="h-3.5 w-3.5" /></a>}
                   </article>
                 ))}

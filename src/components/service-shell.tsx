@@ -38,7 +38,7 @@ export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: Auth
   const staff = !!user && (user.isSuper || user.permissions.length > 0);
   const portal = user ? (staff ? "/admin" : "/medan/dashboard") : null;
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--bg)]">
+    <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--surface)]">
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 md:px-6" aria-label="Menu utama">
         <Logo brand={brand} />
         <ul className="hidden items-center gap-1 text-sm font-medium text-[var(--ink-2)] md:flex">

@@ -1,5 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Logo Leetcloud">
-  <rect width="64" height="64" rx="14" fill="#1f5f4a"/>
-  <path d="M20 43.5h24a8 8 0 0 0 1.2-15.9A12 12 0 0 0 22.3 25 9.3 9.3 0 0 0 20 43.5Z" fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
-  <path d="M29 28v11h9" fill="none" stroke="#f3d9a4" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect width="64" height="64" rx="14" fill="#085c8c"/>
+  <path d="M21 44h23a8.5 8.5 0 0 0 1.3-16.9A12.5 12.5 0 0 0 21.6 24.6 9.7 9.7 0 0 0 21 44Z" fill="#fff"/>
 </svg>

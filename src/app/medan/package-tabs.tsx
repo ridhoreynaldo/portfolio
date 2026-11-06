@@ -44,7 +44,8 @@ export function PackageTabs({ groups, showPrices }: { groups: PkgGroup[]; showPr
                 <h3 className="font-bold leading-snug text-[var(--ink)]">{p.name}</h3>
                 {p.isFeatured && <span className="tag tag-gold shrink-0">Terlaris</span>}
               </div>
-              <p className="mt-1.5 line-clamp-2 flex-1 text-sm text-[var(--ink-3)]">{p.description}</p>
+              <p className="mt-1.5 line-clamp-2 text-sm text-[var(--ink-3)]">{p.description}</p>
+              <span className="flex-1" />
               <div className="mt-4 flex items-end justify-between gap-3">
                 <p className="text-[var(--ink)]">
                   {pr.top && <span className="text-xs text-[var(--ink-3)]">{pr.top} </span>}

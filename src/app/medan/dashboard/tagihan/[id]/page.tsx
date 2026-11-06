@@ -16,7 +16,7 @@ export const metadata = { title: "Detail Tagihan" };
 export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!z.string().uuid().safeParse(id).success) notFound();
-  const user = await requireUser(`/medan/dashboard/tagihan/${id}`);
+  const user = await requireUser(`/dashboard/tagihan/${id}`);
   const inv = await getInvoice(id);
   if (!inv || inv.userId !== user.id) notFound();
   const [pay, profile] = await Promise.all([getPaymentSettings(), getProfile()]);
@@ -27,7 +27,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
   return (
     <>
-      <Link href="/medan/dashboard/tagihan" className="inline-flex items-center gap-1 text-sm font-medium text-[var(--ink-3)] hover:text-[var(--brand-ink)]"><ArrowLeft className="h-3.5 w-3.5" /> Semua tagihan</Link>
+      <Link href="/dashboard/tagihan" className="inline-flex items-center gap-1 text-sm font-medium text-[var(--ink-3)] hover:text-[var(--brand-ink)]"><ArrowLeft className="h-3.5 w-3.5" /> Semua tagihan</Link>
 
       <section className="card mt-4 overflow-hidden">
         <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:justify-between md:p-6">
@@ -54,7 +54,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--line)] px-4 py-3 md:px-6">
           {inv.note ? <p className="text-xs text-[var(--ink-3)]">{inv.note}</p> : <span />}
-          <a href={`/medan/invoice/${inv.id}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm"><Printer className="h-3.5 w-3.5" /> Cetak / PDF</a>
+          <a href={`/invoice/${inv.id}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm"><Printer className="h-3.5 w-3.5" /> Cetak / PDF</a>
         </div>
       </section>
 

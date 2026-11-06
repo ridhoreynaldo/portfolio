@@ -28,13 +28,13 @@ export default async function PackagePage({ params }: { params: Promise<{ slug: 
   const brand = SERVICE_BRAND;
   const per = `${CYCLE[pkg.billingCycle]}${pkg.unit ? ` / ${pkg.unit}` : ""}`;
   const wa = profile?.phone ? waLink(profile.phone, `Halo ${brand.name}, saya tertarik dengan paket "${pkg.name}". Boleh minta penawaran harganya?`) : null;
-  const next = encodeURIComponent(`/medan/order/${slug}`);
+  const next = encodeURIComponent(`/order/${slug}`);
 
   return (
     <div className="svc">
       <ServiceHeader brand={brand} user={user} />
       <main className="mx-auto max-w-5xl px-4 py-8 md:px-6 md:py-12">
-        <Link href="/medan#paket" className="inline-flex items-center gap-1 text-sm font-medium text-[var(--ink-3)] hover:text-[var(--brand-ink)]"><ArrowLeft className="h-3.5 w-3.5" /> Semua paket</Link>
+        <Link href="/#paket" className="inline-flex items-center gap-1 text-sm font-medium text-[var(--ink-3)] hover:text-[var(--brand-ink)]"><ArrowLeft className="h-3.5 w-3.5" /> Semua paket</Link>
         <div className="mt-4"><Flash flash={flash} /></div>
 
         <div className="mt-2 grid gap-6 lg:grid-cols-[1fr_380px]">
@@ -94,8 +94,8 @@ export default async function PackagePage({ params }: { params: Promise<{ slug: 
                   <p className="font-bold text-[var(--ink)]">Atau pesan lewat dashboard</p>
                   <p className="mt-1 text-sm text-[var(--ink-3)]">Masuk untuk mengirim pesanan, lalu pantau tagihan dan bayar via QRIS.</p>
                   <div className="mt-4 grid grid-cols-2 gap-2">
-                    <Link href={`/medan/login?next=${next}`} className="btn-ghost btn-sm"><LogIn className="h-3.5 w-3.5" /> Login</Link>
-                    <Link href={`/medan/register?next=${next}`} className="btn-ghost btn-sm">Daftar</Link>
+                    <Link href={`/login?next=${next}`} className="btn-ghost btn-sm"><LogIn className="h-3.5 w-3.5" /> Login</Link>
+                    <Link href={`/register?next=${next}`} className="btn-ghost btn-sm">Daftar</Link>
                   </div>
                 </div>
               )}

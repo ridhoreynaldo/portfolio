@@ -22,9 +22,9 @@ export default async function JasaLoginPage({ searchParams }: { searchParams: Pr
         <Flash flash={flash} />
         <LoginForm next={safe} />
         <p className="mt-5 text-center text-sm text-[var(--ink-3)]">
-          Belum punya akun? <Link href={safe ? `/medan/register?next=${encodeURIComponent(safe)}` : "/medan/register"} className="font-semibold text-[var(--brand-ink)] hover:underline">Daftar gratis</Link>
+          Belum punya akun? <Link href={safe ? `/register?next=${encodeURIComponent(safe)}` : "/register"} className="font-semibold text-[var(--brand-ink)] hover:underline">Daftar gratis</Link>
         </p>
-        <p className="mt-6 text-center text-xs text-[var(--ink-3)]"><Link href="/medan" className="hover:text-[var(--brand-ink)]">← Kembali ke Leetcloud</Link></p>
+        <p className="mt-6 text-center text-xs text-[var(--ink-3)]"><Link href="/" className="hover:text-[var(--brand-ink)]">← Kembali ke Leetcloud</Link></p>
       </main>
     </div>
   );

@@ -12,7 +12,7 @@ import { users } from "@/modules/users/schema";
 import { PROOF_MIMES, readUpload } from "./files";
 import { deleteOrphanFile, getInvoice, getPackageBySlug, insertFile, insertOrder, nextNumber, updateInvoice, upsertCustomerProfile } from "./repository";
 
-/** Pelanggan memesan paket dari /medan/order/<slug>. */
+/** Pelanggan memesan paket dari /order/<slug>. */
 export const placeOrderAction = action(async (form: FormData) => {
   const me = await requireLogin();
   const d = z
@@ -34,7 +34,7 @@ export const placeOrderAction = action(async (form: FormData) => {
   revalidatePath("/medan/dashboard");
   revalidatePath("/admin/orders");
   await setFlash(`Pesanan ${number} diterima. Kami akan menghubungi Anda untuk konfirmasi.`);
-  redirect("/medan/dashboard");
+  redirect("/dashboard");
 });
 
 /** Pelanggan mengunggah bukti pembayaran → status "menunggu verifikasi". */
@@ -54,7 +54,7 @@ export const uploadProofAction = action(async (form: FormData) => {
   revalidatePath(`/medan/dashboard/tagihan/${id}`);
   revalidatePath("/admin/invoices");
   await setFlash("Bukti pembayaran terkirim. Admin akan memverifikasi.");
-  redirect(`/medan/dashboard/tagihan/${id}`);
+  redirect(`/dashboard/tagihan/${id}`);
 });
 
 /** Pelanggan mengubah data akunnya sendiri (nama, telepon, perusahaan, alamat). */
@@ -72,5 +72,5 @@ export const updateMyProfileAction = action(async (form: FormData) => {
   await upsertCustomerProfile(me.id, { phone: d.phone, company: d.company, address: d.address });
   revalidatePath("/medan/dashboard/akun");
   await setFlash("Data akun tersimpan");
-  redirect("/medan/dashboard/akun");
+  redirect("/dashboard/akun");
 });

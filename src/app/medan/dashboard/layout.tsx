@@ -12,29 +12,29 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Dashboard Pelanggan" };
 
 const NAV: NavItem[] = [
-  { label: "Ringkasan", href: "/medan/dashboard", icon: "LayoutDashboard" },
-  { label: "Tagihan", href: "/medan/dashboard/tagihan", icon: "Receipt" },
-  { label: "Akun", href: "/medan/dashboard/akun", icon: "UserRound" },
+  { label: "Ringkasan", href: "/dashboard", icon: "LayoutDashboard" },
+  { label: "Tagihan", href: "/dashboard/tagihan", icon: "Receipt" },
+  { label: "Akun", href: "/dashboard/akun", icon: "UserRound" },
 ];
 
 /** Dashboard pelanggan Leetcloud: langganan, tagihan, pembayaran. Staf juga bisa membuka untuk uji coba. */
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
-  const user = await requireUser("/medan/dashboard");
+  const user = await requireUser("/dashboard");
   const flash = await readFlash();
   const brand = SERVICE_BRAND;
   return (
     <AppShell
-      brand={{ name: brand.name, sub: "Dashboard pelanggan", href: "/medan/dashboard", logo: SERVICE_LOGO }}
+      brand={{ name: brand.name, sub: "Dashboard pelanggan", href: "/dashboard", logo: SERVICE_LOGO }}
       groups={[
         { items: NAV },
-        { label: "Layanan", items: [{ label: "Pesan layanan baru", href: "/medan#paket", icon: "Package" }, { label: "Halaman Leetcloud", href: "/medan", icon: "Home" }] },
+        { label: "Layanan", items: [{ label: "Pesan layanan baru", href: "/#paket", icon: "Package" }, { label: "Halaman Leetcloud", href: "/", icon: "Home" }] },
       ]}
       tabs={NAV}
       user={{ name: user.name, meta: user.email }}
       topActions={
         <>
           {isStaff(user) && <Link href="/admin" className="btn-ghost btn-sm hidden sm:inline-flex"><LayoutDashboard className="h-3.5 w-3.5" /> Admin</Link>}
-          <Link href="/medan#paket" className="btn-primary btn-sm"><Plus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Pesan layanan</span><span className="sm:hidden">Pesan</span></Link>
+          <Link href="/#paket" className="btn-primary btn-sm"><Plus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Pesan layanan</span><span className="sm:hidden">Pesan</span></Link>
         </>
       }
       footer={<form action={logoutToHomeAction}><button className="btn-ghost btn-sm w-full"><LogOut className="h-3.5 w-3.5" /> Keluar</button></form>}

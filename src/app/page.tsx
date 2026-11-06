@@ -104,7 +104,7 @@ export default async function HomePage() {
               </h1>
               {p?.summary && <p className="mt-5 max-w-2xl text-base text-slate-300/85 md:text-lg">{p.summary}</p>}
               <div className="mt-8 flex flex-wrap justify-center gap-3 md:justify-start">
-                <Link href="/medan" className="btn-primary">Jasa & Layanan <ArrowRight className="h-4 w-4" /></Link>
+                <Link href="https://leetcloud.my.id" className="btn-primary">Jasa & Layanan <ArrowRight className="h-4 w-4" /></Link>
                 {show("proyek") && <a href="#proyek" className="btn-ghost"><Rocket className="h-4 w-4" /> Lihat Proyek</a>}
                 {github && <a href={github} target="_blank" rel="noreferrer" className="btn-ghost"><SiGithub className="h-4 w-4" /> GitHub</a>}
                 {linkedin && <a href={linkedin} target="_blank" rel="noreferrer" className="btn-ghost"><FaLinkedin className="h-4 w-4" /> LinkedIn</a>}
@@ -225,7 +225,7 @@ export default async function HomePage() {
             </Section>
           )}
 
-          {/* Detail jasa & paket ada di halaman /medan — di sini hanya ajakan singkat. */}
+          {/* Detail jasa & paket ada di leetcloud.my.id — di sini hanya ajakan singkat. */}
           <section id="layanan" className="mx-auto max-w-4xl scroll-mt-28 px-5 py-10">
             <div className="hud flex flex-col items-center justify-between gap-5 p-7 text-center md:flex-row md:text-left">
               <div className="flex items-start gap-4">
@@ -237,7 +237,7 @@ export default async function HomePage() {
                   <p className="mt-1 text-sm text-slate-400">Paket, harga, cara kerja, dan portal pelanggan ada di halaman {SERVICE_BRAND.name}.</p>
                 </div>
               </div>
-              <Link href="/medan" className="btn-primary shrink-0">Buka {SERVICE_BRAND.name} <ArrowRight className="h-4 w-4" /></Link>
+              <Link href="https://leetcloud.my.id" className="btn-primary shrink-0">Buka {SERVICE_BRAND.name} <ArrowRight className="h-4 w-4" /></Link>
             </div>
           </section>
 
@@ -251,7 +251,7 @@ export default async function HomePage() {
                   {github && <a href={github} target="_blank" rel="noreferrer" className="btn-ghost"><SiGithub className="h-4 w-4" /> GitHub</a>}
                   {linkedin && <a href={linkedin} target="_blank" rel="noreferrer" className="btn-ghost"><FaLinkedin className="h-4 w-4" /> LinkedIn</a>}
                   {website && <a href={website} target="_blank" rel="noreferrer" className="btn-ghost"><Globe className="h-4 w-4" /> Website</a>}
-                  <Link href="/medan" className="btn-magenta">Lihat Jasa</Link>
+                  <Link href="https://leetcloud.my.id" className="btn-magenta">Lihat Jasa</Link>
                 </div>
               </div>
             </Section>

@@ -9,8 +9,8 @@ import { PackageTabs, type PkgGroup } from "./package-tabs";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: { absolute: "Leetcloud · Jasa Pembuatan Aplikasi, Sewa Server & WhatsApp Gateway di Medan" },
-  description: "Leetcloud melayani bisnis di Medan dan seluruh Indonesia: aplikasi custom (beli putus atau plus sewa server), layanan server & aplikasi, WhatsApp gateway, dan domain.",
+  title: { absolute: "Leetcloud · Jasa Pembuatan Aplikasi, Sewa Server & WhatsApp Gateway" },
+  description: "Leetcloud melayani bisnis di seluruh Indonesia: aplikasi custom (beli putus atau plus sewa server), layanan server & aplikasi, WhatsApp gateway, dan domain.",
 };
 
 /** Kategori paket: urutan tab dan judulnya. */
@@ -30,7 +30,7 @@ const FAQ = [
   ["Apa bedanya beli putus dan langganan?", "Beli putus: sekali bayar, kode aplikasi menjadi milik Anda. Langganan: biaya bulanan yang sudah termasuk server dan perawatan, tanpa biaya besar di awal."],
   ["Berapa harga pastinya?", "Harga di halaman ini adalah estimasi. Harga pasti kami berikan setelah diskusi singkat lewat WhatsApp, dalam bentuk penawaran tertulis."],
   ["Bagaimana cara membayar?", "Lewat dashboard pelanggan: pilih tagihan, bayar dengan QRIS atau transfer bank, lalu unggah bukti pembayaran."],
-  ["Apakah bisa bertemu langsung?", "Bisa, untuk wilayah Medan dan sekitarnya. Untuk luar daerah, pengerjaan dilakukan jarak jauh."],
+  ["Apakah bisa bertemu langsung?", "Bisa, untuk area Medan karena kami berdomisili di sana. Selebihnya semua dikerjakan online, jadi lokasi Anda tidak masalah."],
 ] as const;
 
 /** Tiga proyek contoh (urut tampil). */
@@ -76,12 +76,11 @@ export default async function LeetcloudPage() {
       <main>
         {/* ── Hero ── */}
         <section className="hero-galaxy px-4 pb-20 pt-16 text-center md:pb-28 md:pt-24">
-          <p className="mx-auto inline-flex items-center gap-2 rounded-full border border-[rgba(0,240,255,0.35)] px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-[#9ff7ff]"><span className="h-1.5 w-1.5 rounded-full bg-[#00f0ff]" /> Medan · Sumatera Utara</p>
-          <h1 className="font-cyber mx-auto mt-5 max-w-3xl text-[1.8rem] font-bold uppercase leading-[1.2] text-[#fff] md:text-5xl md:leading-[1.15]">
+          <h1 className="font-cyber mx-auto max-w-3xl text-[1.8rem] font-bold uppercase leading-[1.2] text-[#fff] md:text-5xl md:leading-[1.15]">
             Aplikasi & server untuk <span className="text-[#00f0ff]">bisnis</span> <span className="text-[#ff5ce1]">Anda</span>
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-[#c7d2f0] md:text-lg">
-            Website, sistem informasi, dan WhatsApp gateway. Dibuat sesuai kebutuhan, dikelola sampai jalan. Melayani Medan & seluruh Indonesia.
+            Website, sistem informasi, dan WhatsApp gateway. Dibuat sesuai kebutuhan, dikelola sampai jalan. Melayani seluruh Indonesia secara online.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-neon"><MessageCircle className="h-4 w-4" /> Konsultasi gratis</a>}
@@ -153,8 +152,8 @@ export default async function LeetcloudPage() {
         {/* ── Kontak ── */}
         <section id="kontak" className="scroll-mt-20 bg-[var(--surface)] px-4 py-14 text-center md:py-20">
           <h2 className="font-cyber text-xl font-bold uppercase text-[var(--ink)] md:text-2xl">Diskusi dulu, <span className="text-neon-m">gratis</span></h2>
-          <p className="mx-auto mt-2 max-w-md text-[var(--ink-3)]">Ceritakan kebutuhan Anda, kami balas dalam 24 jam.</p>
-          {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-primary mt-6"><MessageCircle className="h-4 w-4" /> Chat WhatsApp</a>}
+          <p className="mx-auto mt-2 max-w-md text-[var(--ink-3)]">Ceritakan kebutuhan Anda langsung ke {brand.owner}, dibalas dalam 24 jam.</p>
+          {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-primary mt-6"><MessageCircle className="h-4 w-4" /> Chat dengan {brand.owner}</a>}
         </section>
       </main>
 

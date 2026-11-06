@@ -66,7 +66,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
       <Card title="Alur kerja layanan">
         <ol className="list-decimal space-y-1.5 pl-5 text-sm text-[var(--ink-2)]">
-          <li>Pelanggan memesan paket di <b>/medan</b> (atau Anda buat <b>order manual</b>).</li>
+          <li>Pelanggan memesan paket di <b>leetcloud.my.id</b> (atau Anda buat <b>order manual</b>).</li>
           <li>Ubah status order menjadi <b>Aktif</b>, lalu buat tagihan (atau <b>Generate</b> tagihan bulanan).</li>
           <li>Pelanggan membayar via QRIS dan mengunggah bukti di dashboard.</li>
           <li>Verifikasi bukti, lalu tandai tagihan <b>Lunas</b>.</li>

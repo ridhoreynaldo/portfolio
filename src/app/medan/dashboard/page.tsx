@@ -75,14 +75,14 @@ function ServiceCard({ o, invoices, user }: { o: OrderRow; invoices: InvoiceRow[
       </dl>
 
       {s.canPay && s.next && (
-        <Link href={`/medan/dashboard/tagihan/${s.next.id}`} className="btn-gold btn-sm mt-4 w-full"><QrCode className="h-3.5 w-3.5" /> Bayar {fmtIDR(s.next.amount)}</Link>
+        <Link href={`/dashboard/tagihan/${s.next.id}`} className="btn-gold btn-sm mt-4 w-full"><QrCode className="h-3.5 w-3.5" /> Bayar {fmtIDR(s.next.amount)}</Link>
       )}
     </article>
   );
 }
 
 export default async function Dashboard() {
-  const user = await requireUser("/medan/dashboard");
+  const user = await requireUser("/dashboard");
   const [orders, invoices] = await Promise.all([listOrders({ userId: user.id }), listInvoices({ userId: user.id })]);
   const shown = orders.filter((o) => o.status === "active" || o.status === "pending");
   const open = invoices.filter((i) => i.status === "unpaid" || i.status === "pending_verification").sort((a, b) => a.dueDate.localeCompare(b.dueDate));
@@ -97,20 +97,20 @@ export default async function Dashboard() {
       <div className="mb-8 grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
         <Stat label="Layanan aktif" value={shown.length} icon={<Server className="h-4 w-4" />} />
         <Stat label="Biaya bulanan" value={monthly > 0 ? fmtIDR(monthly) : "—"} icon={<Wallet className="h-4 w-4" />} />
-        <Stat label="Tagihan terbuka" value={due.length} sub={due.length ? fmtIDR(due.reduce((n, i) => n + i.amount, 0)) : "Tidak ada"} icon={<Receipt className="h-4 w-4" />} href="/medan/dashboard/tagihan" />
+        <Stat label="Tagihan terbuka" value={due.length} sub={due.length ? fmtIDR(due.reduce((n, i) => n + i.amount, 0)) : "Tidak ada"} icon={<Receipt className="h-4 w-4" />} href="/dashboard/tagihan" />
         <Stat label="Jatuh tempo terdekat" value={nearest ? fmtDate(nearest.dueDate) : "—"} sub={nearest ? daysText(daysUntil(nearest.dueDate)) : undefined} icon={<CalendarClock className="h-4 w-4" />} />
       </div>
 
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 className="text-lg font-bold text-[var(--ink)]">Layanan Anda</h2>
-        <Link href="/medan/dashboard/tagihan" className="inline-flex items-center gap-1 text-sm font-semibold text-[var(--brand-ink)] hover:underline">Semua tagihan <ArrowRight className="h-3.5 w-3.5" /></Link>
+        <Link href="/dashboard/tagihan" className="inline-flex items-center gap-1 text-sm font-semibold text-[var(--brand-ink)] hover:underline">Semua tagihan <ArrowRight className="h-3.5 w-3.5" /></Link>
       </div>
       {shown.length ? (
         <div className="grid gap-4 md:grid-cols-2">
           {shown.map((o) => <ServiceCard key={o.id} o={o} invoices={invoices} user={user.name} />)}
         </div>
       ) : (
-        <EmptyState title="Belum ada layanan" sub="Pilih paket di halaman Leetcloud. Setelah dikonfirmasi, layanan dan tagihannya muncul di sini." action={<Link href="/medan#paket" className="btn-primary btn-sm">Lihat paket</Link>} />
+        <EmptyState title="Belum ada layanan" sub="Pilih paket di halaman Leetcloud. Setelah dikonfirmasi, layanan dan tagihannya muncul di sini." action={<Link href="/#paket" className="btn-primary btn-sm">Lihat paket</Link>} />
       )}
     </>
   );

@@ -17,7 +17,7 @@ export function SiteHeader({ brand, menus, user, home = "/" }: { brand: string; 
               <span>// BACK-END · MACHINE LEARNING · CLOUD</span>
               <span>// JASA KONSULTASI · PEMBUATAN APLIKASI · SEWA & MAINTENANCE</span>
               <span>// MEDAN · INDONESIA · UTC+7</span>
-              <span>// JASA & ORDER → /medan</span>
+              <span>// JASA & ORDER → leetcloud.my.id</span>
             </span>
           ))}
         </div>
@@ -36,7 +36,7 @@ export function SiteHeader({ brand, menus, user, home = "/" }: { brand: string; 
           ))}
         </ul>
         <div className="flex items-center gap-2">
-          <Link href="/medan" className="btn-primary btn-sm"><ShoppingCart className="h-3.5 w-3.5" /> Jasa</Link>
+          <Link href="https://leetcloud.my.id" className="btn-primary btn-sm"><ShoppingCart className="h-3.5 w-3.5" /> Jasa</Link>
           {portal ? (
             <Link href={portal} className="btn-ghost btn-sm"><UserRound className="h-3.5 w-3.5" /> Admin</Link>
           ) : !user ? (

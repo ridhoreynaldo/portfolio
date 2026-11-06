@@ -10,7 +10,7 @@ export const metadata = { title: "Tagihan" };
 
 /** Riwayat tagihan pelanggan: kartu di HP, tabel di desktop. */
 export default async function PortalInvoices() {
-  const user = await requireUser("/medan/dashboard/tagihan");
+  const user = await requireUser("/dashboard/tagihan");
   const [orders, invoices] = await Promise.all([listOrders({ userId: user.id }), listInvoices({ userId: user.id })]);
   const orderName = new Map(orders.map((o) => [o.id, o.packageName]));
   const recurring = new Set(orders.filter((o) => (o.billingCycle ?? "once") !== "once").map((o) => o.id));
@@ -24,8 +24,8 @@ export default async function PortalInvoices() {
   const sub = (i: InvoiceRow) => [(i.orderId && orderName.get(i.orderId)) || "", i.period ? fmtPeriod(i.period) : ""].filter(Boolean).join(" · ");
   const actions = (i: InvoiceRow) => (
     <span className="inline-flex gap-2">
-      {i.status === "unpaid" && <Link href={`/medan/dashboard/tagihan/${i.id}`} className="btn-primary btn-sm">Bayar</Link>}
-      <a href={`/medan/invoice/${i.id}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm btn-icon" title="Cetak invoice" aria-label="Cetak invoice"><Printer className="h-3.5 w-3.5" /></a>
+      {i.status === "unpaid" && <Link href={`/dashboard/tagihan/${i.id}`} className="btn-primary btn-sm">Bayar</Link>}
+      <a href={`/invoice/${i.id}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm btn-icon" title="Cetak invoice" aria-label="Cetak invoice"><Printer className="h-3.5 w-3.5" /></a>
     </span>
   );
 

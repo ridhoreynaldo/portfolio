@@ -8,24 +8,25 @@ import type { PriceTier } from "@/modules/billing/schema";
 /** Logo brand (SVG di public/). */
 export const SERVICE_LOGO = "/service-logo.svg";
 
-export type ServiceBrand = { name: string; tagline: string; area: string };
+export type ServiceBrand = { name: string; tagline: string; area: string; owner: string };
 /** Identitas brand tetap (tidak diambil dari profil pribadi). */
 export const SERVICE_BRAND: ServiceBrand = {
   name: "Leetcloud",
   tagline: "Aplikasi, server & WhatsApp gateway untuk bisnis Anda",
-  area: "Medan",
+  area: "Medan", // domisili pemilik: hanya di invoice & FAQ tatap muka, bukan fokus layanan
+  owner: "Edo", // nama panggilan; nama lengkap tidak ditampilkan di Leetcloud
 };
 
 const NAV = [
-  ["/medan#paket", "Paket"],
-  ["/medan#proyek", "Proyek"],
-  ["/medan#faq", "FAQ"],
-  ["/medan#kontak", "Kontak"],
+  ["/#paket", "Paket"],
+  ["/#proyek", "Proyek"],
+  ["/#faq", "FAQ"],
+  ["/#kontak", "Kontak"],
 ] as const;
 
 function Logo({ brand }: { brand: ServiceBrand }) {
   return (
-    <Link href="/medan" className="flex min-w-0 items-center gap-2.5">
+    <Link href="/" className="flex min-w-0 items-center gap-2.5">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={SERVICE_LOGO} alt="" className="h-8 w-8 shrink-0 rounded-lg" />
       <span className="font-cyber text-base font-bold tracking-wider text-[var(--ink)]">{brand.name}</span>
@@ -36,7 +37,7 @@ function Logo({ brand }: { brand: ServiceBrand }) {
 /** Header halaman publik Leetcloud: logo, menu, tema, login. Di HP menu jadi baris yang bisa digeser. */
 export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: AuthUser | null }) {
   const staff = !!user && (user.isSuper || user.permissions.length > 0);
-  const portal = user ? (staff ? "/admin" : "/medan/dashboard") : null;
+  const portal = user ? (staff ? "/admin" : "/dashboard") : null;
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--surface)]">
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 md:px-6" aria-label="Menu utama">
@@ -49,7 +50,7 @@ export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: Auth
           {portal ? (
             <Link href={portal} className="btn-primary btn-sm"><UserRound className="h-3.5 w-3.5" /> Dashboard</Link>
           ) : (
-            <Link href="/medan/login" className="btn-primary btn-sm"><LogIn className="h-3.5 w-3.5" /> Login</Link>
+            <Link href="/login" className="btn-primary btn-sm"><LogIn className="h-3.5 w-3.5" /> Login</Link>
           )}
         </div>
       </nav>
@@ -61,8 +62,8 @@ export function ServiceFooter({ brand }: { brand: ServiceBrand; wa?: string | nu
   return (
     <footer className="border-t border-[var(--line)]">
       <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-2 px-4 py-6 text-sm text-[var(--ink-3)] sm:flex-row">
-        <p>© {new Date().getFullYear()} {brand.name} · {brand.area}</p>
-        <p className="flex gap-4"><Link href="/medan/login" className="hover:text-[var(--brand-ink)]">Login</Link><Link href="/medan/register" className="hover:text-[var(--brand-ink)]">Daftar</Link></p>
+        <p>© {new Date().getFullYear()} {brand.name}</p>
+        <p className="flex gap-4"><Link href="/login" className="hover:text-[var(--brand-ink)]">Login</Link><Link href="/register" className="hover:text-[var(--brand-ink)]">Daftar</Link></p>
       </div>
     </footer>
   );
@@ -72,7 +73,7 @@ export function ServiceFooter({ brand }: { brand: ServiceBrand; wa?: string | nu
 export function ServiceBrandMark({ brand, title, sub }: { brand: ServiceBrand; title: string; sub: string }) {
   return (
     <div className="mb-6 text-center">
-      <Link href="/medan" className="inline-block">
+      <Link href="/" className="inline-block">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={SERVICE_LOGO} alt="" className="mx-auto h-12 w-12 rounded-xl" />
       </Link>

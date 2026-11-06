@@ -18,9 +18,9 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
         <ServiceBrandMark brand={SERVICE_BRAND} title="Daftar Pelanggan" sub="Gratis. Untuk memesan jasa, melihat tagihan, dan membayar via QRIS." />
         <RegisterForm next={safe} />
         <p className="mt-5 text-center text-sm text-[var(--ink-3)]">
-          Sudah punya akun? <Link href={safe ? `/medan/login?next=${encodeURIComponent(safe)}` : "/medan/login"} className="font-semibold text-[var(--brand-ink)] hover:underline">Login</Link>
+          Sudah punya akun? <Link href={safe ? `/login?next=${encodeURIComponent(safe)}` : "/login"} className="font-semibold text-[var(--brand-ink)] hover:underline">Login</Link>
         </p>
-        <p className="mt-6 text-center text-xs text-[var(--ink-3)]"><Link href="/medan" className="hover:text-[var(--brand-ink)]">← Kembali ke Leetcloud</Link></p>
+        <p className="mt-6 text-center text-xs text-[var(--ink-3)]"><Link href="/" className="hover:text-[var(--brand-ink)]">← Kembali ke Leetcloud</Link></p>
       </main>
     </div>
   );

@@ -35,7 +35,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       brand={{ name: "Admin Panel", sub: "Leetcloud · Portofolio", href: "/admin", logo: SERVICE_LOGO }}
       groups={groups}
       user={{ name: user.name, meta: user.roles.map((r) => r.name).join(", ") || user.email }}
-      topActions={<Link href="/medan" className="btn-ghost btn-sm hidden sm:inline-flex" target="_blank"><ExternalLink className="h-3.5 w-3.5" /> Lihat situs</Link>}
+      topActions={<Link href="https://leetcloud.my.id" className="btn-ghost btn-sm hidden sm:inline-flex" target="_blank"><ExternalLink className="h-3.5 w-3.5" /> Lihat situs</Link>}
       footer={
         <form action={logoutAction}>
           <button className="btn-ghost btn-sm w-full"><LogOut className="h-3.5 w-3.5" /> Keluar</button>

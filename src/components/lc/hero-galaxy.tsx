@@ -196,8 +196,8 @@ export function HeroGalaxy() {
 
     /* ── planet ── */
     const P = () => {
-      const r = Math.min(w, h) * (w < 640 ? 0.12 : 0.15);
-      return { r, cx: w * (w < 640 ? 0.84 : 0.82), cy: h * (w < 640 ? 0.2 : 0.3) };
+      const r = Math.min(w, h) * (w < 640 ? 0.1 : 0.135);
+      return { r, cx: w * (w < 640 ? 0.86 : 0.87), cy: h * (w < 640 ? 0.1 : 0.27) };
     };
     const TILT = -0.38, RY = 0.27;
 

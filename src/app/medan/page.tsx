@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/modules/auth/session";
 import { getPortfolio } from "@/modules/portfolio/service";
 import { waLink } from "@/shared/url";
 import { PackageTabs, type PkgGroup } from "./package-tabs";
+import { HeroGalaxy } from "@/components/lc/hero-galaxy";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,9 @@ const FAQ = [
   ["Bagaimana cara membayar?", "Lewat dashboard pelanggan: pilih tagihan, bayar dengan QRIS atau transfer bank, lalu unggah bukti pembayaran."],
   ["Apakah bisa bertemu langsung?", "Bisa, untuk area Medan karena kami berdomisili di sana. Selebihnya semua dikerjakan online, jadi lokasi Anda tidak masalah."],
 ] as const;
+
+/** Pita teks berjalan di bawah hero. */
+const TICKER = ["Website & Sistem Informasi", "WhatsApp Gateway", "Cloud Server + SSL", "Backup Harian", "Bayar via QRIS", "Monitoring 24/7", "Next.js", "Laravel", "PostgreSQL", "Docker"];
 
 /** Tiga proyek contoh (urut tampil). */
 const SHOWCASE = ["villa-berastagi-mas", "manajemen-aset-pembayaran-asrama", "bimbel-adzkia"];
@@ -75,9 +79,12 @@ export default async function LeetcloudPage() {
 
       <main>
         {/* ── Hero ── */}
-        <section className="hero-galaxy px-4 pb-20 pt-16 text-center md:pb-28 md:pt-24">
+        <section className="hero-galaxy px-4 pb-24 pt-16 text-center md:pb-32 md:pt-24">
+          <HeroGalaxy />
+          <div aria-hidden className="hero-grid" />
+          <p className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-[rgba(198,255,77,0.35)] bg-[rgba(10,15,36,0.6)] px-3 py-1 font-mono text-[11px] uppercase tracking-[0.16em] text-[#e2ff9c]"><span className="pulse-dot" /> online · siap menerima proyek</p>
           <h1 className="font-cyber mx-auto max-w-3xl text-[1.8rem] font-bold uppercase leading-[1.2] text-[#fff] md:text-5xl md:leading-[1.15]">
-            Aplikasi & server untuk <span className="text-[#00f0ff]">bisnis</span> <span className="text-[#ff5ce1]">Anda</span>
+            Aplikasi & server untuk <span className="glitch text-[#00f0ff]" data-text="bisnis">bisnis</span> <span className="text-[#ff5ce1]">Anda</span>
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-[#c7d2f0] md:text-lg">
             Website, sistem informasi, dan WhatsApp gateway. Dibuat sesuai kebutuhan, dikelola sampai jalan. Melayani seluruh Indonesia secara online.
@@ -87,6 +94,17 @@ export default async function LeetcloudPage() {
             <a href="#paket" className="btn-outline-neon">Lihat paket</a>
           </div>
         </section>
+
+        {/* ── Pita layanan berjalan ── */}
+        <div aria-hidden className="marquee py-3">
+          <div className="ticker w-max font-mono text-xs uppercase tracking-[0.18em]">
+            {[0, 1].map((k) => (
+              <span key={k} className="flex shrink-0 gap-10 pr-10">
+                {TICKER.map((x, i) => <span key={x} className={i % 2 ? "text-[#ff8be8]" : "text-[#7df9ff]"}>◆ {x}</span>)}
+              </span>
+            ))}
+          </div>
+        </div>
 
         {/* ── Paket ── */}
         <section id="paket" className="scroll-mt-20 bg-[var(--surface)] px-4 py-14 md:py-20">
@@ -103,7 +121,7 @@ export default async function LeetcloudPage() {
               <Title>Proyek kami</Title>
               <div className="grid gap-4 md:grid-cols-3">
                 {showcase.map((x) => (
-                  <article key={x.id} className="card flex flex-col p-5">
+                  <article key={x.id} className="reveal card card-link flex flex-col p-5">
                     <h3 className="font-bold leading-snug text-[var(--ink)]">{x.title}</h3>
                     <p className="mt-2 line-clamp-2 text-sm text-[var(--ink-3)]">{x.description}</p>
                     <span className="flex-1" />
@@ -121,7 +139,7 @@ export default async function LeetcloudPage() {
             <Title>Cara kerja</Title>
             <ol className="grid gap-6 text-center md:grid-cols-3">
               {STEPS.map(([t, d], i) => (
-                <li key={t}>
+                <li key={t} className="reveal">
                   <span className="font-cyber mx-auto grid h-11 w-11 place-items-center rounded-full border border-[var(--brand)] font-bold text-[var(--brand-ink)]">{String(i + 1).padStart(2, "0")}</span>
                   <h3 className="mt-3 font-bold text-[var(--ink)]">{t}</h3>
                   <p className="mt-1 text-sm text-[var(--ink-3)]">{d}</p>

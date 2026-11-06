@@ -39,7 +39,7 @@ export function PackageTabs({ groups, showPrices }: { groups: PkgGroup[]; showPr
         {g.items.map((p) => {
           const pr = price(p, showPrices);
           return (
-            <Link key={p.id} href={`/order/${p.slug}`} className="card card-link group flex flex-col p-5">
+            <Link key={p.id} href={`/order/${p.slug}`} className="reveal card card-link group flex flex-col p-5">
               <div className="flex items-start justify-between gap-3">
                 <h3 className="font-bold leading-snug text-[var(--ink)]">{p.name}</h3>
                 {p.isFeatured && <span className="tag tag-gold shrink-0">Terlaris</span>}

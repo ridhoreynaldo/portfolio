@@ -1,4 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Logo Leetcloud">
-  <rect width="64" height="64" rx="14" fill="#085c8c"/>
-  <path d="M21 44h23a8.5 8.5 0 0 0 1.3-16.9A12.5 12.5 0 0 0 21.6 24.6 9.7 9.7 0 0 0 21 44Z" fill="#fff"/>
+  <rect width="64" height="64" rx="14" fill="#0b1026"/>
+  <!-- awan: garis tebal cyan neon -->
+  <path d="M20.5 43h23a8 8 0 0 0 1.2-15.9A12 12 0 0 0 21.6 25 9 9 0 0 0 20.5 43Z" fill="none" stroke="#00f0ff" stroke-width="5" stroke-linejoin="round"/>
+  <!-- aksen magenta: garis "sinyal" di bawah awan -->
+  <path d="M24 51h16" stroke="#ff2bd6" stroke-width="5" stroke-linecap="round"/>
 </svg>

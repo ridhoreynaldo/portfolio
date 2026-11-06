@@ -27,13 +27,13 @@ export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: Auth
   const staff = !!user && (user.isSuper || user.permissions.length > 0);
   const portal = user ? (staff ? "/admin" : "/medan/dashboard") : null;
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--rule)] bg-[rgba(250,247,241,0.85)] backdrop-blur">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
+    <header className="sticky top-0 z-40 border-b border-[var(--rule)] bg-white">
+      <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 md:px-5">
         <Link href="/medan" className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={SERVICE_LOGO} alt="" className="h-10 w-10" />
+          <img src={SERVICE_LOGO} alt="" className="h-9 w-9 rounded-lg" />
           <span className="leading-tight">
-            <span className="font-serif block text-xl font-semibold tracking-wide text-[var(--navy)]">{brand.name}</span>
+            <span className="block text-xl font-bold text-[var(--navy)]">{brand.name}</span>
             <span className="block text-[11px] text-[var(--ink-3)]">Layanan IT · {brand.area}</span>
           </span>
         </Link>
@@ -49,13 +49,17 @@ export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: Auth
           <Link href="/medan#paket" className="btn-primary btn-sm">Pesan</Link>
         </div>
       </nav>
+      {/* navigasi HP: baris tautan yang bisa digeser */}
+      <ul className="flex gap-1 overflow-x-auto border-t border-[var(--rule)] px-4 py-2 text-sm font-medium text-[var(--ink-2)] md:hidden">
+        {NAV.map(([href, label]) => <li key={href} className="shrink-0"><a href={href} className="block rounded-lg px-3 py-1.5 hover:bg-[var(--soft)]">{label}</a></li>)}
+      </ul>
     </header>
   );
 }
 
 export function ServiceFooter({ brand }: { brand: ServiceBrand }) {
   return (
-    <footer className="border-t border-[var(--rule)] bg-white/60">
+    <footer className="border-t border-[var(--rule)] bg-white">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 py-8 text-center text-xs text-[var(--ink-3)] md:flex-row md:text-left">
         <div className="flex items-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -89,18 +93,18 @@ export function ServiceBrandMark({ brand, title, sub }: { brand: ServiceBrand; t
 export function PriceTierTable({ tiers, cycle, unit, compact }: { tiers: PriceTier[]; cycle: string; unit?: string; compact?: boolean }) {
   if (!tiers.length) return null;
   return (
-    <div className={`overflow-hidden rounded-xl border border-[var(--rule)] ${compact ? "text-xs" : "text-sm"}`}>
+    <div className={`overflow-hidden rounded-lg border border-[var(--rule)] ${compact ? "text-xs" : "text-sm"}`}>
       <table className="w-full">
         <tbody className="divide-y divide-[var(--rule)]">
           {tiers.map((t, i) => (
-            <tr key={`${t.label}-${i}`} className={i % 2 ? "bg-white/60" : "bg-[#f7f9ff]"}>
+            <tr key={`${t.label}-${i}`} className={i % 2 ? "bg-white" : "bg-[var(--paper)]"}>
               <td className="px-3 py-2 text-[var(--ink-2)]">{t.label}</td>
               <td className="whitespace-nowrap px-3 py-2 text-right font-semibold text-[var(--navy)]">{t.price > 0 ? fmtIDR(t.price) : "Hubungi"}</td>
             </tr>
           ))}
         </tbody>
       </table>
-      <p className="border-t border-[var(--rule)] bg-white/60 px-3 py-1.5 text-[11px] text-[var(--ink-3)]">{cycle}{unit && ` / ${unit}`} · estimasi, harga pasti menyesuaikan kebutuhan</p>
+      <p className="border-t border-[var(--rule)] bg-white px-3 py-1.5 text-[11px] text-[var(--ink-3)]">{cycle}{unit && ` / ${unit}`} · estimasi, harga pasti menyesuaikan kebutuhan</p>
     </div>
   );
 }

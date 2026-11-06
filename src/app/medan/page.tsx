@@ -35,10 +35,10 @@ const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").repla
 
 function Section({ id, eyebrow, title, sub, children, narrow }: { id: string; eyebrow: string; title: string; sub?: string; children: React.ReactNode; narrow?: boolean }) {
   return (
-    <section id={id} className={`mx-auto scroll-mt-24 px-5 py-16 ${narrow ? "max-w-4xl" : "max-w-6xl"}`}>
+    <section id={id} className={`mx-auto scroll-mt-24 px-4 py-12 md:px-5 md:py-16 ${narrow ? "max-w-4xl" : "max-w-6xl"}`}>
       <div className="mb-10 max-w-2xl">
         <p className="eyebrow">{eyebrow}</p>
-        <h2 className="font-serif mt-3 text-3xl font-semibold text-[var(--navy)] md:text-4xl">{title}</h2>
+        <h2 className="font-serif mt-3 text-2xl font-bold text-[var(--navy)] md:text-3xl">{title}</h2>
         {sub && <p className="mt-3 text-[var(--ink-2)]">{sub}</p>}
       </div>
       {children}
@@ -72,15 +72,14 @@ export default async function JasaPage() {
       <main>
         {/* ── Hero ── */}
         <section className="relative overflow-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(900px_380px_at_20%_-10%,rgba(184,146,58,0.16),transparent_60%),radial-gradient(700px_320px_at_90%_10%,rgba(20,33,61,0.10),transparent_60%)]" />
-          <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 pb-16 pt-14 md:grid-cols-[1.15fr_0.85fr] md:pb-24 md:pt-20">
+          <div className="relative mx-auto grid max-w-6xl items-center gap-8 px-4 pb-12 pt-10 md:grid-cols-[1.15fr_0.85fr] md:gap-12 md:px-5 md:pb-20 md:pt-16">
             <div>
               <p className="eyebrow inline-flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> Melayani Medan & seluruh Indonesia</p>
-              <h1 className="font-serif mt-4 text-4xl font-semibold leading-[1.1] text-[var(--navy)] md:text-6xl">
+              <h1 className="font-serif mt-4 text-3xl font-bold leading-tight text-[var(--navy)] md:text-5xl">
                 {brand.name}
-                <span className="block text-2xl font-medium text-[var(--ink-2)] md:text-3xl">{brand.tagline}</span>
+                <span className="mt-2 block text-lg font-medium text-[var(--ink-2)] md:text-2xl">{brand.tagline}</span>
               </h1>
-              <p className="mt-6 max-w-xl text-lg leading-relaxed text-[var(--ink-2)]">
+              <p className="mt-6 max-w-xl text-base leading-relaxed text-[var(--ink-2)] md:text-lg">
                 Aplikasi dibuat sesuai kebutuhan, bisa beli putus atau sekaligus disewakan servernya. Tatap muka untuk wilayah Medan dan sekitarnya, pengerjaan jarak jauh untuk seluruh Indonesia.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
@@ -95,13 +94,12 @@ export default async function JasaPage() {
             </div>
 
             {/* Ringkasan layanan: pengganti panel akun */}
-            <aside className="card relative overflow-hidden p-7 md:p-8">
-              <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(184,146,58,0.22),transparent_70%)]" />
+            <aside className="card relative overflow-hidden p-5 md:p-8">
               <p className="eyebrow">Yang Anda dapatkan</p>
               <ul className="mt-5 divide-y divide-[var(--rule)]">
                 {HIGHLIGHTS.map(([Icon, t, d]) => (
                   <li key={t} className="flex gap-4 py-4 first:pt-0 last:pb-0">
-                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#eef3ff] text-[var(--navy)]"><Icon className="h-5 w-5" /></span>
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-[var(--soft)] text-[var(--navy)]"><Icon className="h-5 w-5" /></span>
                     <div>
                       <p className="font-serif text-base font-semibold text-[var(--navy)]">{t}</p>
                       <p className="mt-0.5 text-sm leading-relaxed text-[var(--ink-2)]">{d}</p>
@@ -109,7 +107,7 @@ export default async function JasaPage() {
                   </li>
                 ))}
               </ul>
-              <div className="mt-6 flex items-center justify-between gap-3 rounded-xl bg-[var(--navy)] px-4 py-3 text-sm text-white">
+              <div className="mt-6 flex items-center justify-between gap-3 rounded-lg bg-[var(--navy)] px-4 py-3 text-sm text-white">
                 <span>Harga pasti dikonfirmasi lewat WhatsApp</span>
                 <a href="#paket" className="shrink-0 font-semibold text-[var(--gold-2)] hover:underline">Lihat paket →</a>
               </div>
@@ -118,14 +116,14 @@ export default async function JasaPage() {
         </section>
 
         {/* ── Paket ── */}
-        <div className="border-y border-[var(--rule)] bg-white/70">
+        <div className="border-y border-[var(--rule)] bg-white">
           <Section id="paket" eyebrow="Pilih yang Anda butuhkan" title="Paket Layanan" sub="Sedikit pilihan, tapi jelas. Belum ada yang pas? Ceritakan saja kebutuhannya lewat WhatsApp.">
             {groups.length === 0 && <p className="card p-8 text-center text-[var(--ink-3)]">Belum ada paket layanan yang aktif.</p>}
             {groups.map(([cat, list], gi) => (
               <div key={cat} id={`paket-${slugify(cat)}`} className={`scroll-mt-24 ${gi ? "mt-14" : ""}`}>
                 <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
                   <div>
-                    <h3 className="font-serif flex items-center gap-3 text-2xl font-semibold text-[var(--navy)]"><span className="ornament text-xs">◆</span>{GROUP_TITLE[cat] ?? cat}</h3>
+                    <h3 className="font-serif flex items-center gap-3 text-2xl font-semibold text-[var(--navy)]">{GROUP_TITLE[cat] ?? cat}</h3>
                     {GROUP_SUB[cat] && <p className="mt-1 max-w-2xl text-sm text-[var(--ink-2)]">{GROUP_SUB[cat]}</p>}
                   </div>
                 </div>
@@ -136,7 +134,7 @@ export default async function JasaPage() {
                       <article key={s.id} className={`card flex flex-col p-6 ${s.isFeatured ? "card-featured" : ""}`}>
                         {s.isFeatured && <span className="tag tag-gold mb-3 self-start">Paling diminati</span>}
                         <div className="flex items-center gap-3">
-                          <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#eef3ff] text-[var(--navy)]"><Server className="h-5 w-5" /></span>
+                          <span className="grid h-10 w-10 place-items-center rounded-lg bg-[var(--soft)] text-[var(--navy)]"><Server className="h-5 w-5" /></span>
                           <h4 className="font-serif text-lg font-semibold text-[var(--navy)]">{s.name}</h4>
                         </div>
                         <p className="mt-3 text-sm leading-relaxed text-[var(--ink-2)]">{s.description}</p>
@@ -192,12 +190,12 @@ export default async function JasaPage() {
         )}
 
         {/* ── Cara kerja ── */}
-        <div className="border-y border-[var(--rule)] bg-white/70">
+        <div className="border-y border-[var(--rule)] bg-white">
           <Section id="cara-kerja" eyebrow="Prosesnya sederhana" title="Cara Kerja" narrow>
             <ol className="grid gap-6 md:grid-cols-3">
               {STEPS.map(([t, d], i) => (
                 <li key={t} className="card p-6">
-                  <span className="font-serif text-4xl font-semibold text-[var(--gold-2)]">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="font-serif text-4xl font-semibold text-[var(--gold)]">{String(i + 1).padStart(2, "0")}</span>
                   <h3 className="font-serif mt-2 text-lg font-semibold text-[var(--navy)]">{t}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-[var(--ink-2)]">{d}</p>
                 </li>

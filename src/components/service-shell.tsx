@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LogIn, UserRound } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Wordmark } from "@/components/lc/wordmark";
 import type { AuthUser } from "@/modules/auth/session";
 import { fmtIDR } from "@/modules/billing/labels";
 import type { PriceTier } from "@/modules/billing/schema";
@@ -29,7 +30,7 @@ function Logo({ brand }: { brand: ServiceBrand }) {
     <Link href="/" className="flex min-w-0 items-center gap-2.5">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={SERVICE_LOGO} alt="" className="h-8 w-8 shrink-0 rounded-lg" />
-      <span className="font-cyber text-base font-bold tracking-wider text-[var(--ink)]">{brand.name}</span>
+      <Wordmark className="text-lg" />
     </Link>
   );
 }
@@ -62,7 +63,7 @@ export function ServiceFooter({ brand }: { brand: ServiceBrand; wa?: string | nu
   return (
     <footer className="border-t border-[var(--line)]">
       <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-2 px-4 py-6 text-sm text-[var(--ink-3)] sm:flex-row">
-        <p>© {new Date().getFullYear()} {brand.name}</p>
+        <p>© {new Date().getFullYear()} <Wordmark /></p>
         <p className="flex gap-4"><Link href="/login" className="hover:text-[var(--brand-ink)]">Login</Link><Link href="/register" className="hover:text-[var(--brand-ink)]">Daftar</Link></p>
       </div>
     </footer>
@@ -77,7 +78,7 @@ export function ServiceBrandMark({ brand, title, sub }: { brand: ServiceBrand; t
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={SERVICE_LOGO} alt="" className="mx-auto h-12 w-12 rounded-xl" />
       </Link>
-      <p className="mt-2 text-sm font-bold text-[var(--ink)]">{brand.name}</p>
+      <p className="mt-2"><Wordmark className="text-lg" /></p>
       <h1 className="mt-5 text-2xl font-bold text-[var(--ink)]">{title}</h1>
       <p className="mt-1 text-sm text-[var(--ink-3)]">{sub}</p>
     </div>

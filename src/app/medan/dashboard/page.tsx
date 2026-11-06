@@ -1,33 +1,13 @@
 import Link from "next/link";
 import { ArrowRight, CalendarClock, QrCode, Receipt, Server, Wallet } from "lucide-react";
 import { requireUser } from "@/modules/auth/guards";
-import { CYCLE, ORDER_STATUS, billingDayOf, daysUntil, fmtIDR, paidUntilDate } from "@/modules/billing/labels";
+import { CYCLE, daysUntil, fmtIDR } from "@/modules/billing/labels";
+import { daysText, daysTone, serviceState } from "@/modules/billing/service-state";
 import { listInvoices, listOrders, orderTotal, type InvoiceRow, type OrderRow } from "@/modules/billing/repository";
 import { EmptyState, fmtDate, fmtDateTime } from "@/components/lc/ui";
-import { Pill, PortalTitle, Stat, type Tone } from "./ui";
+import { Pill, PortalTitle, Stat } from "./ui";
 
 export const metadata = { title: "Ringkasan" };
-
-const daysText = (d: number) => (d < 0 ? `lewat ${-d} hari` : d === 0 ? "hari ini" : `${d} hari lagi`);
-const daysTone = (d: number): Tone => (d < 0 ? "rose" : d <= 7 ? "amber" : "emerald");
-
-/** Status pembayaran satu layanan + tagihan yang sedang terbuka. */
-function serviceState(o: OrderRow, invoices: InvoiceRow[]) {
-  const cycle = o.billingCycle ?? "once";
-  const day = billingDayOf(o.startDate);
-  const mine = invoices.filter((i) => i.orderId === o.id && i.status !== "cancelled").sort((a, b) => a.dueDate.localeCompare(b.dueDate));
-  const next = mine.find((i) => i.status !== "paid");
-  const lastPaid = [...mine].reverse().find((i) => i.status === "paid");
-  const paidUntil = cycle === "monthly" ? (lastPaid?.period ? paidUntilDate(lastPaid.period, day) : null) : cycle === "yearly" ? (o.endDate ?? null) : null;
-  const left = next ? daysUntil(next.dueDate) : null;
-  let status: { label: string; tone: Tone };
-  if (mine.length === 0) status = { label: ORDER_STATUS[o.status].label, tone: ORDER_STATUS[o.status].tone };
-  else if (next?.status === "pending_verification") status = { label: "Menunggu verifikasi", tone: "cyan" };
-  else if (!next || (cycle !== "once" && left != null && left >= 0)) status = { label: "Sudah bayar", tone: "emerald" }; // langganan: belum jatuh tempo = periode berjalan sudah dibayar
-  else status = cycle === "once" ? { label: "Belum bayar", tone: "amber" } : { label: "Lewat jatuh tempo", tone: "rose" };
-  const canPay = next?.status === "unpaid" && (cycle === "once" || (left ?? 0) <= 7);
-  return { cycle, next, lastPaid, paidUntil, left, status, canPay };
-}
 
 function ServiceCard({ o, invoices, user }: { o: OrderRow; invoices: InvoiceRow[]; user: string }) {
   const s = serviceState(o, invoices);
@@ -110,7 +90,7 @@ export default async function Dashboard() {
           {shown.map((o) => <ServiceCard key={o.id} o={o} invoices={invoices} user={user.name} />)}
         </div>
       ) : (
-        <EmptyState title="Belum ada layanan" sub="Pilih paket di halaman Leetcloud. Setelah dikonfirmasi, layanan dan tagihannya muncul di sini." action={<Link href="/#paket" className="btn-primary btn-sm">Lihat paket</Link>} />
+        <EmptyState title="Belum ada layanan" sub="Pilih paket di halaman utama. Setelah dikonfirmasi, layanan dan tagihannya muncul di sini." action={<Link href="/#paket" className="btn-primary btn-sm">Lihat paket</Link>} />
       )}
     </>
   );

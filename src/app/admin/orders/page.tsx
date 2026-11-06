@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { Modal } from "@/components/lc/modal";
-import { Badge, Card, PageTitle, Table, fmtDateTime, td, th } from "@/components/lc/ui";
+import { Badge, Info, List, PageTitle, RowLink, fmtDate } from "@/components/lc/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
 import { createOrderAction, deleteOrderAction, updateOrderAction } from "@/modules/billing/actions";
-import { CYCLE, ORDER_STATUS, currentPeriod, fmtIDR } from "@/modules/billing/labels";
-import { listCustomers, listOrders, listPackages, orderTotal, orderUnitPrice, type OrderRow } from "@/modules/billing/repository";
+import { CYCLE, INVOICE_STATUS, ORDER_STATUS, currentPeriod, fmtIDR, fmtPeriod } from "@/modules/billing/labels";
+import { daysText, daysTone, serviceState } from "@/modules/billing/service-state";
+import { listCustomers, listInvoices, listOrders, listPackages, orderTotal, orderUnitPrice, type InvoiceRow, type OrderRow } from "@/modules/billing/repository";
 import { orderStatus } from "@/modules/billing/schema";
 
 /** Field langganan yang sama untuk form proses & order manual. */
@@ -27,27 +28,103 @@ function SubscriptionFields({ o }: { o?: OrderRow }) {
   );
 }
 
-export default async function OrdersPage({ searchParams }: { searchParams: Promise<{ edit?: string; status?: string; new?: string }> }) {
+/** Detail lengkap satu layanan: ringkasan, masa aktif, rincian biaya, item, dan riwayat tagihan. */
+function DetailModal({ o, invoices, close, canEdit, canInvoice, canDelete }: { o: OrderRow; invoices: InvoiceRow[]; close: string; canEdit: boolean; canInvoice: boolean; canDelete: boolean }) {
+  const s = serviceState(o, invoices);
+  const total = orderTotal(o);
+  const all = invoices.filter((i) => i.orderId === o.id).sort((a, b) => b.dueDate.localeCompare(a.dueDate));
+  return (
+    <Modal title={`${o.packageName}${o.quantity > 1 ? ` ×${o.quantity}` : ""}`} close={close} wide>
+      <div className="detail-section">
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <Badge tone={s.status.tone}>{s.status.label}</Badge>
+          <span className="font-mono text-xs text-[var(--ink-3)]">{o.number}</span>
+        </div>
+        <dl className="grid gap-4 sm:grid-cols-2">
+          <Info label="Pelanggan">{o.customerName}<span className="block text-xs text-[var(--ink-3)]">{o.customerEmail}</span></Info>
+          <Info label="Ditagihkan kepada">{o.billTo || o.customerName}{o.billToEmail && <span className="block text-xs text-[var(--ink-3)]">{o.billToEmail}</span>}</Info>
+          <Info label="Biaya"><span className="num font-bold">{total > 0 ? fmtIDR(total) : "Sesuai kesepakatan"}</span> <span className="text-xs text-[var(--ink-3)]">{CYCLE[s.cycle]}</span>{o.unitPrice != null && o.quantity > 1 && <span className="block text-xs text-[var(--ink-3)]">{fmtIDR(orderUnitPrice(o))} / unit</span>}</Info>
+          <Info label="Mulai layanan">{o.startDate ? fmtDate(o.startDate) : "—"}</Info>
+        </dl>
+      </div>
+
+      <div className="detail-section">
+        <p className="detail-title">Masa aktif & perpanjangan</p>
+        <dl className="grid gap-4 sm:grid-cols-3">
+          <Info label="Aktif s.d.">{s.paidUntil ? fmtDate(s.paidUntil) : o.endDate ? fmtDate(o.endDate) : "—"}{s.leftActive != null && <span className="mt-1 block"><Badge tone={daysTone(s.leftActive)}>{daysText(s.leftActive)}</Badge></span>}</Info>
+          <Info label="Tagihan berikutnya">{s.next ? <>{fmtDate(s.next.dueDate)}<span className="block text-xs text-[var(--ink-3)]">{fmtIDR(s.next.amount)}</span></> : "Tidak ada"}</Info>
+          <Info label="Sisa hari ke jatuh tempo">{s.left != null ? <Badge tone={daysTone(s.left)}>{daysText(s.left)}</Badge> : "—"}</Info>
+        </dl>
+      </div>
+
+      {(o.breakdown.length > 0 || o.items.length > 0 || o.itemLimit != null) && (
+        <div className="detail-section">
+          <p className="detail-title">Rincian</p>
+          {o.breakdown.length > 0 && (
+            <ul className="mb-3 divide-y divide-[var(--line)] text-sm">
+              {o.breakdown.map((b, k) => <li key={k} className="flex justify-between gap-3 py-1.5"><span className="text-[var(--ink-2)]">{b.description}{b.note && <span className="block text-xs text-[var(--ink-3)]">{b.note}</span>}</span><span className="num whitespace-nowrap">{fmtIDR(b.amount)}</span></li>)}
+            </ul>
+          )}
+          {(o.items.length > 0 || o.itemLimit != null) && <p className="text-sm text-[var(--ink-2)]"><b>{o.itemLabel || "Item"}</b> ({o.items.length}{o.itemLimit != null && `/${o.itemLimit}`}): <span className="font-mono text-xs">{o.items.join(", ") || "—"}</span></p>}
+        </div>
+      )}
+
+      {(o.notes || o.adminNote) && (
+        <div className="detail-section">
+          <p className="detail-title">Catatan</p>
+          {o.notes && <p className="whitespace-pre-line text-sm text-[var(--ink-2)]"><b>Brief pelanggan:</b> {o.notes}</p>}
+          {o.adminNote && <p className="mt-2 whitespace-pre-line text-sm text-[var(--ink-2)]"><b>Untuk pelanggan:</b> {o.adminNote}</p>}
+        </div>
+      )}
+
+      <div className="detail-section">
+        <p className="detail-title">Riwayat tagihan ({all.length})</p>
+        {all.length ? (
+          <ol className="divide-y divide-[var(--line)] text-sm">
+            {all.map((i, k) => (
+              <li key={i.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <span className="min-w-0"><span className="num mr-2 text-xs text-[var(--ink-3)]">{k + 1}.</span>{i.period ? fmtPeriod(i.period) : i.title}<span className="block pl-5 font-mono text-[11px] text-[var(--ink-3)]">{i.number} · jatuh tempo {fmtDate(i.dueDate)}</span></span>
+                <span className="flex items-center gap-2"><span className="num font-semibold">{fmtIDR(i.amount)}</span><Badge tone={INVOICE_STATUS[i.status].tone}>{INVOICE_STATUS[i.status].label}</Badge><a href={`/invoice/${i.id}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm">Cetak</a></span>
+              </li>
+            ))}
+          </ol>
+        ) : <p className="text-sm text-[var(--ink-3)]">Belum ada tagihan untuk layanan ini.</p>}
+        <Link href={`/admin/invoices?svc=${o.id}`} className="mt-3 inline-block text-sm font-semibold text-[var(--brand-ink)] hover:underline">Kelola pembayaran di halaman Tagihan →</Link>
+      </div>
+
+      <div className="mt-6 flex flex-wrap gap-2 border-t border-[var(--line)] pt-4">
+        {canEdit && <Link href={`/admin/orders?edit=${o.id}`} scroll={false} className="btn-primary btn-sm">Edit layanan</Link>}
+        {canInvoice && (
+          <Link href={`/admin/invoices?new=1&userId=${o.userId}&orderId=${o.id}&title=${encodeURIComponent(`${o.packageName}${o.quantity > 1 ? ` ×${o.quantity}` : ""} — ${o.number}`)}&amount=${total}&period=${o.billingCycle === "monthly" ? currentPeriod() : ""}`} className="btn-gold btn-sm">+ Buat tagihan</Link>
+        )}
+        {canDelete && <form action={deleteOrderAction} className="ml-auto"><input type="hidden" name="id" value={o.id} /><button className="btn-danger btn-sm">Hapus</button></form>}
+      </div>
+    </Modal>
+  );
+}
+
+export default async function OrdersPage({ searchParams }: { searchParams: Promise<{ edit?: string; status?: string; new?: string; view?: string }> }) {
   const user = await requirePermissionPage("order.read");
-  const { edit, status, new: isNew } = await searchParams;
-  const all = await listOrders();
+  const { edit, status, new: isNew, view } = await searchParams;
+  const [all, invoices] = await Promise.all([listOrders(), listInvoices()]);
   const rows = status && status in ORDER_STATUS ? all.filter((o) => o.status === status) : all;
   const o = edit ? all.find((r) => r.id === edit) : undefined;
+  const v = view ? all.find((r) => r.id === view) : undefined;
+  const back = status ? `/admin/orders?status=${status}` : "/admin/orders";
   const canCreate = can(user, "order.create");
   const [customers, packages] = isNew && canCreate ? await Promise.all([listCustomers(), listPackages()]) : [[], []];
 
   return (
     <>
-      <PageTitle sub="Pesanan dari portal pelanggan atau dibuat admin. Konfirmasi → status Aktif, isi detail langganan (harga kesepakatan, masa berlaku, daftar domain/subdomain), lalu buat tagihan.">Order & Langganan</PageTitle>
+      <PageTitle sub="Semua layanan pelanggan. Klik satu layanan untuk detail lengkap, masa aktif, dan riwayat tagihannya." actions={canCreate ? <Link href="/admin/orders?new=1" scroll={false} className="btn-primary btn-sm">+ Layanan manual</Link> : undefined}>Layanan</PageTitle>
       <div className="mb-4 flex flex-wrap items-center gap-2 text-xs">
-        <Link href="/admin/orders" className={`btn-ghost btn-sm ${!status ? "!border-cyan-400" : ""}`}>Semua ({all.length})</Link>
+        <Link href="/admin/orders" className={`btn-sm ${!status ? "btn-primary" : "btn-ghost"}`}>Semua ({all.length})</Link>
         {orderStatus.enumValues.map((s) => (
-          <Link key={s} href={`/admin/orders?status=${s}`} className={`btn-ghost btn-sm ${status === s ? "!border-cyan-400" : ""}`}>{ORDER_STATUS[s].label} ({all.filter((x) => x.status === s).length})</Link>
+          <Link key={s} href={`/admin/orders?status=${s}`} className={`btn-sm ${status === s ? "btn-primary" : "btn-ghost"}`}>{ORDER_STATUS[s].label} ({all.filter((x) => x.status === s).length})</Link>
         ))}
-        {canCreate && <Link href="/admin/orders?new=1" scroll={false} className="btn-primary btn-sm ml-auto">+ Order manual</Link>}
       </div>
       {isNew && canCreate && (
-        <Modal title="Buat order / langganan untuk pelanggan" close="/admin/orders" wide>
+        <Modal title="Tambah layanan untuk pelanggan" close="/admin/orders" wide>
           <form action={createOrderAction} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-3">
               <div>
@@ -72,7 +149,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
         </Modal>
       )}
       {o && can(user, "order.update") && (
-        <Modal title={`Proses order ${o.number} — ${o.customerName}`} close="/admin/orders" wide>
+        <Modal title={`Edit layanan ${o.number} — ${o.customerName}`} close={`/admin/orders?view=${o.id}`} wide>
           <div className="mb-4 grid gap-3 text-sm sm:grid-cols-2">
             <div><span className="label">Paket</span>{o.packageName}{o.quantity > 1 && ` ×${o.quantity}`} · {orderTotal(o) > 0 ? `${fmtIDR(orderTotal(o))} ${CYCLE[o.billingCycle ?? "once"]}` : "harga sesuai kesepakatan"}{o.unitPrice != null && o.price != null && o.unitPrice !== o.price && <span className="text-xs text-[var(--ink-3)]"> (harga paket {fmtIDR(o.price)})</span>}</div>
             <div><span className="label">Pelanggan</span>{o.customerName} · {o.customerEmail}</div>
@@ -95,34 +172,30 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
           </form>
         </Modal>
       )}
-      <Card flush>
-        <Table>
-          <thead><tr><th className={th}>Nomor</th><th className={th}>Pelanggan</th><th className={th}>Paket</th><th className={th}>Langganan</th><th className={th}>Status</th><th className={th}>Dibuat</th><th className={th} /></tr></thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.id} className="hover:bg-[var(--surface-2)]">
-                <td className={`${td} font-mono text-xs text-[var(--brand-ink)]`}>{r.number}</td>
-                <td className={td}><div className="text-[var(--ink)]">{r.customerName}</div><div className="text-xs text-[var(--ink-3)]">{r.customerEmail}</div></td>
-                <td className={td}>{r.packageName}{r.quantity > 1 && ` ×${r.quantity}`}<div className="text-xs text-[var(--ink-3)]">{orderTotal(r) > 0 ? `${fmtIDR(orderTotal(r))} ${CYCLE[r.billingCycle ?? "once"]}` : "harga sesuai kesepakatan"}{r.unitPrice != null && r.quantity > 1 && ` (${fmtIDR(orderUnitPrice(r))}/unit)`}</div></td>
-                <td className={`${td} text-xs text-[var(--ink-3)]`}>
-                  {r.startDate && <div>{r.startDate}{r.endDate && ` → ${r.endDate}`}</div>}
-                  {(r.items.length > 0 || r.itemLimit != null) && <div>{r.items.length}{r.itemLimit != null && `/${r.itemLimit}`} {r.itemLabel || "item"}</div>}
-                  {!r.startDate && !r.items.length && r.itemLimit == null && "—"}
-                </td>
-                <td className={td}><Badge tone={ORDER_STATUS[r.status].tone}>{ORDER_STATUS[r.status].label}</Badge></td>
-                <td className={`${td} text-xs text-[var(--ink-3)]`}>{fmtDateTime(r.createdAt)}</td>
-                <td className={`${td} text-right`}>
-                  <div className="flex justify-end gap-2">
-                    {can(user, "order.update") && <Link href={`/admin/orders?edit=${r.id}`} scroll={false} className="btn-ghost btn-sm">Proses</Link>}
-                    {can(user, "order.delete") && <form action={deleteOrderAction}><input type="hidden" name="id" value={r.id} /><button className="btn-danger btn-sm">Hapus</button></form>}
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {!rows.length && <tr><td className={td} colSpan={7}>Belum ada order.</td></tr>}
-          </tbody>
-        </Table>
-      </Card>
+      {v && <DetailModal o={v} invoices={invoices} close={back} canEdit={can(user, "order.update")} canInvoice={can(user, "invoice.create")} canDelete={can(user, "order.delete")} />}
+
+      <List count={rows.length} label="layanan">
+        {rows.map((r, k) => {
+          const s = serviceState(r, invoices);
+          const total = orderTotal(r);
+          return (
+            <RowLink key={r.id} no={k + 1} href={`${back}${back.includes("?") ? "&" : "?"}view=${r.id}`} dim={r.status === "cancelled"}
+              right={<span className="hidden text-right sm:block"><span className="num block text-sm font-bold text-[var(--ink)]">{total > 0 ? fmtIDR(total) : "—"}</span><span className="text-xs text-[var(--ink-3)]">{CYCLE[s.cycle]}</span></span>}>
+              <span className="flex flex-wrap items-center gap-2">
+                <span className="truncate font-semibold text-[var(--ink)]">{r.packageName}{r.quantity > 1 && ` ×${r.quantity}`}</span>
+                <Badge tone={s.status.tone}>{s.status.label}</Badge>
+              </span>
+              <span className="mt-0.5 block truncate text-xs text-[var(--ink-3)]">
+                {r.billTo || r.customerName}
+                {s.next && s.left != null && <> · jatuh tempo {fmtDate(s.next.dueDate)} <span className={s.left < 0 ? "text-[var(--bad)]" : s.left <= 7 ? "text-[var(--warn)]" : ""}>({daysText(s.left)})</span></>}
+                {!s.next && s.paidUntil && <> · aktif s.d. {fmtDate(s.paidUntil)}</>}
+                <span className="sm:hidden"> · {total > 0 ? fmtIDR(total) : "—"}</span>
+              </span>
+            </RowLink>
+          );
+        })}
+        {!rows.length && <li className="px-4 py-8 text-center text-sm text-[var(--ink-3)]">Belum ada layanan.</li>}
+      </List>
     </>
   );
 }

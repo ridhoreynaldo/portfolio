@@ -1,19 +1,60 @@
 import Link from "next/link";
 import { Modal } from "@/components/lc/modal";
-import { Badge, Card, PageTitle, Table, fmtDate, fmtDateTime, td, th } from "@/components/lc/ui";
+import { Badge, Info, List, PageTitle, RowLink, Stat, fmtDate, fmtDateTime, type Tone } from "@/components/lc/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
 import { deleteInvoiceAction, generateMonthlyInvoicesAction, saveInvoiceAction, setInvoiceStatusAction } from "@/modules/billing/actions";
-import { INVOICE_STATUS, currentPeriod, fmtIDR, fmtPeriod, isOverdue } from "@/modules/billing/labels";
-import { customerOptions, listInvoices, listOrders } from "@/modules/billing/repository";
+import { CYCLE, INVOICE_STATUS, currentPeriod, daysUntil, fmtIDR, fmtPeriod, isOverdue } from "@/modules/billing/labels";
+import { daysText, daysTone, serviceState } from "@/modules/billing/service-state";
+import { customerOptions, listInvoices, listOrders, orderTotal, type InvoiceRow, type OrderRow } from "@/modules/billing/repository";
 
-type Q = { edit?: string; new?: string; userId?: string; orderId?: string; title?: string; amount?: string; period?: string; status?: string };
+type Q = { edit?: string; new?: string; svc?: string; gen?: string; userId?: string; orderId?: string; title?: string; amount?: string; period?: string; status?: string };
+
+type Group = {
+  key: string; title: string; customer: string; email: string; order?: OrderRow; state?: ReturnType<typeof serviceState>;
+  invoices: InvoiceRow[]; unpaid: number; verifying: number; openTotal: number; nextDue: string | null; label: string; tone: Tone;
+};
+
+/** Kelompokkan tagihan per layanan (order); tagihan tanpa layanan dikelompokkan per pelanggan. */
+function groupByService(all: InvoiceRow[], orders: OrderRow[]): Group[] {
+  const byOrder = new Map(orders.map((o) => [o.id, o]));
+  const map = new Map<string, InvoiceRow[]>();
+  for (const i of all) {
+    const key = i.orderId && byOrder.has(i.orderId) ? i.orderId : `u-${i.userId}`;
+    (map.get(key) ?? map.set(key, []).get(key)!).push(i);
+  }
+  const out: Group[] = [];
+  for (const [key, list] of map) {
+    const invoices = [...list].sort((a, b) => b.dueDate.localeCompare(a.dueDate));
+    const first = invoices[0]!;
+    const order = key.startsWith("u-") ? undefined : byOrder.get(key);
+    const open = invoices.filter((i) => i.status === "unpaid" || i.status === "pending_verification");
+    const unpaid = invoices.filter((i) => i.status === "unpaid").length;
+    const verifying = invoices.filter((i) => i.status === "pending_verification").length;
+    const nextDue = open.map((i) => i.dueDate).sort()[0] ?? null;
+    const overdue = invoices.some((i) => isOverdue(i.dueDate, i.status));
+    const [label, tone]: [string, Tone] = verifying ? ["Menunggu verifikasi", "cyan"] : overdue ? ["Lewat jatuh tempo", "rose"] : unpaid ? ["Belum bayar", "amber"] : ["Lunas", "emerald"];
+    out.push({
+      key, order, state: order ? serviceState(order, all) : undefined, invoices, unpaid, verifying, nextDue, label, tone,
+      title: order ? `${order.packageName}${order.quantity > 1 ? ` ×${order.quantity}` : ""}` : "Tagihan lain (manual)",
+      customer: order?.billTo || first.billTo || first.customerName, email: first.customerEmail,
+      openTotal: open.reduce((s, i) => s + i.amount, 0),
+    });
+  }
+  // yang perlu ditindaklanjuti dulu (jatuh tempo terdekat), lalu yang sudah lunas
+  return out.sort((a, b) => (a.nextDue ? 0 : 1) - (b.nextDue ? 0 : 1) || (a.nextDue ?? "").localeCompare(b.nextDue ?? "") || a.title.localeCompare(b.title));
+}
 
 export default async function InvoicesPage({ searchParams }: { searchParams: Promise<Q> }) {
   const user = await requirePermissionPage("invoice.read");
   const q = await searchParams;
   const [all, customers, orders] = await Promise.all([listInvoices(), customerOptions(), listOrders()]);
-  const rows = q.status && q.status in INVOICE_STATUS ? all.filter((i) => i.status === q.status) : all;
+  const groups = groupByService(all, orders);
+  const FILTERS = { open: "Belum bayar", verify: "Menunggu verifikasi", paid: "Lunas" } as const;
+  const f = q.status && q.status in FILTERS ? (q.status as keyof typeof FILTERS) : null;
+  const rows = groups.filter((g) => !f || (f === "open" ? g.unpaid > 0 : f === "verify" ? g.verifying > 0 : g.unpaid === 0 && g.verifying === 0));
+  const listHref = f ? `/admin/invoices?status=${f}` : "/admin/invoices";
+  const sel = q.svc ? groups.find((g) => g.key === q.svc) : undefined;
   const inv = q.edit ? all.find((r) => r.id === q.edit) : undefined;
   const showForm = !!inv || q.new === "1";
   const canWrite = can(user, `invoice.${inv ? "update" : "create"}`);
@@ -35,30 +76,43 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
 
   return (
     <>
-      <PageTitle sub="Tagihan pelanggan (sekali / bulanan). Pelanggan membayar via QRIS lalu mengunggah bukti; tandai Lunas setelah dicek.">Tagihan</PageTitle>
-      <div className="mb-4 grid gap-3 sm:grid-cols-3">
-        <div className="glass rounded-lg p-4"><p className="hud-label !text-[10px]">belum dibayar</p><p className="font-display text-xl font-bold text-neon">{fmtIDR(totals.unpaid)}</p></div>
-        <div className="glass rounded-lg p-4"><p className="hud-label !text-[10px]">menunggu verifikasi</p><p className="font-display text-xl font-bold text-[var(--ink)]">{totals.verifying}</p></div>
-        {can(user, "invoice.create") && (
-          <form action={generateMonthlyInvoicesAction} className="glass flex flex-wrap items-end gap-2 rounded-lg p-4">
-            <div><label className="label">Tagihan bulanan</label><input name="period" type="month" defaultValue={currentPeriod()} className="input-dark" /></div>
-            <div><label className="label">Tgl jatuh tempo</label><input name="dueDay" type="number" min={1} max={28} defaultValue={15} className="input-dark w-20" /></div>
-            <button className="btn-magenta btn-sm">Generate</button>
-            <p className="w-full text-[11px] text-[var(--ink-3)]">Membuat tagihan untuk semua order <b>aktif</b> berpaket bulanan yang belum ditagih di periode itu. Jatuh tempo mengikuti tanggal mulai layanan tiap order (mis. tgl 15); isian di atas dipakai bila order tanpa tanggal mulai.</p>
-          </form>
-        )}
+      <PageTitle
+        sub="Tagihan dikelompokkan per layanan. Klik satu layanan untuk melihat semua invoice-nya, menandai lunas, atau mencetak."
+        actions={can(user, "invoice.create") ? <>
+          <Link href="/admin/invoices?gen=1" scroll={false} className="btn-ghost btn-sm">Generate bulanan</Link>
+          <Link href="/admin/invoices?new=1" scroll={false} className="btn-primary btn-sm">+ Tagihan manual</Link>
+        </> : undefined}
+      >Tagihan</PageTitle>
+      <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
+        <Stat label="Belum dibayar" value={fmtIDR(totals.unpaid)} href="/admin/invoices?status=open" />
+        <Stat label="Menunggu verifikasi" value={totals.verifying} href="/admin/invoices?status=verify" />
+        <Stat label="Layanan ditagih" value={groups.length} />
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-2 text-xs">
-        <Link href="/admin/invoices" className={`btn-ghost btn-sm ${!q.status ? "!border-cyan-400" : ""}`}>Semua ({all.length})</Link>
-        {(Object.keys(INVOICE_STATUS) as (keyof typeof INVOICE_STATUS)[]).map((s) => (
-          <Link key={s} href={`/admin/invoices?status=${s}`} className={`btn-ghost btn-sm ${q.status === s ? "!border-cyan-400" : ""}`}>{INVOICE_STATUS[s].label} ({all.filter((x) => x.status === s).length})</Link>
+      <div className="mb-4 flex flex-wrap gap-2">
+        <Link href="/admin/invoices" className={`btn-sm ${!f ? "btn-primary" : "btn-ghost"}`}>Semua ({groups.length})</Link>
+        {(Object.keys(FILTERS) as (keyof typeof FILTERS)[]).map((k) => (
+          <Link key={k} href={`/admin/invoices?status=${k}`} className={`btn-sm ${f === k ? "btn-primary" : "btn-ghost"}`}>
+            {FILTERS[k]} ({groups.filter((g) => (k === "open" ? g.unpaid > 0 : k === "verify" ? g.verifying > 0 : g.unpaid === 0 && g.verifying === 0)).length})
+          </Link>
         ))}
-        {!showForm && can(user, "invoice.create") && <Link href="/admin/invoices?new=1" scroll={false} className="btn-primary btn-sm ml-auto">+ Tagihan manual</Link>}
       </div>
+
+      {q.gen === "1" && can(user, "invoice.create") && (
+        <Modal title="Generate tagihan bulanan" close="/admin/invoices">
+          <form action={generateMonthlyInvoicesAction} className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div><label className="label">Periode</label><input name="period" type="month" defaultValue={currentPeriod()} className="input-dark" /></div>
+              <div><label className="label">Tgl jatuh tempo (cadangan)</label><input name="dueDay" type="number" min={1} max={28} defaultValue={15} className="input-dark" /></div>
+            </div>
+            <p className="text-xs text-[var(--ink-3)]">Membuat tagihan untuk semua layanan <b>aktif</b> berpaket bulanan yang belum ditagih di periode itu. Jatuh tempo mengikuti tanggal mulai layanan; isian di atas dipakai bila layanan tanpa tanggal mulai.</p>
+            <button className="btn-primary">Generate</button>
+          </form>
+        </Modal>
+      )}
 
       {showForm && canWrite && (
-        <Modal title={inv ? `Edit tagihan ${inv.number}` : "Tagihan baru"} close="/admin/invoices" wide>
+        <Modal title={inv ? `Edit tagihan ${inv.number}` : "Tagihan baru"} close={q.svc ? `/admin/invoices?svc=${q.svc}` : "/admin/invoices"} wide>
           <form action={saveInvoiceAction} className="space-y-4" key={inv?.id ?? "new"}>
             {inv && <input type="hidden" name="id" value={inv.id} />}
             <div className="grid gap-4 sm:grid-cols-2">
@@ -91,30 +145,46 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
         </Modal>
       )}
 
-      <Card flush>
-        <Table>
-          <thead><tr><th className={th}>Nomor</th><th className={th}>Pelanggan</th><th className={th}>Tagihan</th><th className={th}>Jatuh tempo</th><th className={th}>Nominal</th><th className={th}>Status</th><th className={th} /></tr></thead>
-          <tbody>
-            {rows.map((r) => {
-              const late = isOverdue(r.dueDate, r.status);
-              return (
-                <tr key={r.id} className="align-top hover:bg-[var(--surface-2)]">
-                  <td className={`${td} font-mono text-xs text-[var(--brand-ink)]`}>{r.number}<div className="text-[10px] text-[var(--ink-3)]">{fmtDateTime(r.createdAt)}</div></td>
-                  <td className={td}><div className="text-[var(--ink)]">{r.customerName}</div><div className="text-xs text-[var(--ink-3)]">{r.customerEmail}</div></td>
-                  <td className={td}>{r.title}{r.period && <div className="text-xs text-[var(--ink-3)]">{fmtPeriod(r.period)}</div>}
-                    {r.items.length > 0 && <ul className="mt-1 space-y-0.5 text-xs text-[var(--ink-3)]">{r.items.map((i, k) => <li key={k}>· {i.description} <span className="text-[var(--ink-3)]">{fmtIDR(i.amount)}</span>{i.note && <span className="text-[var(--ink-3)]"> — {i.note}</span>}</li>)}</ul>}
-                  </td>
-                  <td className={`${td} ${late ? "text-rose-300" : ""}`}>{fmtDate(r.dueDate)}{late && <div className="text-[10px]">lewat</div>}</td>
-                  <td className={`${td} font-semibold text-[var(--ink)]`}>{fmtIDR(r.amount)}</td>
-                  <td className={td}>
-                    <Badge tone={INVOICE_STATUS[r.status].tone}>{INVOICE_STATUS[r.status].label}</Badge>
-                    {r.proofFileId && <div className="mt-1 text-xs"><a href={`/api/files/${r.proofFileId}`} target="_blank" rel="noreferrer" className="text-[var(--brand-ink)] hover:underline">bukti bayar ↗</a>{r.proofUploadedAt && <span className="text-[var(--ink-3)]"> · {fmtDateTime(r.proofUploadedAt)}</span>}</div>}
-                    {r.paidAt && <div className="text-[10px] text-emerald-300">lunas {fmtDateTime(r.paidAt)}</div>}
-                  </td>
-                  <td className={`${td} text-right`}>
-                    <div className="flex flex-wrap justify-end gap-1.5">
+      {sel && !showForm && (
+        <Modal title={sel.title} close={listHref} wide>
+          <div className="detail-section">
+            <div className="mb-4 flex flex-wrap items-center gap-2"><Badge tone={sel.tone}>{sel.label}</Badge>{sel.order && <span className="font-mono text-xs text-[var(--ink-3)]">{sel.order.number}</span>}</div>
+            <dl className="grid gap-4 sm:grid-cols-3">
+              <Info label="Pelanggan">{sel.customer}<span className="block text-xs text-[var(--ink-3)]">{sel.email}</span></Info>
+              <Info label="Biaya layanan">{sel.order ? <><span className="num font-bold">{orderTotal(sel.order) > 0 ? fmtIDR(orderTotal(sel.order)) : "—"}</span> <span className="text-xs text-[var(--ink-3)]">{CYCLE[sel.order.billingCycle ?? "once"]}</span></> : "Tagihan manual"}</Info>
+              <Info label="Belum dibayar"><span className="num font-bold">{fmtIDR(sel.openTotal)}</span></Info>
+              {sel.state && <Info label="Aktif s.d.">{sel.state.paidUntil ? fmtDate(sel.state.paidUntil) : sel.order?.endDate ? fmtDate(sel.order.endDate) : "—"}{sel.state.leftActive != null && <span className="mt-1 block"><Badge tone={daysTone(sel.state.leftActive)}>{daysText(sel.state.leftActive)}</Badge></span>}</Info>}
+              <Info label="Jatuh tempo berikutnya">{sel.nextDue ? <>{fmtDate(sel.nextDue)}<span className="mt-1 block"><Badge tone={daysTone(daysUntil(sel.nextDue))}>{daysText(daysUntil(sel.nextDue))}</Badge></span></> : "Tidak ada"}</Info>
+              <Info label="Jumlah invoice">{sel.invoices.length}</Info>
+            </dl>
+          </div>
+
+          <div className="detail-section">
+            <p className="detail-title">Daftar invoice</p>
+            <ol className="space-y-3">
+              {sel.invoices.map((r, k) => {
+                const late = isOverdue(r.dueDate, r.status);
+                return (
+                  <li key={r.id} className="rounded-lg border border-[var(--line)] p-3">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-[var(--ink)]"><span className="num mr-2 text-xs text-[var(--ink-3)]">{k + 1}.</span>{r.period ? fmtPeriod(r.period) : r.title}</p>
+                        <p className="pl-5 font-mono text-[11px] text-[var(--ink-3)]">{r.number} · dibuat {fmtDateTime(r.createdAt)}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="num font-bold text-[var(--ink)]">{fmtIDR(r.amount)}</p>
+                        <Badge tone={INVOICE_STATUS[r.status].tone}>{INVOICE_STATUS[r.status].label}</Badge>
+                      </div>
+                    </div>
+                    {r.items.length > 0 && <ul className="mt-2 space-y-0.5 pl-5 text-xs text-[var(--ink-3)]">{r.items.map((i, n) => <li key={n}>· {i.description} — {fmtIDR(i.amount)}{i.note && ` (${i.note})`}</li>)}</ul>}
+                    <p className={`mt-2 pl-5 text-xs ${late ? "text-[var(--bad)]" : "text-[var(--ink-3)]"}`}>
+                      Jatuh tempo {fmtDate(r.dueDate)}{r.status !== "paid" && r.status !== "cancelled" && ` · ${daysText(daysUntil(r.dueDate))}`}
+                      {r.paidAt && <span className="text-[var(--ok)]"> · lunas {fmtDateTime(r.paidAt)}</span>}
+                      {r.proofFileId && <> · <a href={`/api/files/${r.proofFileId}`} target="_blank" rel="noreferrer" className="text-[var(--brand-ink)] hover:underline">bukti bayar ↗</a></>}
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-1.5 pl-5">
                       {can(user, "invoice.update") && r.status !== "paid" && r.status !== "cancelled" && (
-                        <form action={setInvoiceStatusAction}><input type="hidden" name="id" value={r.id} /><input type="hidden" name="status" value="paid" /><button className="btn-primary btn-sm">Lunas</button></form>
+                        <form action={setInvoiceStatusAction}><input type="hidden" name="id" value={r.id} /><input type="hidden" name="status" value="paid" /><button className="btn-primary btn-sm">Tandai lunas</button></form>
                       )}
                       {can(user, "invoice.update") && r.status === "paid" && (
                         <form action={setInvoiceStatusAction}><input type="hidden" name="id" value={r.id} /><input type="hidden" name="status" value="unpaid" /><button className="btn-ghost btn-sm">Batal lunas</button></form>
@@ -123,17 +193,41 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
                         <form action={setInvoiceStatusAction}><input type="hidden" name="id" value={r.id} /><input type="hidden" name="status" value="cancelled" /><button className="btn-ghost btn-sm">Batalkan</button></form>
                       )}
                       <a href={`/invoice/${r.id}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm">Cetak</a>
-                      {can(user, "invoice.update") && <Link href={`/admin/invoices?edit=${r.id}`} scroll={false} className="btn-ghost btn-sm">Edit</Link>}
+                      {can(user, "invoice.update") && <Link href={`/admin/invoices?edit=${r.id}&svc=${sel.key}`} scroll={false} className="btn-ghost btn-sm">Edit</Link>}
                       {can(user, "invoice.delete") && <form action={deleteInvoiceAction}><input type="hidden" name="id" value={r.id} /><button className="btn-danger btn-sm">Hapus</button></form>}
                     </div>
-                  </td>
-                </tr>
-              );
-            })}
-            {!rows.length && <tr><td className={td} colSpan={7}>Belum ada tagihan.</td></tr>}
-          </tbody>
-        </Table>
-      </Card>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+
+          {can(user, "invoice.create") && sel.order && (
+            <div className="mt-5 flex flex-wrap gap-2 border-t border-[var(--line)] pt-4">
+              <Link href={`/admin/invoices?new=1&svc=${sel.key}&userId=${sel.order.userId}&orderId=${sel.order.id}&title=${encodeURIComponent(`${sel.order.packageName}${sel.order.quantity > 1 ? ` ×${sel.order.quantity}` : ""} — ${sel.order.number}`)}&amount=${orderTotal(sel.order)}&period=${sel.order.billingCycle === "monthly" ? currentPeriod() : ""}`} scroll={false} className="btn-gold btn-sm">+ Tagihan untuk layanan ini</Link>
+              <Link href={`/admin/orders?view=${sel.order.id}`} className="btn-ghost btn-sm">Detail layanan</Link>
+            </div>
+          )}
+        </Modal>
+      )}
+
+      <List count={rows.length} label="layanan">
+        {rows.map((g, k) => (
+          <RowLink key={g.key} no={k + 1} href={`${listHref}${listHref.includes("?") ? "&" : "?"}svc=${g.key}`}
+            right={<span className="hidden text-right sm:block"><span className="num block text-sm font-bold text-[var(--ink)]">{g.openTotal > 0 ? fmtIDR(g.openTotal) : "Lunas"}</span><span className="text-xs text-[var(--ink-3)]">{g.invoices.length} invoice</span></span>}>
+            <span className="flex flex-wrap items-center gap-2">
+              <span className="truncate font-semibold text-[var(--ink)]">{g.title}</span>
+              <Badge tone={g.tone}>{g.label}</Badge>
+            </span>
+            <span className="mt-0.5 block truncate text-xs text-[var(--ink-3)]">
+              {g.customer}
+              {g.nextDue && <> · jatuh tempo {fmtDate(g.nextDue)} <span className={daysUntil(g.nextDue) < 0 ? "text-[var(--bad)]" : daysUntil(g.nextDue) <= 7 ? "text-[var(--warn)]" : ""}>({daysText(daysUntil(g.nextDue))})</span></>}
+              <span className="sm:hidden"> · {g.openTotal > 0 ? fmtIDR(g.openTotal) : "lunas"}</span>
+            </span>
+          </RowLink>
+        ))}
+        {!rows.length && <li className="px-4 py-8 text-center text-sm text-[var(--ink-3)]">Tidak ada tagihan.</li>}
+      </List>
     </>
   );
 }

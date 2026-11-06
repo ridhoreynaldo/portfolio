@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 
 /**
  * Primitif UI Leetcloud (dipakai dashboard pelanggan & panel admin, di dalam .svc).
@@ -79,6 +81,38 @@ export function EmptyState({ title, sub, action }: { title: ReactNode; sub?: Rea
       <p className="font-semibold text-[var(--ink)]">{title}</p>
       {sub && <p className="mt-1 max-w-sm text-sm text-[var(--ink-3)]">{sub}</p>}
       {action && <div className="mt-4">{action}</div>}
+    </div>
+  );
+}
+
+/** Daftar ringkas bernomor: tiap baris bisa diklik untuk membuka detail (modal). */
+export function List({ children, count, label }: { children: ReactNode; count?: number; label?: string }) {
+  return (
+    <section className="card overflow-hidden">
+      {count != null && <p className="border-b border-[var(--line)] px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-[var(--ink-3)]">{count} {label ?? "data"}</p>}
+      <ol className="list">{children}</ol>
+    </section>
+  );
+}
+
+export function RowLink({ no, href, children, right, dim }: { no: number; href: string; children: ReactNode; right?: ReactNode; dim?: boolean }) {
+  return (
+    <li>
+      <Link href={href} scroll={false} className={`list-row ${dim ? "opacity-55" : ""}`}>
+        <span className="row-no num">{String(no).padStart(2, "0")}</span>
+        <span className="min-w-0">{children}</span>
+        <span className="flex items-center gap-3">{right}<ChevronRight className="h-4 w-4 shrink-0 text-[var(--ink-3)]" aria-hidden /></span>
+      </Link>
+    </li>
+  );
+}
+
+/** Pasangan label–nilai untuk modal detail. */
+export function Info({ label, children, wide }: { label: string; children: ReactNode; wide?: boolean }) {
+  return (
+    <div className={wide ? "sm:col-span-2" : ""}>
+      <dt className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">{label}</dt>
+      <dd className="mt-0.5 text-sm text-[var(--ink)]">{children}</dd>
     </div>
   );
 }

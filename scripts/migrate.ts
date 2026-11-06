@@ -127,7 +127,7 @@ async function ensureMenus() {
     { id: M("07"), parentId: M("04"), label: "Role & Akses", icon: "ShieldCheck", path: "/admin/roles", permissionKey: "role.read", sortOrder: 2 },
     { id: M("0c"), parentId: null, label: "Layanan & Pembayaran", icon: "Wallet", path: "#", permissionKey: null, sortOrder: 6 },
     { id: M("0d"), parentId: M("0c"), label: "Paket Layanan", icon: "Package", path: "/admin/packages", permissionKey: "package.read", sortOrder: 0 },
-    { id: M("0e"), parentId: M("0c"), label: "Order", icon: "ShoppingCart", path: "/admin/orders", permissionKey: "order.read", sortOrder: 1 },
+    { id: M("0e"), parentId: M("0c"), label: "Layanan", icon: "Server", path: "/admin/orders", permissionKey: "order.read", sortOrder: 1 },
     { id: M("0f"), parentId: M("0c"), label: "Tagihan", icon: "Receipt", path: "/admin/invoices", permissionKey: "invoice.read", sortOrder: 2 },
     { id: M("10"), parentId: M("0c"), label: "Pelanggan", icon: "Handshake", path: "/admin/customers", permissionKey: "customer.read", sortOrder: 3 },
     { id: M("11"), parentId: M("0c"), label: "Pembayaran & QRIS", icon: "QrCode", path: "/admin/payment", permissionKey: "payment.read", sortOrder: 4 },
@@ -138,6 +138,9 @@ async function ensureMenus() {
     .insert(menus)
     .values(admin.map((m) => ({ ...m, scope: "ADMIN" as const })))
     .onConflictDoUpdate({ target: menus.id, set: { path: sql`excluded.path`, permissionKey: sql`excluded.permission_key` } });
+  // halaman Order kini bernama "Layanan" (hanya bila label masih bawaan, kustomisasi admin tidak ditimpa)
+  const renamedMenu = await db.update(menus).set({ label: "Layanan", icon: "Server" }).where(and(eq(menus.id, M("0e")), eq(menus.label, "Order"))).returning({ id: menus.id });
+  if (renamedMenu.length) log("menu Order → Layanan");
 
   const [pub] = await db.select({ n: sql<number>`count(*)::int` }).from(menus).where(eq(menus.scope, "PUBLIC"));
   if ((pub?.n ?? 0) === 0) {

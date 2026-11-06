@@ -1,24 +1,27 @@
 import Link from "next/link";
 import { Modal } from "@/components/lc/modal";
-import { Badge, Card, PageTitle, Table, fmtDateTime, td, th } from "@/components/lc/ui";
+import { Badge, Info, List, PageTitle, RowLink, fmtDate, fmtDateTime } from "@/components/lc/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
 import { saveCustomerAction } from "@/modules/billing/actions";
-import { fmtIDR } from "@/modules/billing/labels";
-import { listCustomers } from "@/modules/billing/repository";
+import { CYCLE, INVOICE_STATUS, fmtIDR, fmtPeriod } from "@/modules/billing/labels";
+import { daysText, daysTone, serviceState } from "@/modules/billing/service-state";
+import { listCustomers, listInvoices, listOrders, orderTotal } from "@/modules/billing/repository";
 
-export default async function CustomersPage({ searchParams }: { searchParams: Promise<{ edit?: string; new?: string }> }) {
+export default async function CustomersPage({ searchParams }: { searchParams: Promise<{ edit?: string; new?: string; view?: string }> }) {
   const user = await requirePermissionPage("customer.read");
-  const { edit, new: isNew } = await searchParams;
+  const { edit, new: isNew, view } = await searchParams;
   const rows = await listCustomers();
   const c = edit ? rows.find((r) => r.id === edit) : undefined;
+  const v = view ? rows.find((r) => r.id === view) : undefined;
+  const [vOrders, vInvoices] = v ? await Promise.all([listOrders({ userId: v.id }), listInvoices({ userId: v.id })]) : [[], []];
   const canWrite = can(user, `customer.${c ? "update" : "create"}`);
 
   return (
     <>
       <PageTitle actions={can(user, "customer.create") ? <Link href="/admin/customers?new=1" scroll={false} className="btn-primary btn-sm">+ Akun pelanggan</Link> : undefined} sub="Akun pelanggan (role customer). Pelanggan juga bisa mendaftar sendiri di /register. Hapus akun lewat menu Pengguna.">Pelanggan</PageTitle>
       {canWrite && (c || isNew === "1") && (
-        <Modal title={c ? `Edit: ${c.email}` : "Buat akun pelanggan"} close="/admin/customers">
+        <Modal title={c ? `Edit: ${c.email}` : "Buat akun pelanggan"} close={c ? `/admin/customers?view=${c.id}` : "/admin/customers"}>
           <form action={saveCustomerAction} className="space-y-4" key={c?.id ?? "new"}>
             {c && <input type="hidden" name="id" value={c.id} />}
             <div className="grid gap-4 sm:grid-cols-2">
@@ -35,29 +38,81 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
           </form>
         </Modal>
       )}
-      <Card flush>
-        <Table>
-          <thead><tr><th className={th}>Pelanggan</th><th className={th}>Kontak</th><th className={th}>Order</th><th className={th}>Tagihan terbuka</th><th className={th}>Login terakhir</th><th className={th} /></tr></thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.id} className={`hover:bg-[var(--surface-2)] ${r.isActive ? "" : "opacity-50"}`}>
-                <td className={td}><div className="text-[var(--ink)]">{r.name}</div><div className="text-xs text-[var(--ink-3)]">{r.email}{r.company && ` · ${r.company}`}</div></td>
-                <td className={`${td} text-xs text-[var(--ink-2)]`}>{r.phone || "—"}</td>
-                <td className={td}><Link href="/admin/orders" className="text-[var(--brand-ink)] hover:underline">{r.orderCount}</Link></td>
-                <td className={td}>{r.unpaidCount ? <Badge tone="amber">{r.unpaidCount} · {fmtIDR(r.unpaidTotal)}</Badge> : <Badge tone="emerald">lunas</Badge>}</td>
-                <td className={`${td} text-xs text-[var(--ink-3)]`}>{fmtDateTime(r.lastLoginAt)}</td>
-                <td className={`${td} text-right`}>
-                  <div className="flex justify-end gap-2">
-                    {can(user, "customer.update") && <Link href={`/admin/customers?edit=${r.id}`} scroll={false} className="btn-ghost btn-sm">Edit</Link>}
-                    {can(user, "invoice.create") && <Link href={`/admin/invoices?new=1&userId=${r.id}`} className="btn-magenta btn-sm">+ Tagihan</Link>}
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {!rows.length && <tr><td className={td} colSpan={6}>Belum ada pelanggan.</td></tr>}
-          </tbody>
-        </Table>
-      </Card>
+      {v && !c && (
+        <Modal title={v.name} close="/admin/customers" wide>
+          <div className="detail-section">
+            <div className="mb-4 flex flex-wrap items-center gap-2">{v.isActive ? <Badge tone="emerald">aktif</Badge> : <Badge>nonaktif</Badge>}{v.company && <span className="text-sm text-[var(--ink-2)]">{v.company}</span>}</div>
+            <dl className="grid gap-4 sm:grid-cols-2">
+              <Info label="Email">{v.email}</Info>
+              <Info label="WhatsApp">{v.phone || "—"}</Info>
+              <Info label="Alamat" wide>{v.address || "—"}</Info>
+              {v.notes && <Info label="Catatan internal" wide><span className="whitespace-pre-line">{v.notes}</span></Info>}
+              <Info label="Login terakhir">{fmtDateTime(v.lastLoginAt)}</Info>
+              <Info label="Tagihan terbuka">{v.unpaidCount ? <span className="num font-bold">{fmtIDR(v.unpaidTotal)}</span> : "Tidak ada"}</Info>
+            </dl>
+          </div>
+
+          <div className="detail-section">
+            <p className="detail-title">Layanan ({vOrders.length})</p>
+            {vOrders.length ? (
+              <ol className="divide-y divide-[var(--line)]">
+                {vOrders.map((o, k) => {
+                  const s = serviceState(o, vInvoices);
+                  return (
+                    <li key={o.id}>
+                      <Link href={`/admin/orders?view=${o.id}`} className="flex flex-wrap items-center justify-between gap-2 py-2.5 hover:text-[var(--brand-ink)]">
+                        <span className="min-w-0">
+                          <span className="num mr-2 text-xs text-[var(--ink-3)]">{k + 1}.</span><span className="font-semibold">{o.packageName}{o.quantity > 1 && ` ×${o.quantity}`}</span>
+                          <span className="block pl-5 text-xs text-[var(--ink-3)]">
+                            {orderTotal(o) > 0 ? `${fmtIDR(orderTotal(o))} ${CYCLE[s.cycle]}` : "harga kesepakatan"}
+                            {s.next && ` · jatuh tempo ${fmtDate(s.next.dueDate)}`}
+                            {!s.next && s.paidUntil && ` · aktif s.d. ${fmtDate(s.paidUntil)}`}
+                          </span>
+                        </span>
+                        <span className="flex items-center gap-2">
+                          {s.left != null && <Badge tone={daysTone(s.left)}>{daysText(s.left)}</Badge>}
+                          <Badge tone={s.status.tone}>{s.status.label}</Badge>
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ol>
+            ) : <p className="text-sm text-[var(--ink-3)]">Belum punya layanan.</p>}
+          </div>
+
+          {vInvoices.some((i) => i.status === "unpaid" || i.status === "pending_verification") && (
+            <div className="detail-section">
+              <p className="detail-title">Tagihan terbuka</p>
+              <ol className="divide-y divide-[var(--line)] text-sm">
+                {vInvoices.filter((i) => i.status === "unpaid" || i.status === "pending_verification").map((i) => (
+                  <li key={i.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                    <span className="min-w-0">{i.period ? `${i.title.split(" — ")[0]} · ${fmtPeriod(i.period)}` : i.title}<span className="block font-mono text-[11px] text-[var(--ink-3)]">{i.number} · jatuh tempo {fmtDate(i.dueDate)}</span></span>
+                    <span className="flex items-center gap-2"><span className="num font-semibold">{fmtIDR(i.amount)}</span><Badge tone={INVOICE_STATUS[i.status].tone}>{INVOICE_STATUS[i.status].label}</Badge></span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+
+          <div className="mt-6 flex flex-wrap gap-2 border-t border-[var(--line)] pt-4">
+            {can(user, "customer.update") && <Link href={`/admin/customers?edit=${v.id}`} scroll={false} className="btn-primary btn-sm">Edit data</Link>}
+            {can(user, "order.create") && <Link href="/admin/orders?new=1" className="btn-ghost btn-sm">+ Layanan</Link>}
+            {can(user, "invoice.create") && <Link href={`/admin/invoices?new=1&userId=${v.id}`} className="btn-gold btn-sm">+ Tagihan</Link>}
+          </div>
+        </Modal>
+      )}
+
+      <List count={rows.length} label="pelanggan">
+        {rows.map((r, k) => (
+          <RowLink key={r.id} no={k + 1} href={`/admin/customers?view=${r.id}`} dim={!r.isActive}
+            right={<span className="hidden text-right sm:block">{r.unpaidCount ? <><span className="num block text-sm font-bold text-[var(--ink)]">{fmtIDR(r.unpaidTotal)}</span><span className="text-xs text-[var(--warn)]">{r.unpaidCount} tagihan terbuka</span></> : <Badge tone="emerald">lunas</Badge>}</span>}>
+            <span className="block truncate font-semibold text-[var(--ink)]">{r.name}{r.company && <span className="font-normal text-[var(--ink-3)]"> · {r.company}</span>}</span>
+            <span className="mt-0.5 block truncate text-xs text-[var(--ink-3)]">{r.orderCount} layanan · {r.email}<span className="sm:hidden">{r.unpaidCount ? ` · ${fmtIDR(r.unpaidTotal)} terbuka` : " · lunas"}</span></span>
+          </RowLink>
+        ))}
+        {!rows.length && <li className="px-4 py-8 text-center text-sm text-[var(--ink-3)]">Belum ada pelanggan.</li>}
+      </List>
     </>
   );
 }

@@ -500,3 +500,81 @@ html[data-theme="dark"] .svc .modal-panel { box-shadow: 0 0 0 1px rgba(0, 240, 2
   .svc .modal-panel { animation: lc-modal-in .18s ease-out; }
   @keyframes lc-modal-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 }
+
+
+/* ═══ Tipografi Leetcloud: Orbitron (judul, angka, brand) + Chakra Petch (isi, tombol, label) ═══ */
+.svc { font-family: var(--font-chakra), var(--font-jakarta), system-ui, sans-serif; }
+.svc h1, .svc h2 { font-family: var(--font-orbitron), var(--font-chakra), sans-serif; letter-spacing: 0.02em; }
+.svc h3, .svc .label, .svc .nav-item, .svc .tbl th, .svc .pill, .svc .tag, .svc .seg button { font-family: var(--font-chakra), sans-serif; }
+.svc .stat-value { font-family: var(--font-orbitron), sans-serif; font-size: clamp(0.9rem, calc(100cqi / (var(--len, 8) * 0.8)), 1.45rem); letter-spacing: 0.01em; }
+.svc .num { font-family: var(--font-orbitron), sans-serif; letter-spacing: 0.01em; }
+
+/* ═══ Wordmark: 1337 ungu + cloud biru langit galaksi ═══ */
+.wordmark { display: inline-flex; align-items: baseline; font-family: var(--font-orbitron), sans-serif; font-weight: 800; letter-spacing: 0.03em; line-height: 1; white-space: nowrap; }
+.wordmark .wm-leet { color: #b26bff; text-shadow: 0 0 14px rgba(178, 107, 255, 0.45); }
+.wordmark .wm-cloud {
+  background: linear-gradient(100deg, #7dd3fc 0%, #38bdf8 30%, #e0f7ff 50%, #22d3ee 70%, #7dd3fc 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.35));
+  animation: wm-sky 6s ease-in-out infinite;
+}
+@keyframes wm-sky { 0%, 100% { background-position: 0% 0; } 50% { background-position: 100% 0; } }
+html:not([data-theme="dark"]) .svc .wordmark .wm-leet { color: #7c3aed; text-shadow: none; }
+html:not([data-theme="dark"]) .svc .wordmark .wm-cloud { background-image: linear-gradient(100deg, #0284c7 0%, #0ea5e9 35%, #22d3ee 50%, #0284c7 100%); filter: none; }
+.invoice-paper .wordmark .wm-leet { color: #7c3aed !important; text-shadow: none !important; }
+.invoice-paper .wordmark .wm-cloud { background-image: linear-gradient(100deg, #0284c7, #0ea5e9) !important; filter: none !important; animation: none; }
+@media (prefers-reduced-motion: reduce) { .wordmark .wm-cloud { animation: none; } }
+
+/* ═══ Tombol galaksi: sudut terpotong, gradasi nebula, kilau saat disorot ═══ */
+.svc .btn-primary, .svc .btn-ghost, .svc .btn-gold, .svc .btn-danger, .svc .btn-magenta, .svc .btn-neon, .svc .btn-outline-neon {
+  --cut: 10px;
+  position: relative; isolation: isolate; overflow: hidden;
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  min-height: 2.75rem; padding: .7rem 1.3rem;
+  font-family: var(--font-chakra), sans-serif; font-weight: 700; font-size: .85rem; letter-spacing: .07em; text-transform: uppercase; line-height: 1.1;
+  border-radius: 0; border: 1px solid transparent; box-shadow: none; filter: none; transform: none;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  transition: background-position .5s ease, color .15s ease, filter .15s ease;
+}
+.svc .btn-sm { --cut: 7px; min-height: 2.25rem; padding: .4rem .85rem; font-size: .74rem; }
+.svc .btn-icon { padding: 0; width: 2.25rem; }
+/* kilau menyapu */
+.svc .btn-primary::after, .svc .btn-ghost::after, .svc .btn-gold::after, .svc .btn-magenta::after, .svc .btn-neon::after, .svc .btn-outline-neon::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.45) 50%, transparent 65%);
+  transform: translateX(-130%); transition: transform .7s ease;
+}
+.svc .btn-primary:hover::after, .svc .btn-ghost:hover::after, .svc .btn-gold:hover::after, .svc .btn-magenta:hover::after, .svc .btn-neon:hover::after, .svc .btn-outline-neon:hover::after { transform: translateX(130%); }
+.svc .btn-primary, .svc .btn-neon {
+  color: #04101c;
+  background: linear-gradient(120deg, #22e4f5 0%, #7dd3fc 45%, #a78bfa 100%); background-size: 180% 100%; background-position: 0 0;
+}
+.svc .btn-primary:hover, .svc .btn-neon:hover { background-position: 100% 0; filter: brightness(1.05); }
+.svc .btn-gold, .svc .btn-magenta {
+  color: #fff;
+  background: linear-gradient(120deg, #ff2bd6 0%, #c026d3 45%, #7c3aed 100%); background-size: 180% 100%;
+}
+.svc .btn-gold:hover, .svc .btn-magenta:hover { background-position: 100% 0; }
+/* outline dengan bingkai gradasi cyan→ungu */
+.svc .btn-ghost, .svc .btn-outline-neon {
+  color: var(--ink);
+  background: linear-gradient(var(--surface), var(--surface)) padding-box, linear-gradient(120deg, rgba(34, 228, 245, 0.75), rgba(167, 139, 250, 0.75)) border-box;
+}
+.svc .btn-ghost:hover, .svc .btn-outline-neon:hover {
+  background: linear-gradient(var(--soft), var(--soft)) padding-box, linear-gradient(120deg, #22e4f5, #a78bfa) border-box;
+}
+.svc .btn-on-dark, .svc .btn-outline-neon { color: #fff; background: linear-gradient(rgba(10, 14, 36, 0.55), rgba(10, 14, 36, 0.55)) padding-box, linear-gradient(120deg, #22e4f5, #ff2bd6) border-box; }
+.svc .btn-on-dark:hover { background: linear-gradient(rgba(34, 228, 245, 0.12), rgba(167, 139, 250, 0.12)) padding-box, linear-gradient(120deg, #22e4f5, #ff2bd6) border-box; }
+.svc .btn-danger { color: var(--bad); background: var(--bad-bg); }
+.svc .btn-primary:disabled, .svc .btn-ghost:disabled { opacity: .55; cursor: not-allowed; }
+.svc .btn-primary:focus-visible, .svc .btn-ghost:focus-visible, .svc .btn-gold:focus-visible, .svc .btn-danger:focus-visible, .svc .btn-magenta:focus-visible { outline: none; box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 4px #22e4f5; }
+@media (prefers-reduced-motion: reduce) { .svc [class*="btn-"]::after { display: none; } }
+
+/* ═══ Daftar ringkas bernomor (admin) ═══ */
+.svc .list > li + li { border-top: 1px solid var(--line); }
+.svc .list-row { display: grid; grid-template-columns: 2.4rem minmax(0, 1fr) auto; gap: .85rem; align-items: center; padding: .8rem 1rem; transition: background .15s ease, box-shadow .15s ease; }
+.svc .list-row:hover { background: var(--surface-2); box-shadow: inset 3px 0 0 var(--brand); }
+.svc .row-no { display: grid; place-items: center; width: 2.3rem; height: 2.3rem; font-size: .72rem; font-weight: 700; color: var(--brand-ink); background: var(--soft); clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); }
+.svc .detail-section + .detail-section { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px dashed var(--line-2); }
+.svc .detail-title { margin-bottom: .75rem; font-family: var(--font-orbitron), sans-serif; font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--brand-ink); }

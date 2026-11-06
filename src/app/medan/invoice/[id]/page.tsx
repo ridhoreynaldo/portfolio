@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Wordmark } from "@/components/lc/wordmark";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { SERVICE_LOGO, SERVICE_BRAND } from "@/components/service-shell";
@@ -40,7 +41,7 @@ export default async function InvoicePrintPage({ params }: { params: Promise<{ i
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={SERVICE_LOGO} alt="" className="h-14 w-14" />
             <div>
-              <p className="font-serif text-2xl font-semibold tracking-wide text-[var(--navy)]">{brand.name}</p>
+              <p><Wordmark className="text-2xl" /></p>
               <p className="text-xs text-[var(--ink-3)]">{brand.tagline}</p>
               <p className="mt-1 text-xs text-[var(--ink-2)]">{brand.area}{profile?.phone ? ` · ${profile.phone}` : ""}</p>
             </div>

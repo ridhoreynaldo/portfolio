@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Wordmark } from "@/components/lc/wordmark";
 import { redirect } from "next/navigation";
 import { getCurrentUser, homeFor } from "@/modules/auth/session";
 import { ServiceBrandMark, SERVICE_BRAND } from "@/components/service-shell";
@@ -20,7 +21,7 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
         <p className="mt-5 text-center text-sm text-[var(--ink-3)]">
           Sudah punya akun? <Link href={safe ? `/login?next=${encodeURIComponent(safe)}` : "/login"} className="font-semibold text-[var(--brand-ink)] hover:underline">Login</Link>
         </p>
-        <p className="mt-6 text-center text-xs text-[var(--ink-3)]"><Link href="/" className="hover:text-[var(--brand-ink)]">← Kembali ke Leetcloud</Link></p>
+        <p className="mt-6 text-center text-xs text-[var(--ink-3)]"><Link href="/" className="hover:text-[var(--brand-ink)]">← Kembali ke <Wordmark /></Link></p>
       </main>
     </div>
   );

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LayoutDashboard, LogOut, Plus } from "lucide-react";
 import { AppShell, type NavItem } from "@/components/lc/app-shell";
+import { Wordmark } from "@/components/lc/wordmark";
 import { Flash } from "@/components/lc/ui";
 import { SERVICE_LOGO, SERVICE_BRAND } from "@/components/service-shell";
 import { logoutToHomeAction } from "@/modules/auth/actions";
@@ -24,10 +25,10 @@ export default async function PortalLayout({ children }: { children: React.React
   const brand = SERVICE_BRAND;
   return (
     <AppShell
-      brand={{ name: brand.name, sub: "Dashboard pelanggan", href: "/dashboard", logo: SERVICE_LOGO }}
+      brand={{ name: <Wordmark />, sub: "Dashboard pelanggan", href: "/dashboard", logo: SERVICE_LOGO }}
       groups={[
         { items: NAV },
-        { label: "Layanan", items: [{ label: "Pesan layanan baru", href: "/#paket", icon: "Package" }, { label: "Halaman Leetcloud", href: "/", icon: "Home" }] },
+        { label: "Layanan", items: [{ label: "Pesan layanan baru", href: "/#paket", icon: "Package" }, { label: "Beranda 1337cloud", href: "/", icon: "Home" }] },
       ]}
       tabs={NAV}
       user={{ name: user.name, meta: user.email }}

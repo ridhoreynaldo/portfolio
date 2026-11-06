@@ -82,7 +82,6 @@ export default async function LeetcloudPage() {
         <section className="hero-galaxy px-4 pb-24 pt-16 text-center md:pb-32 md:pt-24">
           <HeroGalaxy />
           <div aria-hidden className="hero-grid" />
-          <p className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-[rgba(198,255,77,0.35)] bg-[rgba(10,15,36,0.6)] px-3 py-1 font-mono text-[11px] uppercase tracking-[0.16em] text-[#e2ff9c]"><span className="pulse-dot" /> online · siap menerima proyek</p>
           <h1 className="font-cyber mx-auto max-w-3xl text-[1.8rem] font-bold uppercase leading-[1.2] text-[#fff] md:text-5xl md:leading-[1.15]">
             Aplikasi & server untuk <span className="glitch text-[#00f0ff]" data-text="bisnis">bisnis</span> <span className="text-[#ff5ce1]">Anda</span>
           </h1>
@@ -90,8 +89,8 @@ export default async function LeetcloudPage() {
             Website, sistem informasi, dan WhatsApp gateway. Dibuat sesuai kebutuhan, dikelola sampai jalan. Melayani seluruh Indonesia secara online.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-neon"><MessageCircle className="h-4 w-4" /> Konsultasi gratis</a>}
-            <a href="#paket" className="btn-outline-neon">Lihat paket</a>
+            {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-primary"><MessageCircle className="h-4 w-4" /> Konsultasi gratis</a>}
+            <a href="#paket" className="btn-ghost btn-on-dark">Lihat paket</a>
           </div>
         </section>
 

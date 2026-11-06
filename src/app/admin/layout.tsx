@@ -5,6 +5,7 @@ import { logoutAction } from "@/modules/auth/actions";
 import { requireStaff } from "@/modules/auth/guards";
 import { adminMenuTree } from "@/modules/menus/repository";
 import { AppShell, type NavGroup } from "@/components/lc/app-shell";
+import { Wordmark } from "@/components/lc/wordmark";
 import { Toast } from "@/components/lc/modal";
 import { SERVICE_LOGO } from "@/components/service-shell";
 
@@ -32,7 +33,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <AppShell
-      brand={{ name: "Admin Panel", sub: "Leetcloud · Portofolio", href: "/admin", logo: SERVICE_LOGO }}
+      brand={{ name: <Wordmark />, sub: "Admin panel", href: "/admin", logo: SERVICE_LOGO }}
       groups={groups}
       user={{ name: user.name, meta: user.roles.map((r) => r.name).join(", ") || user.email }}
       topActions={<Link href="https://leetcloud.my.id" className="btn-ghost btn-sm hidden sm:inline-flex" target="_blank"><ExternalLink className="h-3.5 w-3.5" /> Lihat situs</Link>}

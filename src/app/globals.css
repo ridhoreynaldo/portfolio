@@ -289,9 +289,9 @@ input[type="file"].input-dark::file-selector-button {
   min-height: 100vh;
   font-family: var(--font-sans);
 }
-body:has(> .svc)::after, body:has(> .svc) { background-image: none; }
-body:has(> .svc)::after { display: none; }
-body:has(> .svc) { background-color: #f6f7f3; }
+body:has(.svc)::after, body:has(.svc) { background-image: none; }
+body:has(.svc)::after { display: none; }
+body:has(.svc) { background-color: #f6f7f3; }
 
 .svc .font-serif { font-family: var(--font-sans); letter-spacing: -0.01em; }
 .svc .card { background: var(--paper-2); border: 1px solid var(--rule); border-radius: 0.75rem; box-shadow: none; }
@@ -345,3 +345,26 @@ body:has(> .svc) { background-color: #f6f7f3; }
 .svc input[type="file"].input-dark { padding: 0.5rem; }
 .svc details > summary { list-style: none; }
 .svc details > summary::-webkit-details-marker { display: none; }
+
+/* ── Panel admin dalam tema flat: kelas gelap bawaan dipetakan ke warna terang ── */
+.svc .glass { background: #fff; border: 1px solid var(--rule); border-radius: 0.75rem; box-shadow: none; backdrop-filter: none; }
+.svc .text-white { color: var(--ink); }
+.svc .text-slate-600 { color: var(--ink-3); }
+.svc .text-violet-300, .svc .text-violet-200, .svc .text-cyan-200, .svc .text-fuchsia-300 { color: var(--navy); }
+.svc .text-amber-200 { color: #7a5a0f; }
+.svc .text-emerald-300 { color: #14532d; } .svc .text-rose-300 { color: #9b1c1c; }
+.svc .border-white\/10, .svc .border-white\/5 { border-color: var(--rule); }
+.svc .border-cyan-400 { border-color: var(--navy); }
+.svc .border-amber-400\/40 { border-color: #ecd49a; } .svc .bg-amber-500\/10 { background: #fff8e6; }
+.svc .hover\:bg-white\/5:hover { background: var(--soft); }
+.svc .hover\:text-white:hover { color: var(--navy); }
+.svc .hover\:border-violet-400\/40:hover { border-color: var(--navy); }
+.svc .bg-white\/10 { background: #edf0ee; }
+.svc .bg-violet-500\/20 { background: var(--soft); box-shadow: none !important; }
+.svc .bg-cyan-500\/20 { background: #e3eff9; } .svc .bg-emerald-500\/20 { background: #e2f3e8; }
+.svc .bg-rose-500\/20 { background: #fdeaea; } .svc .bg-amber-500\/20 { background: #fbf0d6; }
+.svc .text-gradient { background: none; -webkit-text-fill-color: currentColor; color: var(--navy); }
+.svc table th { color: var(--ink-3); }
+.svc .hud { background: #fff; border: 1px solid var(--rule); clip-path: none; box-shadow: none; }
+.svc .hud::before, .svc .hud::after { display: none; }
+.svc select.input-dark option { background: #fff; color: var(--ink); }

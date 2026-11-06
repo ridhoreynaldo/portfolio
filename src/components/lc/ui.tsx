@@ -99,7 +99,7 @@ export function RowLink({ no, href, children, right, dim }: { no: number; href: 
   return (
     <li>
       <Link href={href} scroll={false} className={`list-row ${dim ? "opacity-55" : ""}`}>
-        <span className="row-no num">{String(no).padStart(2, "0")}</span>
+        <span className="row-no num">{no}</span>
         <span className="min-w-0">{children}</span>
         <span className="flex items-center gap-3">{right}<ChevronRight className="h-4 w-4 shrink-0 text-[var(--ink-3)]" aria-hidden /></span>
       </Link>

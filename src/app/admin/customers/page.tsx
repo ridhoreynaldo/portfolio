@@ -5,7 +5,7 @@ import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
 import { saveCustomerAction } from "@/modules/billing/actions";
 import { fmtIDR } from "@/modules/billing/labels";
-import { CustomerServices } from "./service-list";
+import { CustomerServices } from "@/components/lc/service-list";
 import { listCustomers, listInvoices, listOrders } from "@/modules/billing/repository";
 
 export default async function CustomersPage({ searchParams }: { searchParams: Promise<{ edit?: string; new?: string; view?: string }> }) {

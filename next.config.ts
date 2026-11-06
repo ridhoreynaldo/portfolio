@@ -25,6 +25,11 @@ const config: NextConfig = {
         { source: `${p}/:path*`, has: portfolioHost, destination: `${L}/:path*`, permanent: true },
       ]),
       ...["/dashboard/:path*", "/dashboard", "/order/:path*", "/invoice/:path*", "/register"].map((p) => ({ source: p, has: portfolioHost, destination: `${L}${p}`, permanent: true })),
+      // panel admin DIPISAH: halaman jasa hanya di leetcloud.my.id, konten portofolio hanya di ridhoreynaldo.com
+      { source: "/admin/:s(packages|orders|invoices|customers|payment)", has: portfolioHost, destination: `${L}/admin/:s`, permanent: false },
+      { source: "/admin/:s(packages|orders|invoices|customers|payment)/:rest*", has: portfolioHost, destination: `${L}/admin/:s/:rest*`, permanent: false },
+      { source: "/admin/:s(profile|experience|certification|skill|projects|menus|users|roles)", has: leet, destination: "https://ridhoreynaldo.com/admin/:s", permanent: false },
+      { source: "/admin/:s(profile|experience|certification|skill|projects|menus|users|roles)/:rest*", has: leet, destination: "https://ridhoreynaldo.com/admin/:s/:rest*", permanent: false },
       // rute lama (tautan lama tetap bekerja)
       { source: "/jasa", destination: "/", permanent: true },
       { source: "/jasa/:path*", destination: "/:path*", permanent: true },

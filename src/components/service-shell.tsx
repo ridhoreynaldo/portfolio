@@ -17,22 +17,18 @@ export const SERVICE_BRAND: ServiceBrand = {
 };
 
 const NAV = [
-  ["/medan#layanan", "Layanan"],
   ["/medan#paket", "Paket"],
   ["/medan#proyek", "Proyek"],
   ["/medan#faq", "FAQ"],
   ["/medan#kontak", "Kontak"],
 ] as const;
 
-function Logo({ brand, sub }: { brand: ServiceBrand; sub: string }) {
+function Logo({ brand }: { brand: ServiceBrand }) {
   return (
     <Link href="/medan" className="flex min-w-0 items-center gap-2.5">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={SERVICE_LOGO} alt="" className="h-9 w-9 shrink-0 rounded-lg" />
-      <span className="min-w-0 leading-tight">
-        <span className="block text-lg font-bold text-[var(--ink)]">{brand.name}</span>
-        <span className="block truncate text-[11px] text-[var(--ink-3)]">{sub}</span>
-      </span>
+      <img src={SERVICE_LOGO} alt="" className="h-8 w-8 shrink-0 rounded-lg" />
+      <span className="text-lg font-bold text-[var(--ink)]">{brand.name}</span>
     </Link>
   );
 }
@@ -42,9 +38,9 @@ export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: Auth
   const staff = !!user && (user.isSuper || user.permissions.length > 0);
   const portal = user ? (staff ? "/admin" : "/medan/dashboard") : null;
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--surface)]">
+    <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--bg)]">
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 md:px-6" aria-label="Menu utama">
-        <Logo brand={brand} sub={`Layanan IT · ${brand.area}`} />
+        <Logo brand={brand} />
         <ul className="hidden items-center gap-1 text-sm font-medium text-[var(--ink-2)] md:flex">
           {NAV.map(([href, label]) => <li key={href}><a href={href} className="rounded-lg px-3 py-2 transition hover:bg-[var(--surface-2)] hover:text-[var(--ink)]">{label}</a></li>)}
         </ul>
@@ -57,37 +53,17 @@ export function ServiceHeader({ brand, user }: { brand: ServiceBrand; user: Auth
           )}
         </div>
       </nav>
-      <ul className="no-scrollbar flex gap-1 overflow-x-auto border-t border-[var(--line)] px-3 py-1.5 text-sm font-medium text-[var(--ink-2)] md:hidden">
-        {NAV.map(([href, label]) => <li key={href} className="shrink-0"><a href={href} className="block rounded-lg px-3 py-1.5 active:bg-[var(--surface-2)]">{label}</a></li>)}
-      </ul>
     </header>
   );
 }
 
-export function ServiceFooter({ brand, wa }: { brand: ServiceBrand; wa?: string | null }) {
+export function ServiceFooter({ brand }: { brand: ServiceBrand; wa?: string | null }) {
   return (
-    <footer className="border-t border-[var(--line)] bg-[var(--surface)]">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-[1.5fr_1fr_1fr] md:px-6">
-        <div>
-          <Logo brand={brand} sub={`Layanan IT · ${brand.area}`} />
-          <p className="mt-3 max-w-sm text-sm text-[var(--ink-3)]">{brand.tagline}.</p>
-        </div>
-        <div>
-          <p className="text-sm font-bold text-[var(--ink)]">Menu</p>
-          <ul className="mt-3 space-y-2 text-sm text-[var(--ink-2)]">
-            {NAV.map(([href, label]) => <li key={href}><a href={href} className="hover:text-[var(--brand-ink)]">{label}</a></li>)}
-          </ul>
-        </div>
-        <div>
-          <p className="text-sm font-bold text-[var(--ink)]">Pelanggan</p>
-          <ul className="mt-3 space-y-2 text-sm text-[var(--ink-2)]">
-            <li><Link href="/medan/login" className="hover:text-[var(--brand-ink)]">Login dashboard</Link></li>
-            <li><Link href="/medan/register" className="hover:text-[var(--brand-ink)]">Daftar akun</Link></li>
-            {wa && <li><a href={wa} target="_blank" rel="noreferrer" className="hover:text-[var(--brand-ink)]">WhatsApp</a></li>}
-          </ul>
-        </div>
+    <footer className="border-t border-[var(--line)]">
+      <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-2 px-4 py-6 text-sm text-[var(--ink-3)] sm:flex-row">
+        <p>© {new Date().getFullYear()} {brand.name} · {brand.area}</p>
+        <p className="flex gap-4"><Link href="/medan/login" className="hover:text-[var(--brand-ink)]">Login</Link><Link href="/medan/register" className="hover:text-[var(--brand-ink)]">Daftar</Link></p>
       </div>
-      <p className="border-t border-[var(--line)] px-4 py-4 text-center text-xs text-[var(--ink-3)]">© {new Date().getFullYear()} {brand.name} · {brand.area}, Indonesia</p>
     </footer>
   );
 }

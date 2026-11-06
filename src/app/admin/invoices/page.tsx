@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Modal } from "@/components/lc/modal";
 import { Badge, Card, PageTitle, Table, fmtDate, fmtDateTime, td, th } from "@/components/lc/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
@@ -53,14 +54,14 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
         {(Object.keys(INVOICE_STATUS) as (keyof typeof INVOICE_STATUS)[]).map((s) => (
           <Link key={s} href={`/admin/invoices?status=${s}`} className={`btn-ghost btn-sm ${q.status === s ? "!border-cyan-400" : ""}`}>{INVOICE_STATUS[s].label} ({all.filter((x) => x.status === s).length})</Link>
         ))}
-        {!showForm && can(user, "invoice.create") && <Link href="/admin/invoices?new=1" className="btn-primary btn-sm ml-auto">+ Tagihan manual</Link>}
+        {!showForm && can(user, "invoice.create") && <Link href="/admin/invoices?new=1" scroll={false} className="btn-primary btn-sm ml-auto">+ Tagihan manual</Link>}
       </div>
 
       {showForm && canWrite && (
-        <Card title={inv ? `Edit tagihan ${inv.number}` : "Tagihan baru"} right={<Link href="/admin/invoices" className="btn-ghost btn-sm">Batal</Link>}>
+        <Modal title={inv ? `Edit tagihan ${inv.number}` : "Tagihan baru"} close="/admin/invoices" wide>
           <form action={saveInvoiceAction} className="space-y-4" key={inv?.id ?? "new"}>
             {inv && <input type="hidden" name="id" value={inv.id} />}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="label">Pelanggan *</label>
                 <select name="userId" required defaultValue={preset.userId} className="input-dark">
@@ -79,15 +80,15 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
               <div className="sm:col-span-2"><label className="label">Ditagihkan kepada (kosong = ikut order / nama akun)</label><input name="billTo" maxLength={160} defaultValue={preset.billTo} placeholder="mis. Adzkia Smart / Bimbel Adzkia Kedinasan" className="input-dark" /></div>
               <div className="sm:col-span-2"><label className="label">Email tujuan tagihan (kosong = ikut order / email akun)</label><input name="billToEmail" type="email" maxLength={160} defaultValue={preset.billToEmail} placeholder="mis. keuangan@klien.com" className="input-dark" /></div>
               <div className="sm:col-span-2"><label className="label">Judul tagihan *</label><input name="title" required minLength={2} maxLength={255} defaultValue={preset.title} placeholder="Sewa Server — Oktober 2026" className="input-dark" /></div>
-              <div className="sm:col-span-2 lg:col-span-3"><label className="label">Rincian baris (opsional, satu per baris: <code>deskripsi | nominal | keterangan</code>; keterangan opsional, mis. &quot;Sekali bayar · jatuh tempo 9 Nov 2026&quot;; nominal tagihan otomatis = jumlahnya)</label><textarea name="items" rows={3} defaultValue={preset.items} className="input-dark font-mono text-xs" placeholder={"Sewa Server | 2000000\nMaintenance Aplikasi | 2500000"} /></div>
+              <div className="sm:col-span-2"><label className="label">Rincian baris (opsional, satu per baris: <code>deskripsi | nominal | keterangan</code>; keterangan opsional, mis. &quot;Sekali bayar · jatuh tempo 9 Nov 2026&quot;; nominal tagihan otomatis = jumlahnya)</label><textarea name="items" rows={3} defaultValue={preset.items} className="input-dark font-mono text-xs" placeholder={"Sewa Server | 2000000\nMaintenance Aplikasi | 2500000"} /></div>
               <div><label className="label">Nominal (Rp){" "}<span className="text-[var(--ink-3)]">(diabaikan bila ada rincian)</span></label><input name="amount" type="number" min={0} step={1000} defaultValue={preset.amount} className="input-dark" /></div>
               <div><label className="label">Jatuh tempo *</label><input name="dueDate" type="date" required defaultValue={preset.dueDate} className="input-dark" /></div>
               <div><label className="label">Tanggal dibayar (isi = tandai lunas)</label><input name="paidAt" type="date" defaultValue={preset.paidAt} className="input-dark" /></div>
-              <div className="sm:col-span-2 lg:col-span-3"><label className="label">Catatan (tampil ke pelanggan)</label><input name="note" maxLength={2000} defaultValue={preset.note} className="input-dark" /></div>
+              <div className="sm:col-span-2"><label className="label">Catatan (tampil ke pelanggan)</label><input name="note" maxLength={2000} defaultValue={preset.note} className="input-dark" /></div>
             </div>
             <button className="btn-primary">{inv ? "Simpan perubahan" : "Buat tagihan"}</button>
           </form>
-        </Card>
+        </Modal>
       )}
 
       <Card flush>
@@ -122,7 +123,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
                         <form action={setInvoiceStatusAction}><input type="hidden" name="id" value={r.id} /><input type="hidden" name="status" value="cancelled" /><button className="btn-ghost btn-sm">Batalkan</button></form>
                       )}
                       <a href={`/invoice/${r.id}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm">Cetak</a>
-                      {can(user, "invoice.update") && <Link href={`/admin/invoices?edit=${r.id}`} className="btn-ghost btn-sm">Edit</Link>}
+                      {can(user, "invoice.update") && <Link href={`/admin/invoices?edit=${r.id}`} scroll={false} className="btn-ghost btn-sm">Edit</Link>}
                       {can(user, "invoice.delete") && <form action={deleteInvoiceAction}><input type="hidden" name="id" value={r.id} /><button className="btn-danger btn-sm">Hapus</button></form>}
                     </div>
                   </td>

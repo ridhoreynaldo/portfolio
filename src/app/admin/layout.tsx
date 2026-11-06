@@ -5,7 +5,7 @@ import { logoutAction } from "@/modules/auth/actions";
 import { requireStaff } from "@/modules/auth/guards";
 import { adminMenuTree } from "@/modules/menus/repository";
 import { AppShell, type NavGroup } from "@/components/lc/app-shell";
-import { Flash } from "@/components/lc/ui";
+import { Toast } from "@/components/lc/modal";
 import { SERVICE_LOGO } from "@/components/service-shell";
 
 export const dynamic = "force-dynamic";
@@ -42,7 +42,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </form>
       }
     >
-      <Flash flash={flash} />
+      <Toast flash={flash} />
       {children}
     </AppShell>
   );

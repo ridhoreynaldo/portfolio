@@ -480,3 +480,12 @@ html[data-theme="dark"] body:has(.svc) { background-color: #070b1a; }
    100cqi = lebar isi kotak; ~0.62em per karakter (tebal) → muat 1 baris, min 0.95rem, maks 1.5rem. */
 .svc .stat-box { container-type: inline-size; }
 .svc .stat-value { font-size: clamp(0.95rem, calc(100cqi / (var(--len, 8) * 0.62)), 1.5rem); line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+
+/* ── Modal ── */
+.svc .modal-panel { background: var(--surface); border: 1px solid var(--line); box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.55); }
+html[data-theme="dark"] .svc .modal-panel { box-shadow: 0 0 0 1px rgba(0, 240, 255, 0.12), 0 30px 80px -30px rgba(0, 0, 0, 0.8); }
+@media (prefers-reduced-motion: no-preference) {
+  .svc .modal-panel { animation: lc-modal-in .18s ease-out; }
+  @keyframes lc-modal-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Modal } from "@/components/lc/modal";
 import { Badge, Card, PageTitle, Table, td, th } from "@/components/lc/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
@@ -15,18 +16,18 @@ function Input({ name, label, value, type = "text", required, placeholder, hint 
   );
 }
 
-export default async function ProjectsPage({ searchParams }: { searchParams: Promise<{ edit?: string }> }) {
+export default async function ProjectsPage({ searchParams }: { searchParams: Promise<{ edit?: string; new?: string }> }) {
   const user = await requirePermissionPage("project.read");
-  const { edit } = await searchParams;
+  const { edit, new: isNew } = await searchParams;
   const rows = await listProjects();
   const p = edit ? rows.find((r) => r.id === edit) : undefined;
   const canWrite = can(user, `project.${p ? "update" : "create"}`);
 
   return (
     <>
-      <PageTitle sub={`${rows.length} project · ${rows.filter((r) => r.isPublished).length} tayang`}>Project</PageTitle>
-      {canWrite && (
-        <Card title={p ? `Edit: ${p.title}` : "Tambah project"} right={p && <Link href="/admin/projects" className="btn-ghost btn-sm">Batal</Link>}>
+      <PageTitle actions={can(user, "project.create") ? <Link href="/admin/projects?new=1" scroll={false} className="btn-primary btn-sm">+ Tambah project</Link> : undefined} sub={`${rows.length} project · ${rows.filter((r) => r.isPublished).length} tayang`}>Project</PageTitle>
+      {canWrite && (p || isNew === "1") && (
+        <Modal title={p ? `Edit: ${p.title}` : "Tambah project"} close="/admin/projects">
           <form action={saveProjectAction} className="space-y-4" key={p?.id ?? "new"}>
             {p && <input type="hidden" name="id" value={p.id} />}
             <div className="grid gap-4 sm:grid-cols-2">
@@ -59,7 +60,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
             </div>
             <button className="btn-primary">{p ? "Simpan perubahan" : "Tambah"}</button>
           </form>
-        </Card>
+        </Modal>
       )}
       <Card flush>
         <Table>
@@ -73,7 +74,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                 <td className={td}><div className="flex gap-1">{r.isPublished ? <Badge tone="emerald">tayang</Badge> : <Badge>draft</Badge>}{r.isFeatured && <Badge tone="violet">unggulan</Badge>}</div></td>
                 <td className={`${td} text-right`}>
                   <div className="flex justify-end gap-2">
-                    {can(user, "project.update") && <Link href={`/admin/projects?edit=${r.id}`} className="btn-ghost btn-sm">Edit</Link>}
+                    {can(user, "project.update") && <Link href={`/admin/projects?edit=${r.id}`} scroll={false} className="btn-ghost btn-sm">Edit</Link>}
                     {can(user, "project.delete") && <form action={deleteProjectAction}><input type="hidden" name="id" value={r.id} /><button className="btn-danger btn-sm">Hapus</button></form>}
                   </div>
                 </td>

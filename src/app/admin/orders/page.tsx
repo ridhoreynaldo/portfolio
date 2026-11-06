@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Modal } from "@/components/lc/modal";
 import { Badge, Card, PageTitle, Table, fmtDateTime, td, th } from "@/components/lc/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
@@ -43,10 +44,10 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
         {orderStatus.enumValues.map((s) => (
           <Link key={s} href={`/admin/orders?status=${s}`} className={`btn-ghost btn-sm ${status === s ? "!border-cyan-400" : ""}`}>{ORDER_STATUS[s].label} ({all.filter((x) => x.status === s).length})</Link>
         ))}
-        {canCreate && <Link href="/admin/orders?new=1" className="btn-primary btn-sm ml-auto">+ Order manual</Link>}
+        {canCreate && <Link href="/admin/orders?new=1" scroll={false} className="btn-primary btn-sm ml-auto">+ Order manual</Link>}
       </div>
       {isNew && canCreate && (
-        <Card title="Buat order / langganan untuk pelanggan" right={<Link href="/admin/orders" className="btn-ghost btn-sm">Tutup</Link>}>
+        <Modal title="Buat order / langganan untuk pelanggan" close="/admin/orders" wide>
           <form action={createOrderAction} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-3">
               <div>
@@ -68,10 +69,10 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
             </div>
             <button className="btn-primary">Buat order</button>
           </form>
-        </Card>
+        </Modal>
       )}
       {o && can(user, "order.update") && (
-        <Card title={`Proses order ${o.number} — ${o.customerName}`} right={<Link href="/admin/orders" className="btn-ghost btn-sm">Tutup</Link>}>
+        <Modal title={`Proses order ${o.number} — ${o.customerName}`} close="/admin/orders" wide>
           <div className="mb-4 grid gap-3 text-sm sm:grid-cols-2">
             <div><span className="label">Paket</span>{o.packageName}{o.quantity > 1 && ` ×${o.quantity}`} · {orderTotal(o) > 0 ? `${fmtIDR(orderTotal(o))} ${CYCLE[o.billingCycle ?? "once"]}` : "harga sesuai kesepakatan"}{o.unitPrice != null && o.price != null && o.unitPrice !== o.price && <span className="text-xs text-[var(--ink-3)]"> (harga paket {fmtIDR(o.price)})</span>}</div>
             <div><span className="label">Pelanggan</span>{o.customerName} · {o.customerEmail}</div>
@@ -92,7 +93,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
               )}
             </div>
           </form>
-        </Card>
+        </Modal>
       )}
       <Card flush>
         <Table>
@@ -112,7 +113,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                 <td className={`${td} text-xs text-[var(--ink-3)]`}>{fmtDateTime(r.createdAt)}</td>
                 <td className={`${td} text-right`}>
                   <div className="flex justify-end gap-2">
-                    {can(user, "order.update") && <Link href={`/admin/orders?edit=${r.id}`} className="btn-ghost btn-sm">Proses</Link>}
+                    {can(user, "order.update") && <Link href={`/admin/orders?edit=${r.id}`} scroll={false} className="btn-ghost btn-sm">Proses</Link>}
                     {can(user, "order.delete") && <form action={deleteOrderAction}><input type="hidden" name="id" value={r.id} /><button className="btn-danger btn-sm">Hapus</button></form>}
                   </div>
                 </td>

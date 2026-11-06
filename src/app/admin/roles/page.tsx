@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Modal } from "@/components/lc/modal";
 import { Badge, Card, PageTitle, Table, td, th } from "@/components/lc/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
@@ -6,9 +7,9 @@ import { deleteRoleAction, saveRoleAction } from "@/modules/rbac/actions";
 import { PERMISSIONS } from "@/modules/rbac/permissions";
 import { listRoles, rolePermissionKeys } from "@/modules/rbac/repository";
 
-export default async function RolesPage({ searchParams }: { searchParams: Promise<{ edit?: string }> }) {
+export default async function RolesPage({ searchParams }: { searchParams: Promise<{ edit?: string; new?: string }> }) {
   const me = await requirePermissionPage("role.read");
-  const { edit } = await searchParams;
+  const { edit, new: isNew } = await searchParams;
   const roles = await listRoles();
   const editing = edit ? roles.find((r) => r.id === edit) : undefined;
   const granted = new Set(editing ? await rolePermissionKeys(editing.id) : []);
@@ -18,9 +19,9 @@ export default async function RolesPage({ searchParams }: { searchParams: Promis
 
   return (
     <>
-      <PageTitle sub="Permission dibaca dari DB tiap request — perubahan berlaku langsung tanpa login ulang">Role & Hak Akses</PageTitle>
-      {canWrite && (
-        <Card title={editing ? `Edit role: ${editing.name}` : "Tambah role"} right={editing && <Link href="/admin/roles" className="btn-ghost btn-sm">Batal</Link>}>
+      <PageTitle actions={can(me, "role.create") ? <Link href="/admin/roles?new=1" scroll={false} className="btn-primary btn-sm">+ Tambah role</Link> : undefined} sub="Permission dibaca dari DB tiap request — perubahan berlaku langsung tanpa login ulang">Role & Hak Akses</PageTitle>
+      {canWrite && (editing || isNew === "1") && (
+        <Modal title={editing ? `Edit role: ${editing.name}` : "Tambah role"} close="/admin/roles">
           <form action={saveRoleAction} className="space-y-5" key={editing?.id ?? "new"}>
             {editing && <input type="hidden" name="id" value={editing.id} />}
             <div className="grid gap-4 sm:grid-cols-2">
@@ -30,7 +31,7 @@ export default async function RolesPage({ searchParams }: { searchParams: Promis
             {editing?.isSystem ? (
               <p className="text-sm text-amber-200">Role sistem memiliki akses penuh ke seluruh fitur dan tidak dapat dibatasi.</p>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2">
                 {Object.entries(modules).map(([mod, list]) => (
                   <fieldset key={mod} className="rounded-xl border border-[var(--line)] p-3">
                     <legend className="px-1 text-[11px] uppercase tracking-wider text-[var(--brand-ink)]">{mod}</legend>
@@ -46,7 +47,7 @@ export default async function RolesPage({ searchParams }: { searchParams: Promis
             )}
             <button className="btn-primary">{editing ? "Simpan" : "Buat role"}</button>
           </form>
-        </Card>
+        </Modal>
       )}
       <Card flush>
         <Table>
@@ -60,7 +61,7 @@ export default async function RolesPage({ searchParams }: { searchParams: Promis
                 <td className={td}>{r.userCount}</td>
                 <td className={`${td} text-right`}>
                   <div className="flex justify-end gap-2">
-                    {can(me, "role.update") && (me.isSuper || !r.isSystem) && <Link href={`/admin/roles?edit=${r.id}`} className="btn-ghost btn-sm">Edit</Link>}
+                    {can(me, "role.update") && (me.isSuper || !r.isSystem) && <Link href={`/admin/roles?edit=${r.id}`} scroll={false} className="btn-ghost btn-sm">Edit</Link>}
                     {can(me, "role.delete") && !r.isSystem && r.userCount === 0 && <form action={deleteRoleAction}><input type="hidden" name="id" value={r.id} /><button className="btn-danger btn-sm">Hapus</button></form>}
                   </div>
                 </td>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Modal } from "@/components/lc/modal";
 import { Badge, Card, PageTitle, Table, fmtDateTime, td, th } from "@/components/lc/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
@@ -6,21 +7,21 @@ import { saveCustomerAction } from "@/modules/billing/actions";
 import { fmtIDR } from "@/modules/billing/labels";
 import { listCustomers } from "@/modules/billing/repository";
 
-export default async function CustomersPage({ searchParams }: { searchParams: Promise<{ edit?: string }> }) {
+export default async function CustomersPage({ searchParams }: { searchParams: Promise<{ edit?: string; new?: string }> }) {
   const user = await requirePermissionPage("customer.read");
-  const { edit } = await searchParams;
+  const { edit, new: isNew } = await searchParams;
   const rows = await listCustomers();
   const c = edit ? rows.find((r) => r.id === edit) : undefined;
   const canWrite = can(user, `customer.${c ? "update" : "create"}`);
 
   return (
     <>
-      <PageTitle sub="Akun pelanggan (role customer). Pelanggan juga bisa mendaftar sendiri di /register. Hapus akun lewat menu Pengguna.">Pelanggan</PageTitle>
-      {canWrite && (
-        <Card title={c ? `Edit: ${c.email}` : "Buat akun pelanggan"} right={c && <Link href="/admin/customers" className="btn-ghost btn-sm">Batal</Link>}>
+      <PageTitle actions={can(user, "customer.create") ? <Link href="/admin/customers?new=1" scroll={false} className="btn-primary btn-sm">+ Akun pelanggan</Link> : undefined} sub="Akun pelanggan (role customer). Pelanggan juga bisa mendaftar sendiri di /register. Hapus akun lewat menu Pengguna.">Pelanggan</PageTitle>
+      {canWrite && (c || isNew === "1") && (
+        <Modal title={c ? `Edit: ${c.email}` : "Buat akun pelanggan"} close="/admin/customers">
           <form action={saveCustomerAction} className="space-y-4" key={c?.id ?? "new"}>
             {c && <input type="hidden" name="id" value={c.id} />}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div><label className="label">Nama *</label><input name="name" required minLength={2} maxLength={80} defaultValue={c?.name} className="input-dark" /></div>
               <div><label className="label">Email *</label><input name="email" type="email" required defaultValue={c?.email} className="input-dark" /></div>
               <div><label className="label">Password {c ? "(kosongkan jika tetap)" : "*"}</label><input name="password" type="password" minLength={8} required={!c} autoComplete="new-password" className="input-dark" /></div>
@@ -32,7 +33,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
             </div>
             <button className="btn-primary">{c ? "Simpan" : "Buat akun"}</button>
           </form>
-        </Card>
+        </Modal>
       )}
       <Card flush>
         <Table>
@@ -47,7 +48,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
                 <td className={`${td} text-xs text-[var(--ink-3)]`}>{fmtDateTime(r.lastLoginAt)}</td>
                 <td className={`${td} text-right`}>
                   <div className="flex justify-end gap-2">
-                    {can(user, "customer.update") && <Link href={`/admin/customers?edit=${r.id}`} className="btn-ghost btn-sm">Edit</Link>}
+                    {can(user, "customer.update") && <Link href={`/admin/customers?edit=${r.id}`} scroll={false} className="btn-ghost btn-sm">Edit</Link>}
                     {can(user, "invoice.create") && <Link href={`/admin/invoices?new=1&userId=${r.id}`} className="btn-magenta btn-sm">+ Tagihan</Link>}
                   </div>
                 </td>

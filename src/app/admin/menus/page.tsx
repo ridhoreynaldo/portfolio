@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Modal } from "@/components/lc/modal";
 import { Badge, Card, PageTitle, Table, td, th } from "@/components/lc/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
@@ -7,9 +8,9 @@ import { listMenus } from "@/modules/menus/repository";
 import { PERMISSIONS } from "@/modules/rbac/permissions";
 import { ADMIN_ICON_NAMES } from "../sidebar";
 
-export default async function MenusPage({ searchParams }: { searchParams: Promise<{ edit?: string }> }) {
+export default async function MenusPage({ searchParams }: { searchParams: Promise<{ edit?: string; new?: string }> }) {
   const me = await requirePermissionPage("menu.read");
-  const { edit } = await searchParams;
+  const { edit, new: isNew } = await searchParams;
   const menus = await listMenus();
   const editing = edit ? menus.find((m) => m.id === edit) : undefined;
   const canWrite = can(me, editing ? "menu.update" : "menu.create");
@@ -18,12 +19,12 @@ export default async function MenusPage({ searchParams }: { searchParams: Promis
 
   return (
     <>
-      <PageTitle sub="ADMIN = sidebar panel (tampil sesuai permission) · PUBLIC = navigasi & section di halaman portofolio">Menu Dinamis</PageTitle>
-      {canWrite && (
-        <Card title={editing ? `Edit: ${editing.label}` : "Tambah menu"} right={editing && <Link href="/admin/menus" className="btn-ghost btn-sm">Batal</Link>}>
+      <PageTitle actions={can(me, "menu.create") ? <Link href="/admin/menus?new=1" scroll={false} className="btn-primary btn-sm">+ Tambah menu</Link> : undefined} sub="ADMIN = sidebar panel (tampil sesuai permission) · PUBLIC = navigasi & section di halaman portofolio">Menu Dinamis</PageTitle>
+      {canWrite && (editing || isNew === "1") && (
+        <Modal title={editing ? `Edit: ${editing.label}` : "Tambah menu"} close="/admin/menus">
           <form action={saveMenuAction} className="space-y-4" key={editing?.id ?? "new"}>
             {editing && <input type="hidden" name="id" value={editing.id} />}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div><label className="label">Scope</label>
                 <select name="scope" defaultValue={editing?.scope ?? "ADMIN"} className="input-dark"><option value="ADMIN">ADMIN — sidebar</option><option value="PUBLIC">PUBLIC — nav & section</option></select></div>
               <div><label className="label">Label *</label><input name="label" required defaultValue={editing?.label} className="input-dark" /></div>
@@ -40,7 +41,7 @@ export default async function MenusPage({ searchParams }: { searchParams: Promis
             <p className="text-xs text-[var(--ink-3)]">Section publik yang tersedia: #tentang, #biodata, #pengalaman, #skill, #sertifikasi, #proyek, #kontak. Nonaktifkan menu PUBLIC → section-nya hilang dari situs.</p>
             <button className="btn-primary">{editing ? "Simpan" : "Tambah"}</button>
           </form>
-        </Card>
+        </Modal>
       )}
       <Card flush>
         <Table>
@@ -56,7 +57,7 @@ export default async function MenusPage({ searchParams }: { searchParams: Promis
                 <td className={td}>{m.isActive ? "✔" : "✘"}</td>
                 <td className={`${td} text-right`}>
                   <div className="flex justify-end gap-2">
-                    {can(me, "menu.update") && <Link href={`/admin/menus?edit=${m.id}`} className="btn-ghost btn-sm">Edit</Link>}
+                    {can(me, "menu.update") && <Link href={`/admin/menus?edit=${m.id}`} scroll={false} className="btn-ghost btn-sm">Edit</Link>}
                     {can(me, "menu.delete") && <form action={deleteMenuAction}><input type="hidden" name="id" value={m.id} /><button className="btn-danger btn-sm">Hapus</button></form>}
                   </div>
                 </td>

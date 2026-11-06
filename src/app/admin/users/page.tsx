@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Modal } from "@/components/lc/modal";
 import { Badge, Card, PageTitle, Table, td, th, fmtDateTime } from "@/components/lc/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
@@ -6,9 +7,9 @@ import { listRoles } from "@/modules/rbac/repository";
 import { deleteUserAction, saveUserAction } from "@/modules/users/actions";
 import { listUsers } from "@/modules/users/repository";
 
-export default async function UsersPage({ searchParams }: { searchParams: Promise<{ edit?: string }> }) {
+export default async function UsersPage({ searchParams }: { searchParams: Promise<{ edit?: string; new?: string }> }) {
   const me = await requirePermissionPage("user.read");
-  const { edit } = await searchParams;
+  const { edit, new: isNew } = await searchParams;
   const [users, roles] = await Promise.all([listUsers(), listRoles()]);
   const editing = edit ? users.find((u) => u.id === edit) : undefined;
   const canWrite = can(me, editing ? "user.update" : "user.create");
@@ -18,9 +19,9 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
 
   return (
     <>
-      <PageTitle sub="Satu user bisa punya beberapa role; hak akses = gabungan permission semua role">Pengguna</PageTitle>
-      {canWrite && (
-        <Card title={editing ? `Edit: ${editing.email}` : "Tambah pengguna"} right={editing && <Link href="/admin/users" className="btn-ghost btn-sm">Batal</Link>}>
+      <PageTitle actions={can(me, "user.create") ? <Link href="/admin/users?new=1" scroll={false} className="btn-primary btn-sm">+ Tambah pengguna</Link> : undefined} sub="Satu user bisa punya beberapa role; hak akses = gabungan permission semua role">Pengguna</PageTitle>
+      {canWrite && (editing || isNew === "1") && (
+        <Modal title={editing ? `Edit: ${editing.email}` : "Tambah pengguna"} close="/admin/users">
           <form action={saveUserAction} className="space-y-4" key={editing?.id ?? "new"}>
             {editing && <input type="hidden" name="id" value={editing.id} />}
             <div className="grid gap-4 sm:grid-cols-3">
@@ -45,7 +46,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
             {editing?.id === me.id && editing.roles.map((r) => <input key={r.id} type="hidden" name="roleIds" value={r.id} />)}
             <button className="btn-primary">{editing ? "Simpan" : "Tambah"}</button>
           </form>
-        </Card>
+        </Modal>
       )}
       <Card flush>
         <Table>
@@ -60,7 +61,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
                 <td className={`${td} text-xs text-[var(--ink-3)]`}>{fmtDateTime(u.lastLoginAt)}</td>
                 <td className={`${td} text-right`}>
                   <div className="flex justify-end gap-2">
-                    {can(me, "user.update") && (me.isSuper || !u.roles.some((r) => r.isSystem)) && <Link href={`/admin/users?edit=${u.id}`} className="btn-ghost btn-sm">Edit</Link>}
+                    {can(me, "user.update") && (me.isSuper || !u.roles.some((r) => r.isSystem)) && <Link href={`/admin/users?edit=${u.id}`} scroll={false} className="btn-ghost btn-sm">Edit</Link>}
                     {can(me, "user.delete") && u.id !== me.id && (me.isSuper || !u.roles.some((r) => r.isSystem)) && (
                       <form action={deleteUserAction}><input type="hidden" name="id" value={u.id} /><button className="btn-danger btn-sm">Hapus</button></form>
                     )}

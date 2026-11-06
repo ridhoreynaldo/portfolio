@@ -74,17 +74,17 @@ export default async function LeetcloudPage() {
 
       <main>
         {/* ── Hero ── */}
-        <section className="bg-[var(--brand-deep)] px-4 pb-16 pt-14 text-center text-white md:pb-24 md:pt-24">
-          <p className="mx-auto inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white/90">Medan · Sumatera Utara</p>
+        <section className="bg-[var(--brand-deep)] px-4 pb-16 pt-14 text-center text-[#fff] md:pb-24 md:pt-24">
+          <p className="mx-auto inline-flex items-center rounded-full bg-[rgba(255,255,255,0.12)] px-3 py-1 text-xs font-bold uppercase tracking-wider text-[rgba(255,255,255,0.9)]">Medan · Sumatera Utara</p>
           <h1 className="mx-auto mt-4 max-w-3xl text-[2rem] font-extrabold leading-[1.15] md:text-5xl md:leading-[1.1]">
             Aplikasi & server untuk <span className="text-[var(--accent)]">bisnis</span> Anda
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-white/85 md:text-lg">
+          <p className="mx-auto mt-4 max-w-xl text-[rgba(255,255,255,0.85)] md:text-lg">
             Website, sistem informasi, dan WhatsApp gateway. Dibuat sesuai kebutuhan, dikelola sampai jalan. Melayani Medan & seluruh Indonesia.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-gold"><MessageCircle className="h-4 w-4" /> Konsultasi gratis</a>}
-            <a href="#paket" className="inline-flex min-h-[2.75rem] items-center justify-center rounded-[10px] border border-white/40 px-5 font-semibold text-white transition hover:bg-white/10">Lihat paket</a>
+            <a href="#paket" className="inline-flex min-h-[2.75rem] items-center justify-center rounded-[10px] border border-[rgba(255,255,255,0.4)] px-5 font-semibold text-[#fff] transition hover:bg-[rgba(255,255,255,0.1)]">Lihat paket</a>
           </div>
         </section>
 

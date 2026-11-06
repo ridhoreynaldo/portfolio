@@ -12,13 +12,13 @@ import { deleteMenu, getMenu, insertMenu, updateMenu } from "./repository";
 
 const input = z
   .object({
-    id: z.string().uuid().optional(),
+    id: z.guid().optional(),
     scope: z.enum(["ADMIN", "PUBLIC"]),
     label: z.string().trim().min(1).max(128),
     path: z.string().trim().min(1).max(255),
     icon: z.string().trim().max(64).default("LayoutDashboard"),
     permissionKey: z.string().trim().max(64).default(""),
-    parentId: z.string().uuid().optional(),
+    parentId: z.guid().optional(),
     sortOrder: z.coerce.number().int().min(0).max(9999).default(0),
     isActive: z.boolean(),
   })
@@ -68,7 +68,7 @@ export const saveMenuAction = action(async (form: FormData) => {
 
 export const deleteMenuAction = action(async (form: FormData) => {
   await requirePermission("menu.delete");
-  const id = z.string().uuid().parse(form.get("id"));
+  const id = z.guid().parse(form.get("id"));
   const m = await getMenu(id);
   if (!m) throw notFound();
   await deleteMenu(id); // anak ikut terhapus (cascade)

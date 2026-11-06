@@ -13,7 +13,7 @@ import {
   deleteProject, deleteRow, getProject, insertProject, insertRow, listRows, slugify, uniqueSlug, updateProject, updateRow, upsertProfile,
 } from "./repository";
 
-const uuid = z.string().uuid();
+const uuid = z.guid();
 
 // ── Resource generik ──────────────────────────────────────────────────────────
 export const saveResourceAction = action(async (key: string, form: FormData) => {

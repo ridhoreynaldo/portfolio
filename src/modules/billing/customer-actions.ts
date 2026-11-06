@@ -40,7 +40,7 @@ export const placeOrderAction = action(async (form: FormData) => {
 /** Pelanggan mengunggah bukti pembayaran → status "menunggu verifikasi". */
 export const uploadProofAction = action(async (form: FormData) => {
   const me = await requireLogin();
-  const id = z.string().uuid().parse(form.get("invoiceId"));
+  const id = z.guid().parse(form.get("invoiceId"));
   const inv = await getInvoice(id);
   if (!inv || inv.userId !== me.id) throw notFound("Tagihan tidak ditemukan");
   if (inv.status === "paid" || inv.status === "cancelled") throw new AppError("Tagihan ini sudah selesai");

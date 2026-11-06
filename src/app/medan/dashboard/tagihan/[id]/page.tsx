@@ -15,7 +15,7 @@ export const metadata = { title: "Detail Tagihan" };
 
 export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!z.string().uuid().safeParse(id).success) notFound();
+  if (!z.guid().safeParse(id).success) notFound();
   const user = await requireUser(`/dashboard/tagihan/${id}`);
   const inv = await getInvoice(id);
   if (!inv || inv.userId !== user.id) notFound();

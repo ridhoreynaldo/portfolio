@@ -10,7 +10,7 @@ import { PERMISSION_KEYS } from "./permissions";
 import { countRoleUsers, deleteRole, getRole, saveRole } from "./repository";
 
 const input = z.object({
-  id: z.string().uuid().optional(),
+  id: z.guid().optional(),
   name: z
     .string()
     .trim()
@@ -46,7 +46,7 @@ export const saveRoleAction = action(async (form: FormData) => {
 
 export const deleteRoleAction = action(async (form: FormData) => {
   await requirePermission("role.delete");
-  const id = z.string().uuid().parse(form.get("id"));
+  const id = z.guid().parse(form.get("id"));
   const role = await getRole(id);
   if (!role) throw notFound();
   if (role.isSystem) throw new AppError("Role sistem tidak bisa dihapus");

@@ -14,12 +14,12 @@ import { roles } from "@/modules/rbac/schema";
 import { countActiveSuperAdmins, deleteUser, findUserByEmail, getUser, saveUser } from "./repository";
 
 const input = z.object({
-  id: z.string().uuid().optional(),
+  id: z.guid().optional(),
   name: z.string().trim().min(2).max(80),
   email: z.string().trim().email().transform((s) => s.toLowerCase()),
   password: z.string().max(128).default(""),
   isActive: z.boolean(),
-  roleIds: z.array(z.string().uuid()),
+  roleIds: z.array(z.guid()),
 });
 
 export const saveUserAction = action(async (form: FormData) => {
@@ -70,7 +70,7 @@ export const saveUserAction = action(async (form: FormData) => {
 
 export const deleteUserAction = action(async (form: FormData) => {
   const me = await requirePermission("user.delete");
-  const id = z.string().uuid().parse(form.get("id"));
+  const id = z.guid().parse(form.get("id"));
   if (id === me.id) throw new AppError("Tidak bisa menghapus akun sendiri");
   const target = await getUser(id);
   if (!target) throw notFound();

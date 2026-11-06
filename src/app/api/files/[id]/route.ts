@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 /** File dari DB: QRIS (publik) atau bukti bayar (pemilik / admin tagihan). */
 export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
-  if (!z.string().uuid().safeParse(id).success) return new NextResponse("Not found", { status: 404 });
+  if (!z.guid().safeParse(id).success) return new NextResponse("Not found", { status: 404 });
   const f = await getFile(id);
   if (!f) return new NextResponse("Not found", { status: 404 });
   if (!f.isPublic) {

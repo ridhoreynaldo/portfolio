@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: "Invoice" };
 /** Lembar invoice siap cetak (A4) — untuk pemilik tagihan dan staf. Tanpa header/nav dashboard. */
 export default async function InvoicePrintPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!z.string().uuid().safeParse(id).success) notFound();
+  if (!z.guid().safeParse(id).success) notFound();
   const user = await requireUser(`/invoice/${id}`);
   const inv = await getInvoice(id);
   if (!inv || (inv.userId !== user.id && !isStaff(user))) notFound();

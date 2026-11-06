@@ -4,9 +4,9 @@ import { Badge, Info, List, PageTitle, RowLink, fmtDate, fmtDateTime } from "@/c
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
 import { saveCustomerAction } from "@/modules/billing/actions";
-import { CYCLE, INVOICE_STATUS, fmtIDR, fmtPeriod } from "@/modules/billing/labels";
-import { daysText, daysTone, serviceState } from "@/modules/billing/service-state";
-import { listCustomers, listInvoices, listOrders, orderTotal } from "@/modules/billing/repository";
+import { fmtIDR } from "@/modules/billing/labels";
+import { CustomerServices } from "./service-list";
+import { listCustomers, listInvoices, listOrders } from "@/modules/billing/repository";
 
 export default async function CustomersPage({ searchParams }: { searchParams: Promise<{ edit?: string; new?: string; view?: string }> }) {
   const user = await requirePermissionPage("customer.read");
@@ -53,47 +53,8 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
           </div>
 
           <div className="detail-section">
-            <p className="detail-title">Layanan ({vOrders.length})</p>
-            {vOrders.length ? (
-              <ol className="divide-y divide-[var(--line)]">
-                {vOrders.map((o, k) => {
-                  const s = serviceState(o, vInvoices);
-                  return (
-                    <li key={o.id}>
-                      <Link href={`/admin/orders?view=${o.id}`} className="flex flex-wrap items-center justify-between gap-2 py-2.5 hover:text-[var(--brand-ink)]">
-                        <span className="min-w-0">
-                          <span className="num mr-2 text-xs text-[var(--ink-3)]">{k + 1}.</span><span className="font-semibold">{o.packageName}{o.quantity > 1 && ` ×${o.quantity}`}</span>
-                          <span className="block pl-5 text-xs text-[var(--ink-3)]">
-                            {orderTotal(o) > 0 ? `${fmtIDR(orderTotal(o))} ${CYCLE[s.cycle]}` : "harga kesepakatan"}
-                            {s.next && ` · jatuh tempo ${fmtDate(s.next.dueDate)}`}
-                            {!s.next && s.paidUntil && ` · aktif s.d. ${fmtDate(s.paidUntil)}`}
-                          </span>
-                        </span>
-                        <span className="flex items-center gap-2">
-                          {s.left != null && <Badge tone={daysTone(s.left)}>{daysText(s.left)}</Badge>}
-                          <Badge tone={s.status.tone}>{s.status.label}</Badge>
-                        </span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ol>
-            ) : <p className="text-sm text-[var(--ink-3)]">Belum punya layanan.</p>}
+            <CustomerServices orders={vOrders} invoices={vInvoices} />
           </div>
-
-          {vInvoices.some((i) => i.status === "unpaid" || i.status === "pending_verification") && (
-            <div className="detail-section">
-              <p className="detail-title">Tagihan terbuka</p>
-              <ol className="divide-y divide-[var(--line)] text-sm">
-                {vInvoices.filter((i) => i.status === "unpaid" || i.status === "pending_verification").map((i) => (
-                  <li key={i.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-                    <span className="min-w-0">{i.period ? `${i.title.split(" — ")[0]} · ${fmtPeriod(i.period)}` : i.title}<span className="block font-mono text-[11px] text-[var(--ink-3)]">{i.number} · jatuh tempo {fmtDate(i.dueDate)}</span></span>
-                    <span className="flex items-center gap-2"><span className="num font-semibold">{fmtIDR(i.amount)}</span><Badge tone={INVOICE_STATUS[i.status].tone}>{INVOICE_STATUS[i.status].label}</Badge></span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          )}
 
           <div className="mt-6 flex flex-wrap gap-2 border-t border-[var(--line)] pt-4">
             {can(user, "customer.update") && <Link href={`/admin/customers?edit=${v.id}`} scroll={false} className="btn-primary btn-sm">Edit data</Link>}

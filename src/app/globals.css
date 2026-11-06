@@ -612,3 +612,10 @@ html[data-theme="dark"] .svc { scrollbar-color: #2a3870 #070b1a; }
 .lc-nocopy body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .lc-nocopy input, .lc-nocopy textarea { -webkit-user-select: text; user-select: text; }
 .lc-nocopy img { -webkit-user-drag: none; }
+
+/* ═══ Daftar yang bisa di-expand (details/summary) ═══ */
+.svc .expand { border: 1px solid var(--line); background: var(--surface); }
+.svc .expand[open] { border-color: var(--line-2); box-shadow: inset 3px 0 0 var(--brand); }
+.svc .expand-row { display: grid; grid-template-columns: 2.4rem minmax(0, 1fr) auto; gap: .85rem; align-items: center; padding: .75rem .9rem; }
+.svc .expand-row:hover { background: var(--surface-2); }
+.svc .expand-body { border-top: 1px dashed var(--line-2); padding: .9rem .9rem 1rem; }

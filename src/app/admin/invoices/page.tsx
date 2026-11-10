@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CustomerOrderFields } from "@/components/lc/customer-order-fields";
 import { MoneyInput } from "@/components/lc/money-input";
 import { Modal } from "@/components/lc/modal";
 import { Badge, Info, List, PageTitle, RowLink, Stat, fmtDate, fmtDateTime, type Tone } from "@/components/lc/ui";
@@ -138,20 +139,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
           <form action={saveInvoiceAction} className="space-y-4" key={inv?.id ?? "new"}>
             {inv && <input type="hidden" name="id" value={inv.id} />}
             <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="label">Pelanggan *</label>
-                <select name="userId" required defaultValue={preset.userId} className="input-dark">
-                  <option value="">— pilih —</option>
-                  {customers.map((c) => <option key={c.id} value={c.id}>{c.name} · {c.email}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="label">Order terkait (opsional)</label>
-                <select name="orderId" defaultValue={preset.orderId} className="input-dark">
-                  <option value="">—</option>
-                  {orders.filter((o) => o.status !== "cancelled").map((o) => <option key={o.id} value={o.id}>{o.number} · {o.customerName} · {o.packageName}</option>)}
-                </select>
-              </div>
+              <CustomerOrderFields customers={customers} orders={orders.filter((o) => o.status !== "cancelled").map((o) => ({ id: o.id, userId: o.userId, number: o.number, packageName: o.packageName }))} userId={preset.userId} orderId={preset.orderId} />
               <div><label className="label">Periode (YYYY-MM, kosong = sekali)</label><input name="period" type="month" defaultValue={preset.period} className="input-dark" /></div>
               <div className="sm:col-span-2"><label className="label">Ditagihkan kepada (kosong = ikut order / nama akun)</label><input name="billTo" maxLength={160} defaultValue={preset.billTo} placeholder="mis. Adzkia Smart / Bimbel Adzkia Kedinasan" className="input-dark" /></div>
               <div className="sm:col-span-2"><label className="label">Email tujuan tagihan (kosong = ikut order / email akun)</label><input name="billToEmail" type="email" maxLength={160} defaultValue={preset.billToEmail} placeholder="mis. keuangan@klien.com" className="input-dark" /></div>

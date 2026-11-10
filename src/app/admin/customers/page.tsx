@@ -34,6 +34,8 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
     if (d && (!cur || d < cur)) nextDue.set(o.userId, d);
   }
   const rows = f === "open" ? allRows.filter((r) => r.unpaidCount > 0) : allRows;
+  const paidTotal = vInvoices.filter((i) => i.status === "paid").reduce((n, i) => n + i.amount, 0);
+  const openTotal = vInvoices.filter((i) => i.status === "unpaid" || i.status === "pending_verification").reduce((n, i) => n + i.amount, 0);
   const back = v ? `/admin/customers?view=${v.id}` : "/admin/customers";
   const ctx: AdminCtx | undefined = v ? {
     customerId: v.id, notes,
@@ -75,6 +77,13 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
       {v && !c && !showOrderForm && !showInvoiceForm && (
         <Modal title={v.name} close="/admin/customers" wide>
           <div className="detail-section">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-lg border border-[var(--line)] p-3"><p className="text-xs text-[var(--ink-3)]">Total sudah dibayar</p><p className="num text-lg font-bold text-[var(--ok,var(--ink))]">{fmtIDR(paidTotal)}</p></div>
+              <div className="rounded-lg border border-[var(--line)] p-3"><p className="text-xs text-[var(--ink-3)]">Tagihan saat ini</p><p className={`num text-lg font-bold ${openTotal > 0 ? "text-[var(--warn)]" : ""}`}>{openTotal > 0 ? fmtIDR(openTotal) : "Rp 0"}</p></div>
+            </div>
+            <details className="group mt-3">
+              <summary className="cursor-pointer text-sm font-semibold text-[var(--ink-3)] hover:text-[var(--brand-ink)]">Detail pelanggan <span className="font-normal">· {v.email}</span></summary>
+              <div className="mt-3">
             <div className="mb-4 flex flex-wrap items-center gap-2">{v.isActive ? <Badge tone="emerald">aktif</Badge> : <Badge>nonaktif</Badge>}{v.company && <span className="text-sm text-[var(--ink-2)]">{v.company}</span>}</div>
             <dl className="grid gap-4 sm:grid-cols-2">
               <Info label="Email">{v.email}</Info>
@@ -84,6 +93,8 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
               <Info label="Login terakhir">{fmtDateTime(v.lastLoginAt)}</Info>
               <Info label="Tagihan terbuka">{v.unpaidCount ? <span className="num font-bold">{fmtIDR(v.unpaidTotal)}</span> : "Tidak ada"}</Info>
             </dl>
+              </div>
+            </details>
           </div>
 
           <div className="detail-section">

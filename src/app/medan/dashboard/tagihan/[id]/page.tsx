@@ -9,6 +9,7 @@ import { getInvoice, getPaymentSettings } from "@/modules/billing/repository";
 import { getProfile } from "@/modules/content/repository";
 import { waLink } from "@/shared/url";
 import { fmtDate, fmtDateTime } from "@/components/lc/ui";
+import { ZoomImage } from "@/components/lc/zoom-image";
 import { Pill } from "../../ui";
 
 export const metadata = { title: "Detail Tagihan" };
@@ -69,8 +70,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             <h2 className="flex items-center gap-2 text-base font-bold text-[var(--ink)]"><QrCode className="h-5 w-5 text-[var(--brand-ink)]" /> 1. Bayar</h2>
             {pay?.qrisFileId ? (
               <div className="mt-4 rounded-xl border border-[var(--line)] bg-white p-4">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/api/files/${pay.qrisFileId}`} alt="QRIS" className="mx-auto max-h-80 w-auto" />
+                <ZoomImage src={`/api/files/${pay.qrisFileId}`} alt="QRIS" className="mx-auto max-h-80 w-auto" />
                 <p className="mt-3 text-center text-xs text-[#46544d]">Scan QRIS dengan aplikasi bank / e-wallet apa pun. Nominal: <b className="text-[#17231e]">{fmtIDR(inv.amount)}</b></p>
               </div>
             ) : (

@@ -27,7 +27,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
   return (
     <>
-      <Link href="/dashboard/tagihan" className="inline-flex items-center gap-1 text-sm font-medium text-[var(--ink-3)] hover:text-[var(--brand-ink)]"><ArrowLeft className="h-3.5 w-3.5" /> Semua tagihan</Link>
+      <Link href="/dashboard" className="inline-flex items-center gap-1 text-sm font-medium text-[var(--ink-3)] hover:text-[var(--brand-ink)]"><ArrowLeft className="h-3.5 w-3.5" /> Kembali ke ringkasan</Link>
 
       <section className="card mt-4 overflow-hidden">
         <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:justify-between md:p-6">

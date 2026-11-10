@@ -14,7 +14,6 @@ export const metadata = { title: "Dashboard Pelanggan" };
 
 const NAV: NavItem[] = [
   { label: "Ringkasan", href: "/dashboard", icon: "LayoutDashboard" },
-  { label: "Tagihan", href: "/dashboard/tagihan", icon: "Receipt" },
   { label: "Akun", href: "/dashboard/akun", icon: "UserRound" },
 ];
 

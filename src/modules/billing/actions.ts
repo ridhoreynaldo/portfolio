@@ -130,8 +130,8 @@ export const updateOrderAction = action(async (form: FormData) => {
   revalidatePath("/admin/orders");
   revalidatePath("/medan/dashboard");
   revalidatePath("/medan/dashboard/tagihan");
-  await setFlash(`Order ${o.number} diperbarui`);
-  redirect("/admin/orders");
+  await setFlash(`Layanan ${o.number} diperbarui`);
+  redirect(backOf(form));
 });
 
 /** Admin membuat order/langganan langsung untuk pelanggan (tanpa lewat form portal). */
@@ -158,8 +158,8 @@ export const createOrderAction = action(async (form: FormData) => {
   revalidatePath("/admin/orders");
   revalidatePath("/medan/dashboard");
   revalidatePath("/medan/dashboard/tagihan");
-  await setFlash(`Order ${number} dibuat untuk ${cust.name}`);
-  redirect("/admin/orders");
+  await setFlash(`Layanan ${number} dibuat untuk ${cust.name}`);
+  redirect(backOf(form));
 });
 
 export const deleteOrderAction = action(async (form: FormData) => {
@@ -173,6 +173,12 @@ export const deleteOrderAction = action(async (form: FormData) => {
 });
 
 // ── Tagihan ───────────────────────────────────────────────────────────────────
+/** Tujuan redirect setelah simpan: hanya halaman Pelanggan admin (cegah open-redirect). */
+const backOf = (form: FormData) => {
+  const b = String(form.get("back") ?? "");
+  return /^\/admin\/customers(\?[\w=&%.-]*)?$/.test(b) ? b : "/admin/customers";
+};
+
 const invoiceInput = z.object({
   userId: uuid,
   orderId: z.union([z.literal(""), uuid]).transform((v) => v || null),
@@ -216,9 +222,9 @@ export const saveInvoiceAction = action(async (form: FormData) => {
     const number = await createWithNumber({ ...d, items, ...paidPatch });
     await setFlash(`Tagihan ${number} dibuat`);
   }
-  revalidatePath("/admin/invoices");
+  revalidatePath("/admin/customers");
   revalidatePath("/medan/dashboard");
-  redirect("/admin/invoices");
+  redirect(backOf(form));
 });
 
 /** Insert dengan nomor urut; ulang bila nomor bentrok (dua admin bersamaan). */
@@ -288,7 +294,7 @@ export const generateMonthlyInvoicesAction = action(async (form: FormData) => {
   revalidatePath("/admin/invoices");
   revalidatePath("/medan/dashboard");
   await setFlash(n ? `${n} tagihan periode ${d.period} dibuat` : `Tidak ada order aktif yang perlu ditagih untuk ${d.period}`, n ? "ok" : "error");
-  redirect("/admin/invoices");
+  redirect("/admin/customers");
 });
 
 // ── Pengaturan pembayaran ─────────────────────────────────────────────────────

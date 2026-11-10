@@ -33,11 +33,11 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     ["Pengguna", c?.user ?? 0, "/admin/users", "user.read"],
   ];
   const billing: [string, string, string, string][] = [
-    ["Pesanan menunggu konfirmasi", String(b.pendingOrders), "/admin/orders?status=pending", "order.read"],
-    ["Layanan aktif", String(b.activeOrders), "/admin/orders?status=active", "order.read"],
-    ["Tagihan belum dibayar", fmtIDR(b.unpaidTotal), "/admin/invoices?status=open", "invoice.read"],
-    ["Bukti bayar perlu verifikasi", String(b.verifying), "/admin/invoices?status=verify", "invoice.read"],
-    ["Total lunas", fmtIDR(b.paidTotal), "/admin/invoices?status=paid", "invoice.read"],
+    ["Pesanan menunggu konfirmasi", String(b.pendingOrders), "/admin/customers", "order.read"],
+    ["Layanan aktif", String(b.activeOrders), "/admin/customers", "order.read"],
+    ["Tagihan belum dibayar", fmtIDR(b.unpaidTotal), "/admin/customers?f=open", "invoice.read"],
+    ["Bukti bayar perlu verifikasi", String(b.verifying), "/admin/customers?f=open", "invoice.read"],
+    ["Total lunas", fmtIDR(b.paidTotal), "/admin/customers", "invoice.read"],
   ];
 
   // tiap situs hanya menampilkan statistiknya sendiri

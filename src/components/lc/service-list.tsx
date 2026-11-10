@@ -3,6 +3,7 @@ import { ChevronDown, Printer, QrCode } from "lucide-react";
 import { Badge, fmtDate, fmtDateTime } from "@/components/lc/ui";
 import { CYCLE, INVOICE_STATUS, daysUntil, fmtIDR, fmtPeriod } from "@/modules/billing/labels";
 import { orderTotal, orderUnitPrice, type InvoiceRow, type OrderRow } from "@/modules/billing/repository";
+import { deleteInvoiceAction, deleteOrderAction, setInvoiceStatusAction } from "@/modules/billing/actions";
 import { daysText, daysTone, serviceState } from "@/modules/billing/service-state";
 
 /**
@@ -11,6 +12,14 @@ import { daysText, daysTone, serviceState } from "@/modules/billing/service-stat
  * variant "customer" → tombol Bayar ke halaman tagihan pelanggan
  */
 export type Variant = "admin" | "customer";
+
+/** Konteks aksi admin (edit/hapus/tandai lunas) di dalam halaman Pelanggan. */
+export type AdminCtx = {
+  customerId: string;
+  canEditOrder: boolean; canDeleteOrder: boolean; canCreateInvoice: boolean; canEditInvoice: boolean; canDeleteInvoice: boolean;
+  notes: Record<string, string>;
+};
+const hub = (c: AdminCtx) => `/admin/customers?view=${c.customerId}`;
 
 const Due = ({ date, open }: { date: string; open: boolean }) => {
   if (!open) return <>{fmtDate(date)}</>;
@@ -60,7 +69,7 @@ export function InvoiceItem({ i, no, variant, service }: { i: InvoiceRow; no: nu
 }
 
 /** Riwayat pembayaran ringkas di dalam satu layanan. */
-function History({ invoices, variant }: { invoices: InvoiceRow[]; variant: Variant }) {
+function History({ invoices, variant, ctx }: { invoices: InvoiceRow[]; variant: Variant; ctx?: AdminCtx }) {
   if (!invoices.length) return <p className="text-sm text-[var(--ink-3)]">Belum ada tagihan.</p>;
   return (
     <ol className="divide-y divide-[var(--line)] text-sm">
@@ -76,6 +85,17 @@ function History({ invoices, variant }: { invoices: InvoiceRow[]; variant: Varia
             {variant === "customer" && i.status === "unpaid" && <Link href={`/dashboard/tagihan/${i.id}`} className="btn-gold btn-sm">Bayar</Link>}
             <a href={`/invoice/${i.id}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm btn-icon" title="Cetak" aria-label="Cetak invoice"><Printer className="h-3.5 w-3.5" /></a>
           </span>
+          {ctx && (
+            <span className="flex w-full flex-wrap items-center gap-1.5 pl-5">
+              {ctx.notes[i.id] && <span className="w-full whitespace-pre-line rounded border border-dashed border-[var(--line)] px-2 py-1 text-xs text-[var(--ink-2)]"><b>🔒 Internal:</b> {ctx.notes[i.id]}</span>}
+              {ctx.canEditInvoice && i.status !== "paid" && i.status !== "cancelled" && <form action={setInvoiceStatusAction}><input type="hidden" name="id" value={i.id} /><input type="hidden" name="status" value="paid" /><button className="btn-primary btn-sm">Tandai lunas</button></form>}
+              {ctx.canEditInvoice && i.status === "paid" && <form action={setInvoiceStatusAction}><input type="hidden" name="id" value={i.id} /><input type="hidden" name="status" value="unpaid" /><button className="btn-ghost btn-sm">Batal lunas</button></form>}
+              {ctx.canEditInvoice && i.status === "unpaid" && <form action={setInvoiceStatusAction}><input type="hidden" name="id" value={i.id} /><input type="hidden" name="status" value="cancelled" /><button className="btn-ghost btn-sm">Batalkan</button></form>}
+              {i.proofFileId && <a href={`/api/files/${i.proofFileId}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm">Bukti bayar ↗</a>}
+              {ctx.canEditInvoice && <Link href={`${hub(ctx)}&inv=${i.id}`} scroll={false} className="btn-ghost btn-sm">Edit tagihan</Link>}
+              {ctx.canDeleteInvoice && <form action={deleteInvoiceAction}><input type="hidden" name="id" value={i.id} /><button className="btn-danger btn-sm">Hapus</button></form>}
+            </span>
+          )}
         </li>
       ))}
     </ol>
@@ -83,11 +103,14 @@ function History({ invoices, variant }: { invoices: InvoiceRow[]; variant: Varia
 }
 
 /** Satu layanan: baris ringkas, bisa di-expand untuk detail + seluruh riwayat pembayaran. */
-export function ServiceItem({ o, invoices, no, variant }: { o: OrderRow; invoices: InvoiceRow[]; no: number; variant: Variant }) {
+export function ServiceItem({ o, invoices, no, variant, ctx }: { o: OrderRow; invoices: InvoiceRow[]; no: number; variant: Variant; ctx?: AdminCtx }) {
   const s = serviceState(o, invoices);
   const total = orderTotal(o);
   const history = invoices.filter((i) => i.orderId === o.id).sort((a, b) => b.dueDate.localeCompare(a.dueDate));
   const nextAmount = s.next?.amount ?? (s.cycle !== "once" ? total : 0);
+  // jatuh tempo + hitung mundur: tagihan terbuka bila ada; kalau sudah lunas, tanggal perpanjangan berikutnya (bulanan/tahunan)
+  const dueDate = s.next?.dueDate ?? (s.cycle !== "once" ? s.paidUntil : null);
+  const dueLeft = dueDate ? daysUntil(dueDate) : null;
   return (
     <details className="expand group">
       <summary className="expand-row">
@@ -99,7 +122,7 @@ export function ServiceItem({ o, invoices, no, variant }: { o: OrderRow; invoice
           </span>
           <span className="mt-0.5 block text-xs text-[var(--ink-3)]"><span className="font-mono">{o.number}</span> · untuk {o.billTo || o.customerName}</span>
           <span className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-[var(--ink-2)]">
-            <span>Jatuh tempo: <b>{s.next ? fmtDate(s.next.dueDate) : s.paidUntil ? fmtDate(s.paidUntil) : "—"}</b>{s.left != null && <span className={s.left < 0 ? "text-[var(--bad)]" : s.left <= 7 ? "text-[var(--warn)]" : "text-[var(--ink-3)]"}> ({daysText(s.left)})</span>}</span>
+            <span>{s.next ? "Jatuh tempo" : "Perpanjangan"}: <b>{dueDate ? fmtDate(dueDate) : "—"}</b>{dueLeft != null && <span className={dueLeft < 0 ? "text-[var(--bad)]" : dueLeft <= 7 ? "text-[var(--warn)]" : "text-[var(--ink-3)]"}> · {daysText(dueLeft)}</span>}</span>
             <span>Tagihan selanjutnya: <b className="num">{nextAmount > 0 ? fmtIDR(nextAmount) : "—"}</b></span>
           </span>
         </span>
@@ -122,15 +145,21 @@ export function ServiceItem({ o, invoices, no, variant }: { o: OrderRow; invoice
         {variant === "customer" && s.canPay && s.next && <Link href={`/dashboard/tagihan/${s.next.id}`} className="btn-gold btn-sm mt-3"><QrCode className="h-3.5 w-3.5" /> Bayar {fmtIDR(s.next.amount)}</Link>}
 
         <p className="detail-title mt-5">Riwayat pembayaran ({history.length})</p>
-        <History invoices={history} variant={variant} />
-        {variant === "admin" && <Link href={`/admin/orders?view=${o.id}`} className="mt-3 inline-block text-sm font-semibold text-[var(--brand-ink)] hover:underline">Buka di halaman Layanan →</Link>}
+        <History invoices={history} variant={variant} ctx={ctx} />
+        {ctx && (
+          <div className="mt-4 flex flex-wrap gap-2 border-t border-[var(--line)] pt-3">
+            {ctx.canEditOrder && <Link href={`${hub(ctx)}&order=${o.id}`} scroll={false} className="btn-primary btn-sm">Edit layanan</Link>}
+            {ctx.canCreateInvoice && <Link href={`${hub(ctx)}&inv=new&o=${o.id}`} scroll={false} className="btn-gold btn-sm">+ Tagihan</Link>}
+            {ctx.canDeleteOrder && <form action={deleteOrderAction} className="ml-auto"><input type="hidden" name="id" value={o.id} /><button className="btn-danger btn-sm">Hapus layanan</button></form>}
+          </div>
+        )}
       </div>
     </details>
   );
 }
 
 /** Daftar layanan pelanggan untuk modal admin: yang berjalan tampil ringkas, sisanya dilipat. */
-export function CustomerServices({ orders, invoices }: { orders: OrderRow[]; invoices: InvoiceRow[] }) {
+export function CustomerServices({ orders, invoices, ctx }: { orders: OrderRow[]; invoices: InvoiceRow[]; ctx?: AdminCtx }) {
   const running = orders.filter((o) => o.status === "active" || o.status === "pending");
   const ended = orders.filter((o) => o.status !== "active" && o.status !== "pending");
   const manual = invoices.filter((i) => !i.orderId || !orders.some((o) => o.id === i.orderId)).sort((a, b) => b.dueDate.localeCompare(a.dueDate));
@@ -140,7 +169,7 @@ export function CustomerServices({ orders, invoices }: { orders: OrderRow[]; inv
     <>
       <p className="detail-title">Layanan berjalan ({running.length})</p>
       {running.length ? (
-        <div className="space-y-2">{running.map((o, k) => <ServiceItem key={o.id} o={o} invoices={invoices} no={k + 1} variant="admin" />)}</div>
+        <div className="space-y-2">{running.map((o, k) => <ServiceItem key={o.id} o={o} invoices={invoices} no={k + 1} variant="admin" ctx={ctx} />)}</div>
       ) : <p className="text-sm text-[var(--ink-3)]">Tidak ada layanan yang sedang berjalan.</p>}
 
       {manual.length > 0 && (
@@ -153,14 +182,14 @@ export function CustomerServices({ orders, invoices }: { orders: OrderRow[]; inv
             </span>
             <ChevronDown className="h-4 w-4 shrink-0 text-[var(--ink-3)] transition group-open:rotate-180" aria-hidden />
           </summary>
-          <div className="expand-body"><History invoices={manual} variant="admin" /></div>
+          <div className="expand-body"><History invoices={manual} variant="admin" ctx={ctx} /></div>
         </details>
       )}
 
       {ended.length > 0 && (
         <details className="group mt-4">
           <summary className="text-sm font-semibold text-[var(--ink-3)] hover:text-[var(--brand-ink)]">Layanan selesai / dibatalkan ({ended.length}) <ChevronDown className="inline h-3.5 w-3.5 transition group-open:rotate-180" /></summary>
-          <div className="mt-2 space-y-2 opacity-80">{ended.map((o, k) => <ServiceItem key={o.id} o={o} invoices={invoices} no={k + 1} variant="admin" />)}</div>
+          <div className="mt-2 space-y-2 opacity-80">{ended.map((o, k) => <ServiceItem key={o.id} o={o} invoices={invoices} no={k + 1} variant="admin" ctx={ctx} />)}</div>
         </details>
       )}
     </>

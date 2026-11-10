@@ -1,25 +1,57 @@
 import Link from "next/link";
 import { Modal } from "@/components/lc/modal";
 import { Badge, Info, List, PageTitle, RowLink, fmtDate, fmtDateTime } from "@/components/lc/ui";
+import { InvoiceFormModal, OrderFormModal } from "./forms";
 import { requirePermissionPage } from "@/modules/auth/guards";
 import { can } from "@/modules/auth/session";
 import { saveCustomerAction } from "@/modules/billing/actions";
-import { fmtIDR } from "@/modules/billing/labels";
-import { CustomerServices } from "@/components/lc/service-list";
-import { listCustomers, listInvoices, listOrders } from "@/modules/billing/repository";
+import { daysUntil, fmtIDR } from "@/modules/billing/labels";
+import { CustomerServices, type AdminCtx } from "@/components/lc/service-list";
+import { invoiceInternalNotes, listCustomers, listInvoices, listOrders, listPackages } from "@/modules/billing/repository";
+import { daysText, serviceState } from "@/modules/billing/service-state";
 
-export default async function CustomersPage({ searchParams }: { searchParams: Promise<{ edit?: string; new?: string; view?: string }> }) {
+type Q = { edit?: string; new?: string; view?: string; order?: string; inv?: string; o?: string; f?: string };
+
+export default async function CustomersPage({ searchParams }: { searchParams: Promise<Q> }) {
   const user = await requirePermissionPage("customer.read");
-  const { edit, new: isNew, view } = await searchParams;
-  const rows = await listCustomers();
-  const c = edit ? rows.find((r) => r.id === edit) : undefined;
-  const v = view ? rows.find((r) => r.id === view) : undefined;
-  const [vOrders, vInvoices] = v ? await Promise.all([listOrders({ userId: v.id }), listInvoices({ userId: v.id })]) : [[], []];
+  const { edit, new: isNew, view, order: orderQ, inv: invQ, o: presetOrder, f } = await searchParams;
+  const [allRows, allOrders, allInvoices] = await Promise.all([listCustomers(), listOrders(), listInvoices()]);
+  const c = edit ? allRows.find((r) => r.id === edit) : undefined;
+  const v = view ? allRows.find((r) => r.id === view) : undefined;
+  const vOrders = v ? allOrders.filter((o) => o.userId === v.id) : [];
+  const vInvoices = v ? allInvoices.filter((i) => i.userId === v.id) : [];
+  const packages = v && orderQ === "new" ? await listPackages() : [];
+  const notes: Record<string, string> = v ? await invoiceInternalNotes() : {};
   const canWrite = can(user, `customer.${c ? "update" : "create"}`);
+
+  // ringkasan per pelanggan: jatuh tempo terdekat dari layanan aktif (tagihan terbuka, atau perpanjangan berikutnya)
+  const nextDue = new Map<string, string>();
+  for (const o of allOrders) {
+    if (o.status !== "active") continue;
+    const st = serviceState(o, allInvoices.filter((i) => i.userId === o.userId));
+    const d = st.next?.dueDate ?? (st.cycle !== "once" ? st.paidUntil : null);
+    const cur = nextDue.get(o.userId);
+    if (d && (!cur || d < cur)) nextDue.set(o.userId, d);
+  }
+  const rows = f === "open" ? allRows.filter((r) => r.unpaidCount > 0) : allRows;
+  const back = v ? `/admin/customers?view=${v.id}` : "/admin/customers";
+  const ctx: AdminCtx | undefined = v ? {
+    customerId: v.id, notes,
+    canEditOrder: can(user, "order.update"), canDeleteOrder: can(user, "order.delete"),
+    canCreateInvoice: can(user, "invoice.create"), canEditInvoice: can(user, "invoice.update"), canDeleteInvoice: can(user, "invoice.delete"),
+  } : undefined;
+  const editOrder = v && orderQ && orderQ !== "new" ? vOrders.find((o) => o.id === orderQ) : undefined;
+  const editInvoice = v && invQ && invQ !== "new" ? vInvoices.find((i) => i.id === invQ) : undefined;
+  const showOrderForm = !!v && !c && (orderQ === "new" ? can(user, "order.create") : !!editOrder && can(user, "order.update"));
+  const showInvoiceForm = !!v && !c && !showOrderForm && (invQ === "new" ? can(user, "invoice.create") : !!editInvoice && can(user, "invoice.update"));
 
   return (
     <>
-      <PageTitle actions={can(user, "customer.create") ? <Link href="/admin/customers?new=1" scroll={false} className="btn-primary btn-sm">+ Akun pelanggan</Link> : undefined} sub="Akun pelanggan (role customer). Pelanggan juga bisa mendaftar sendiri di /register. Hapus akun lewat menu Pengguna.">Pelanggan</PageTitle>
+      <PageTitle actions={can(user, "customer.create") ? <Link href="/admin/customers?new=1" scroll={false} className="btn-primary btn-sm">+ Akun pelanggan</Link> : undefined} sub="Semua dikelola dari sini: klik satu pelanggan untuk edit data, layanan, dan tagihannya. Hapus akun lewat menu Pengguna.">Pelanggan</PageTitle>
+      <div className="mb-4 flex flex-wrap items-center gap-2 text-xs">
+        <Link href="/admin/customers" className={`btn-sm ${f !== "open" ? "btn-primary" : "btn-ghost"}`}>Semua ({allRows.length})</Link>
+        <Link href="/admin/customers?f=open" className={`btn-sm ${f === "open" ? "btn-primary" : "btn-ghost"}`}>Ada tagihan belum lunas ({allRows.filter((r) => r.unpaidCount > 0).length})</Link>
+      </div>
       {canWrite && (c || isNew === "1") && (
         <Modal title={c ? `Edit: ${c.email}` : "Buat akun pelanggan"} close={c ? `/admin/customers?view=${c.id}` : "/admin/customers"}>
           <form action={saveCustomerAction} className="space-y-4" key={c?.id ?? "new"}>
@@ -38,7 +70,9 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
           </form>
         </Modal>
       )}
-      {v && !c && (
+      {showOrderForm && v && <OrderFormModal o={editOrder} customerId={v.id} customerName={v.name} packages={packages} back={back} />}
+      {showInvoiceForm && v && <InvoiceFormModal inv={editInvoice} customerId={v.id} customerName={v.name} orders={vOrders} invoices={vInvoices} presetOrderId={presetOrder} internalNote={editInvoice ? notes[editInvoice.id] ?? "" : ""} back={back} />}
+      {v && !c && !showOrderForm && !showInvoiceForm && (
         <Modal title={v.name} close="/admin/customers" wide>
           <div className="detail-section">
             <div className="mb-4 flex flex-wrap items-center gap-2">{v.isActive ? <Badge tone="emerald">aktif</Badge> : <Badge>nonaktif</Badge>}{v.company && <span className="text-sm text-[var(--ink-2)]">{v.company}</span>}</div>
@@ -53,13 +87,13 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
           </div>
 
           <div className="detail-section">
-            <CustomerServices orders={vOrders} invoices={vInvoices} />
+            <CustomerServices orders={vOrders} invoices={vInvoices} ctx={ctx} />
           </div>
 
           <div className="mt-6 flex flex-wrap gap-2 border-t border-[var(--line)] pt-4">
-            {can(user, "customer.update") && <Link href={`/admin/customers?edit=${v.id}`} scroll={false} className="btn-primary btn-sm">Edit data</Link>}
-            {can(user, "order.create") && <Link href="/admin/orders?new=1" className="btn-ghost btn-sm">+ Layanan</Link>}
-            {can(user, "invoice.create") && <Link href={`/admin/invoices?new=1&userId=${v.id}`} className="btn-gold btn-sm">+ Tagihan</Link>}
+            {can(user, "customer.update") && <Link href={`/admin/customers?edit=${v.id}`} scroll={false} className="btn-primary btn-sm">Edit data pelanggan</Link>}
+            {can(user, "order.create") && <Link href={`${back}&order=new`} scroll={false} className="btn-ghost btn-sm">+ Layanan</Link>}
+            {can(user, "invoice.create") && <Link href={`${back}&inv=new`} scroll={false} className="btn-gold btn-sm">+ Tagihan manual</Link>}
           </div>
         </Modal>
       )}
@@ -69,7 +103,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
           <RowLink key={r.id} no={k + 1} href={`/admin/customers?view=${r.id}`} dim={!r.isActive}
             right={<span className="hidden text-right sm:block">{r.unpaidCount ? <><span className="num block text-sm font-bold text-[var(--ink)]">{fmtIDR(r.unpaidTotal)}</span><span className="text-xs text-[var(--warn)]">{r.unpaidCount} tagihan terbuka</span></> : <Badge tone="emerald">lunas</Badge>}</span>}>
             <span className="block truncate font-semibold text-[var(--ink)]">{r.name}{r.company && <span className="font-normal text-[var(--ink-3)]"> · {r.company}</span>}</span>
-            <span className="mt-0.5 block truncate text-xs text-[var(--ink-3)]">{r.orderCount} layanan · {r.email}<span className="sm:hidden">{r.unpaidCount ? ` · ${fmtIDR(r.unpaidTotal)} terbuka` : " · lunas"}</span></span>
+            <span className="mt-0.5 block truncate text-xs text-[var(--ink-3)]">{r.orderCount} layanan · {r.email}{nextDue.get(r.id) && <> · jatuh tempo {fmtDate(nextDue.get(r.id)!)} <span className={daysUntil(nextDue.get(r.id)!) < 0 ? "text-[var(--bad)]" : daysUntil(nextDue.get(r.id)!) <= 7 ? "text-[var(--warn)]" : ""}>({daysText(daysUntil(nextDue.get(r.id)!))})</span></>}<span className="sm:hidden">{r.unpaidCount ? ` · ${fmtIDR(r.unpaidTotal)} terbuka` : " · lunas"}</span></span>
           </RowLink>
         ))}
         {!rows.length && <li className="px-4 py-8 text-center text-sm text-[var(--ink-3)]">Belum ada pelanggan.</li>}

@@ -14,7 +14,7 @@ import { findUserByEmail, getUser, saveUser } from "@/modules/users/repository";
 import { IMAGE_MIMES, readUpload } from "./files";
 import { PACKAGE_CATEGORIES, billingDayOf } from "./labels";
 import {
-  customerRoleId, listPackages, deleteInvoice, deleteOrder, deleteOrphanFile, deletePackage, getInvoice, getOrder, getPackage, getPaymentSettings, insertFile, insertInvoice,
+  customerRoleId, isUniqueViolation, listPackages, deleteInvoice, deleteOrder, deleteOrphanFile, deletePackage, getInvoice, getOrder, getPackage, getPaymentSettings, insertFile, insertInvoice,
   insertOrder, insertPackage, invoiceLinesFor, monthlyOrdersWithoutInvoice, nextNumber, orderTotal, uniquePackageSlug, updateInvoice, updateOrder, updatePackage, upsertCustomerProfile, upsertPaymentSettings,
 } from "./repository";
 import { billingCycle, invoiceStatus, orderStatus } from "./schema";
@@ -151,7 +151,7 @@ export const createOrderAction = action(async (form: FormData) => {
       await insertOrder({ number, userId: d.userId, packageId: pkg?.id ?? null, packageName: pkg?.name ?? d.packageName, quantity: d.quantity, notes: "", ...v });
       break;
     } catch (e) {
-      if (i === 2 || !String(e).includes("orders_number_unique")) throw e;
+      if (i === 2 || !isUniqueViolation(e, "orders_number_unique")) throw e;
     }
   }
   revalidatePath("/admin/orders");
@@ -228,7 +228,7 @@ async function createWithNumber(v: Omit<typeof import("./schema").invoices.$infe
       await insertInvoice({ ...v, number });
       return number;
     } catch (e) {
-      if (i === 2 || !String(e).includes("invoices_number_unique")) throw e;
+      if (i === 2 || !isUniqueViolation(e, "invoices_number_unique")) throw e;
     }
   }
   throw new AppError("Gagal membuat nomor tagihan");

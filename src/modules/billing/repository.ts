@@ -40,11 +40,18 @@ export async function nextNumber(kind: "ORD" | "INV", when = new Date()) {
   const prefix = `${kind}-${ym}-`;
   const table = kind === "ORD" ? orders : invoices;
   const [row] = await db()
-    .select({ n: sql<number>`count(*)::int` })
+    // nomor terbesar + 1 (bukan jumlah baris: baris yang pernah dihapus membuat jumlah bentrok dengan nomor yang masih ada)
+    .select({ n: sql<number>`coalesce(max(substring(${table.number} from '([0-9]+)$')::int), 0)` })
     .from(table)
     .where(sql`${table.number} like ${prefix + "%"}`);
   return `${prefix}${String((row?.n ?? 0) + 1).padStart(4, "0")}`;
 }
+
+/** Error PostgreSQL "unique violation" (kode 23505) pada constraint tertentu — error asli ada di `cause`. */
+export const isUniqueViolation = (e: unknown, constraint: string): boolean => {
+  for (let x: any = e, i = 0; x && i < 4; x = x.cause, i++) if (x.code === "23505" && String(x.constraint_name ?? "") === constraint) return true;
+  return false;
+};
 
 // ── Order ─────────────────────────────────────────────────────────────────────
 const orderSelect = {

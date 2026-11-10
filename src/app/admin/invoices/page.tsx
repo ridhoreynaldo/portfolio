@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MoneyInput } from "@/components/lc/money-input";
 import { Modal } from "@/components/lc/modal";
 import { Badge, Info, List, PageTitle, RowLink, Stat, fmtDate, fmtDateTime, type Tone } from "@/components/lc/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
@@ -80,7 +81,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
     period: inv?.period ?? q.period ?? "",
     dueDate: inv?.dueDate ?? due.toISOString().slice(0, 10),
     note: inv?.note ?? "",
-    items: (inv?.items ?? []).map((i) => `${i.description} | ${i.amount}${i.note ? ` | ${i.note}` : ""}`).join("\n"),
+    items: (inv?.items ?? []).map((i) => `${i.description} | ${new Intl.NumberFormat("id-ID").format(i.amount)}${i.note ? ` | ${i.note}` : ""}`).join("\n"),
     paidAt: inv?.paidAt ? new Date(inv.paidAt.getTime() + 7 * 3600_000).toISOString().slice(0, 10) : "",
   };
   const totals = { unpaid: all.filter((i) => i.status === "unpaid").reduce((s, i) => s + i.amount, 0), verifying: all.filter((i) => i.status === "pending_verification").length };
@@ -156,7 +157,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
               <div className="sm:col-span-2"><label className="label">Email tujuan tagihan (kosong = ikut order / email akun)</label><input name="billToEmail" type="email" maxLength={160} defaultValue={preset.billToEmail} placeholder="mis. keuangan@klien.com" className="input-dark" /></div>
               <div className="sm:col-span-2"><label className="label">Judul tagihan *</label><input name="title" required minLength={2} maxLength={255} defaultValue={preset.title} placeholder="Sewa Server — Oktober 2026" className="input-dark" /></div>
               <div className="sm:col-span-2"><label className="label">Rincian baris (opsional, satu per baris: <code>deskripsi | nominal | keterangan</code>; keterangan opsional, mis. &quot;Sekali bayar · jatuh tempo 9 Nov 2026&quot;; nominal tagihan otomatis = jumlahnya)</label><textarea name="items" rows={3} defaultValue={preset.items} className="input-dark font-mono text-xs" placeholder={"Sewa Server | 2000000\nMaintenance Aplikasi | 2500000"} /></div>
-              <div><label className="label">Nominal (Rp){" "}<span className="text-[var(--ink-3)]">(diabaikan bila ada rincian)</span></label><input name="amount" type="number" min={0} step={1000} defaultValue={preset.amount} className="input-dark" /></div>
+              <div><label className="label">Nominal (Rp){" "}<span className="text-[var(--ink-3)]">(diabaikan bila ada rincian)</span></label><MoneyInput name="amount" defaultValue={preset.amount} /></div>
               <div><label className="label">Jatuh tempo *</label><input name="dueDate" type="date" required defaultValue={preset.dueDate} className="input-dark" /></div>
               <div><label className="label">Tanggal dibayar (isi = tandai lunas)</label><input name="paidAt" type="date" defaultValue={preset.paidAt} className="input-dark" /></div>
               <div className="sm:col-span-2"><label className="label">Catatan (tampil ke pelanggan)</label><input name="note" maxLength={2000} defaultValue={preset.note} className="input-dark" /></div>

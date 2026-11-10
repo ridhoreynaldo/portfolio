@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MoneyInput } from "@/components/lc/money-input";
 import { Modal } from "@/components/lc/modal";
 import { Badge, Card, PageTitle, Table, td, th } from "@/components/lc/ui";
 import { requirePermissionPage } from "@/modules/auth/guards";
@@ -29,7 +30,7 @@ export default async function PackagesPage({ searchParams }: { searchParams: Pro
                 <label className="label">Kategori *</label>
                 <select name="category" defaultValue={p?.category ?? "Pembuatan Aplikasi"} className="input-dark">{PACKAGE_CATEGORIES.map((c) => <option key={c}>{c}</option>)}</select>
               </div>
-              <div><label className="label">Harga (Rp)</label><input name="price" type="number" min={0} step={1000} defaultValue={p?.price ?? 0} className="input-dark" /></div>
+              <div><label className="label">Harga (Rp)</label><MoneyInput name="price" defaultValue={p?.price ?? 0} /></div>
               <div>
                 <label className="label">Siklus tagihan *</label>
                 <select name="billingCycle" defaultValue={p?.billingCycle ?? "once"} className="input-dark">{billingCycle.enumValues.map((c) => <option key={c} value={c}>{CYCLE[c]}</option>)}</select>
@@ -39,7 +40,7 @@ export default async function PackagesPage({ searchParams }: { searchParams: Pro
               <div className="sm:col-span-2"><label className="label">Fitur (satu per baris)</label><textarea name="features" rows={4} defaultValue={p?.features.join("\n")} className="input-dark" /></div>
               <div className="sm:col-span-2">
                 <label className="label">Harga bertingkat (opsional, satu per baris: <code>label | harga</code>)</label>
-                <textarea name="priceTiers" rows={5} defaultValue={p?.priceTiers.map((t) => `${t.label} | ${t.price}`).join("\n")} placeholder={"≤ 100 pengguna | 350000\n≤ 5.000 pengguna | 2500000\n> 5.000 pengguna | 0"} className="input-dark font-mono text-xs" />
+                <textarea name="priceTiers" rows={5} defaultValue={p?.priceTiers.map((t) => `${t.label} | ${new Intl.NumberFormat("id-ID").format(t.price)}`).join("\n")} placeholder={"≤ 100 pengguna | 350.000\n≤ 5.000 pengguna | 2.500.000\n> 5.000 pengguna | 0"} className="input-dark font-mono text-xs" />
                 <p className="mt-1 text-xs text-[var(--ink-3)]">Harga 0 pada satu tingkat berarti “hubungi”. Kolom Harga (Rp) di atas tetap dipakai sebagai harga dasar tagihan otomatis.</p>
               </div>
               <div><label className="label">Urutan</label><input name="sortOrder" type="number" min={0} defaultValue={p?.sortOrder ?? 0} className="input-dark" /></div>

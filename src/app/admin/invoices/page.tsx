@@ -6,7 +6,7 @@ import { can } from "@/modules/auth/session";
 import { deleteInvoiceAction, generateMonthlyInvoicesAction, saveInvoiceAction, setInvoiceStatusAction } from "@/modules/billing/actions";
 import { CYCLE, INVOICE_STATUS, currentPeriod, daysUntil, fmtIDR, fmtPeriod, isOverdue } from "@/modules/billing/labels";
 import { daysText, daysTone, serviceState } from "@/modules/billing/service-state";
-import { customerOptions, listInvoices, listOrders, orderTotal, type InvoiceRow, type OrderRow } from "@/modules/billing/repository";
+import { customerOptions, invoiceInternalNotes, listInvoices, listOrders, orderTotal, type InvoiceRow, type OrderRow } from "@/modules/billing/repository";
 
 type Q = { u?: string; edit?: string; new?: string; svc?: string; gen?: string; userId?: string; orderId?: string; title?: string; amount?: string; period?: string; status?: string };
 
@@ -48,7 +48,7 @@ function groupByService(all: InvoiceRow[], orders: OrderRow[]): Group[] {
 export default async function InvoicesPage({ searchParams }: { searchParams: Promise<Q> }) {
   const user = await requirePermissionPage("invoice.read");
   const q = await searchParams;
-  const [all, customers, orders] = await Promise.all([listInvoices(), customerOptions(), listOrders()]);
+  const [all, customers, orders, internalNotes] = await Promise.all([listInvoices(), customerOptions(), listOrders(), invoiceInternalNotes()]);
   const groups = groupByService(all, orders);
   const FILTERS = { open: "Belum bayar", verify: "Menunggu verifikasi", paid: "Lunas" } as const;
   const f = q.status && q.status in FILTERS ? (q.status as keyof typeof FILTERS) : null;
@@ -160,6 +160,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
               <div><label className="label">Jatuh tempo *</label><input name="dueDate" type="date" required defaultValue={preset.dueDate} className="input-dark" /></div>
               <div><label className="label">Tanggal dibayar (isi = tandai lunas)</label><input name="paidAt" type="date" defaultValue={preset.paidAt} className="input-dark" /></div>
               <div className="sm:col-span-2"><label className="label">Catatan (tampil ke pelanggan)</label><input name="note" maxLength={2000} defaultValue={preset.note} className="input-dark" /></div>
+              <div className="sm:col-span-2"><label className="label">🔒 Catatan internal (hanya admin, tidak tampil ke pelanggan)</label><textarea name="internalNote" rows={3} maxLength={4000} defaultValue={inv ? internalNotes[inv.id] ?? "" : ""} placeholder="mis. Rp 2.000.000 uang server · Rp 220.000 pajak server · Rp 4.000 pajak QRIS" className="input-dark" /></div>
             </div>
             <button className="btn-primary">{inv ? "Simpan perubahan" : "Buat tagihan"}</button>
           </form>
@@ -198,6 +199,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
                       </div>
                     </div>
                     {r.items.length > 0 && <ul className="mt-2 space-y-0.5 pl-5 text-xs text-[var(--ink-3)]">{r.items.map((i, n) => <li key={n}>· {i.description} — {fmtIDR(i.amount)}{i.note && ` (${i.note})`}</li>)}</ul>}
+                    {internalNotes[r.id] && <p className="mt-2 whitespace-pre-line rounded border border-dashed border-[var(--line)] px-2 py-1 pl-5 text-xs text-[var(--ink-2)]"><b>🔒 Internal:</b> {internalNotes[r.id]}</p>}
                     <p className={`mt-2 pl-5 text-xs ${late ? "text-[var(--bad)]" : "text-[var(--ink-3)]"}`}>
                       Jatuh tempo {fmtDate(r.dueDate)}{r.status !== "paid" && r.status !== "cancelled" && ` · ${daysText(daysUntil(r.dueDate))}`}
                       {r.paidAt && <span className="text-[var(--ok)]"> · lunas {fmtDateTime(r.paidAt)}</span>}

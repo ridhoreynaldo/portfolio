@@ -123,6 +123,8 @@ export const invoices = pgTable(
     dueDate: date("due_date", { mode: "string" }).notNull(),
     status: invoiceStatus("status").default("unpaid").notNull(),
     note: text("note").default("").notNull(),
+    /** Catatan INTERNAL admin (pisah uang server / pajak server / pajak QRIS, dll). Tidak pernah tampil ke pelanggan. */
+    internalNote: text("internal_note").default("").notNull(),
     proofFileId: uuid("proof_file_id").references(() => files.id, { onDelete: "set null" }),
     proofUploadedAt: timestamp("proof_uploaded_at"),
     paidAt: timestamp("paid_at"),

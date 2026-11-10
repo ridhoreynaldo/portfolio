@@ -171,6 +171,10 @@ export const listInvoices = (filter: { userId?: string; status?: InvoiceStatus }
     .where(and(filter.userId ? eq(invoices.userId, filter.userId) : undefined, filter.status ? eq(invoices.status, filter.status) : undefined))
     .orderBy(desc(invoices.createdAt)) as Promise<InvoiceRow[]>;
 
+/** Catatan internal per tagihan — HANYA untuk halaman admin (sengaja tidak ada di InvoiceRow agar tak bocor ke pelanggan). */
+export const invoiceInternalNotes = async (): Promise<Record<string, string>> =>
+  Object.fromEntries((await db().select({ id: invoices.id, n: invoices.internalNote }).from(invoices)).filter((r) => r.n).map((r) => [r.id, r.n]));
+
 export const getInvoice = async (id: string) =>
   (await db().select(invoiceSelect).from(invoices).innerJoin(users, eq(users.id, invoices.userId)).where(eq(invoices.id, id)).limit(1))[0] as InvoiceRow | undefined;
 

@@ -181,6 +181,7 @@ const invoiceInput = z.object({
   amount: money,
   dueDate: z.string().regex(DATE, "Jatuh tempo tidak valid"),
   note: z.string().trim().max(2000).default(""),
+  internalNote: z.string().trim().max(4000).default(""),
   paidAt: z.string().trim().default(""),
 });
 
@@ -189,7 +190,7 @@ export const saveInvoiceAction = action(async (form: FormData) => {
   await requirePermission(`invoice.${id ? "update" : "create"}`);
   const { paidAt, ...d } = invoiceInput.parse({
     userId: form.get("userId"), orderId: form.get("orderId") ?? "", title: form.get("title"), billTo: form.get("billTo") ?? "", billToEmail: String(form.get("billToEmail") ?? "").trim(), period: form.get("period") ?? "",
-    amount: form.get("amount") || 0, dueDate: form.get("dueDate"), note: form.get("note") ?? "", paidAt: form.get("paidAt") ?? "",
+    amount: form.get("amount") || 0, dueDate: form.get("dueDate"), note: form.get("note") ?? "", internalNote: form.get("internalNote") ?? "", paidAt: form.get("paidAt") ?? "",
   });
   if (d.period && !PERIOD.test(d.period)) throw new AppError("Periode harus format YYYY-MM");
   if (paidAt && !DATE.test(paidAt)) throw new AppError("Tanggal bayar tidak valid");

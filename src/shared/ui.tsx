@@ -58,5 +58,9 @@ export function fmtDate(d: string | null | undefined, opts: Intl.DateTimeFormatO
   return Number.isNaN(dt.getTime()) ? d : new Intl.DateTimeFormat("id-ID", { ...opts, timeZone: "UTC" }).format(dt);
 }
 
-export const fmtDateTime = (d: Date | null | undefined) =>
-  d ? new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "short", timeZone: process.env.TZ_APP ?? "Asia/Jakarta" }).format(d) : "—";
+export const fmtDateTime = (d: Date | string | null | undefined) => {
+  if (!d) return "—";
+  const dt = d instanceof Date ? d : new Date(d); // query mentah bisa mengembalikan string
+  if (Number.isNaN(dt.getTime())) return "—";
+  return new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "short", timeZone: process.env.TZ_APP ?? "Asia/Jakarta" }).format(dt);
+};

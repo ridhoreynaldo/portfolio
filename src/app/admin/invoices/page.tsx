@@ -8,10 +8,10 @@ import { CYCLE, INVOICE_STATUS, currentPeriod, daysUntil, fmtIDR, fmtPeriod, isO
 import { daysText, daysTone, serviceState } from "@/modules/billing/service-state";
 import { customerOptions, listInvoices, listOrders, orderTotal, type InvoiceRow, type OrderRow } from "@/modules/billing/repository";
 
-type Q = { edit?: string; new?: string; svc?: string; gen?: string; userId?: string; orderId?: string; title?: string; amount?: string; period?: string; status?: string };
+type Q = { u?: string; edit?: string; new?: string; svc?: string; gen?: string; userId?: string; orderId?: string; title?: string; amount?: string; period?: string; status?: string };
 
 type Group = {
-  key: string; title: string; customer: string; email: string; order?: OrderRow; state?: ReturnType<typeof serviceState>;
+  key: string; userId: string; title: string; customer: string; email: string; order?: OrderRow; state?: ReturnType<typeof serviceState>;
   invoices: InvoiceRow[]; unpaid: number; verifying: number; openTotal: number; nextDue: string | null; label: string; tone: Tone;
 };
 
@@ -35,7 +35,7 @@ function groupByService(all: InvoiceRow[], orders: OrderRow[]): Group[] {
     const overdue = invoices.some((i) => isOverdue(i.dueDate, i.status));
     const [label, tone]: [string, Tone] = verifying ? ["Menunggu verifikasi", "cyan"] : overdue ? ["Lewat jatuh tempo", "rose"] : unpaid ? ["Belum bayar", "amber"] : ["Lunas", "emerald"];
     out.push({
-      key, order, state: order ? serviceState(order, all) : undefined, invoices, unpaid, verifying, nextDue, label, tone,
+      key, userId: first.userId, order, state: order ? serviceState(order, all) : undefined, invoices, unpaid, verifying, nextDue, label, tone,
       title: order ? `${order.packageName}${order.quantity > 1 ? ` ×${order.quantity}` : ""}` : "Tagihan lain (manual)",
       customer: order?.billTo || first.billTo || first.customerName, email: first.customerEmail,
       openTotal: open.reduce((s, i) => s + i.amount, 0),
@@ -52,8 +52,19 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
   const groups = groupByService(all, orders);
   const FILTERS = { open: "Belum bayar", verify: "Menunggu verifikasi", paid: "Lunas" } as const;
   const f = q.status && q.status in FILTERS ? (q.status as keyof typeof FILTERS) : null;
-  const rows = groups.filter((g) => !f || (f === "open" ? g.unpaid > 0 : f === "verify" ? g.verifying > 0 : g.unpaid === 0 && g.verifying === 0));
-  const listHref = f ? `/admin/invoices?status=${f}` : "/admin/invoices";
+  // filter per pelanggan (?u=userId), digabung dengan filter status
+  const people = [...new Map(groups.map((g) => [g.userId, g.customer])).entries()].sort((a, b) => a[1].localeCompare(b[1]));
+  const uid = q.u && people.some(([id]) => id === q.u) ? q.u : null;
+  const hrefOf = (status: string | null, u: string | null) => {
+    const p = new URLSearchParams();
+    if (status) p.set("status", status);
+    if (u) p.set("u", u);
+    return p.size ? `/admin/invoices?${p}` : "/admin/invoices";
+  };
+  const byUser = uid ? groups.filter((g) => g.userId === uid) : groups;
+  const match = (g: Group, k: keyof typeof FILTERS) => (k === "open" ? g.unpaid > 0 : k === "verify" ? g.verifying > 0 : g.unpaid === 0 && g.verifying === 0);
+  const rows = byUser.filter((g) => !f || match(g, f));
+  const listHref = hrefOf(f, uid);
   const sel = q.svc ? groups.find((g) => g.key === q.svc) : undefined;
   const inv = q.edit ? all.find((r) => r.id === q.edit) : undefined;
   const showForm = !!inv || q.new === "1";
@@ -90,13 +101,23 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
       </div>
 
       <div className="mb-4 flex flex-wrap gap-2">
-        <Link href="/admin/invoices" className={`btn-sm ${!f ? "btn-primary" : "btn-ghost"}`}>Semua ({groups.length})</Link>
+        <Link href={hrefOf(null, uid)} className={`btn-sm ${!f ? "btn-primary" : "btn-ghost"}`}>Semua ({byUser.length})</Link>
         {(Object.keys(FILTERS) as (keyof typeof FILTERS)[]).map((k) => (
-          <Link key={k} href={`/admin/invoices?status=${k}`} className={`btn-sm ${f === k ? "btn-primary" : "btn-ghost"}`}>
-            {FILTERS[k]} ({groups.filter((g) => (k === "open" ? g.unpaid > 0 : k === "verify" ? g.verifying > 0 : g.unpaid === 0 && g.verifying === 0)).length})
+          <Link key={k} href={hrefOf(k, uid)} className={`btn-sm ${f === k ? "btn-primary" : "btn-ghost"}`}>
+            {FILTERS[k]} ({byUser.filter((g) => match(g, k)).length})
           </Link>
         ))}
       </div>
+
+      {people.length > 1 && (
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="text-xs text-[var(--ink-3)]">Pelanggan:</span>
+          <Link href={hrefOf(f, null)} className={`btn-sm ${!uid ? "btn-primary" : "btn-ghost"}`}>Semua</Link>
+          {people.map(([id, name]) => (
+            <Link key={id} href={hrefOf(f, id)} className={`btn-sm ${uid === id ? "btn-primary" : "btn-ghost"}`}>{name}</Link>
+          ))}
+        </div>
+      )}
 
       {q.gen === "1" && can(user, "invoice.create") && (
         <Modal title="Generate tagihan bulanan" close="/admin/invoices">

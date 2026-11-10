@@ -15,6 +15,16 @@ function SubscriptionFields({ o }: { o?: OrderRow }) {
   return (
     <>
       <div><label className="label">Status</label><select name="status" defaultValue={o?.status ?? "active"} className="input-dark">{orderStatus.enumValues.map((s) => <option key={s} value={s}>{ORDER_STATUS[s].label}</option>)}</select></div>
+      <div>
+        <label className="label">Siklus tagihan</label>
+        <select name="billingCycle" defaultValue={o?.cycleOverride ?? ""} className="input-dark">
+          <option value="">Ikut paket{o && o.cycleOverride == null && o.price != null ? ` (${CYCLE[o.billingCycle ?? "once"]})` : ""}</option>
+          <option value="monthly">Bulanan (tagihan dibuat otomatis tiap bulan)</option>
+          <option value="yearly">Tahunan</option>
+          <option value="once">Sekali bayar</option>
+        </select>
+        <p className="mt-1 text-xs text-[var(--ink-3)]">Bulanan: tagihan terbit otomatis 3 hari sebelum jatuh tempo (tanggal = tanggal mulai layanan) sampai tanggal berakhir.</p>
+      </div>
       <div><label className="label">Mulai layanan</label><input name="startDate" type="date" defaultValue={o?.startDate ?? ""} className="input-dark" /></div>
       <div><label className="label">Berakhir / lunas s.d.</label><input name="endDate" type="date" defaultValue={o?.endDate ?? ""} className="input-dark" /><p className="mt-1 text-xs text-[var(--ink-3)]">Untuk sewa tahunan/kontrak; portal menampilkan sisa waktu.</p></div>
       <div><label className="label">Harga kesepakatan / unit (Rp)</label><MoneyInput name="unitPrice" defaultValue={o?.unitPrice} placeholder={o?.price ? `kosong = harga paket ${fmtIDR(o.price)}` : "kosong = harga paket"} /></div>

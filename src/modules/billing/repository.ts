@@ -1,9 +1,9 @@
-import { and, asc, desc, eq, notInArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, notInArray, sql, type SQL } from "drizzle-orm";
 import { db } from "@/shared/db";
 import { users, userRoles } from "@/modules/users/schema";
 import { roles } from "@/modules/rbac/schema";
 import { CUSTOMER_ROLE } from "@/modules/rbac/permissions";
-import { customerProfiles, files, invoices, orders, paymentSettings, servicePackages, type InvoiceItem, type InvoiceStatus, type OrderStatus } from "./schema";
+import { customerProfiles, files, invoices, orders, paymentSettings, servicePackages, type BillingCycle, type InvoiceItem, type InvoiceStatus, type OrderStatus } from "./schema";
 
 // ── Paket layanan ─────────────────────────────────────────────────────────────
 export type PackageRow = typeof servicePackages.$inferSelect;
@@ -78,10 +78,15 @@ const orderSelect = {
   customerName: users.name,
   customerEmail: users.email,
   price: servicePackages.price,
-  billingCycle: servicePackages.billingCycle,
+  /** siklus EFEKTIF: milik layanan bila diisi, kalau tidak ikut paket */
+  billingCycle: sql<BillingCycle | null>`coalesce(${orders.billingCycle}, ${servicePackages.billingCycle})`,
+  /** isian siklus di layanan itu sendiri (null = ikut paket) */
+  cycleOverride: orders.billingCycle,
   unit: servicePackages.unit,
 };
-export type OrderRow = { [K in keyof typeof orderSelect]: (typeof orderSelect)[K]["_"]["data"] | (K extends "price" | "billingCycle" | "unit" ? null : never) };
+export type OrderRow = {
+  [K in keyof typeof orderSelect]: (typeof orderSelect)[K] extends SQL<infer T> ? T : (typeof orderSelect)[K] extends { _: { data: infer D } } ? D | (K extends "price" | "unit" ? null : never) : never;
+};
 
 /** Harga per unit yang berlaku: kesepakatan khusus order, kalau tidak ada harga paket. */
 export const orderUnitPrice = (o: Pick<OrderRow, "unitPrice" | "price">) => o.unitPrice ?? o.price ?? 0;
@@ -190,15 +195,15 @@ export const updateInvoice = (id: string, v: Partial<typeof invoices.$inferInser
   db().update(invoices).set({ ...v, updatedAt: new Date() }).where(eq(invoices.id, id));
 export const deleteInvoice = (id: string) => db().delete(invoices).where(eq(invoices.id, id));
 
-/** Order aktif berpaket bulanan yang BELUM punya tagihan untuk periode ini. */
+/** Order aktif bersiklus bulanan (milik layanan atau ikut paket) yang BELUM punya tagihan untuk periode ini. */
 export async function monthlyOrdersWithoutInvoice(period: string) {
   const billed = db().select({ id: invoices.orderId }).from(invoices).where(and(eq(invoices.period, period), sql`${invoices.orderId} is not null`));
   return db()
     .select(orderSelect)
     .from(orders)
     .innerJoin(users, eq(users.id, orders.userId))
-    .innerJoin(servicePackages, eq(servicePackages.id, orders.packageId))
-    .where(and(eq(orders.status, "active"), eq(servicePackages.billingCycle, "monthly"), notInArray(orders.id, billed)))
+    .leftJoin(servicePackages, eq(servicePackages.id, orders.packageId))
+    .where(and(eq(orders.status, "active"), sql`coalesce(${orders.billingCycle}, ${servicePackages.billingCycle}) = 'monthly'`, notInArray(orders.id, billed)))
     .orderBy(asc(orders.createdAt)) as Promise<OrderRow[]>;
 }
 

@@ -43,6 +43,11 @@ if ! grep -q '^NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=' "$ENVF"; then
   echo "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=$(openssl rand -base64 32)" >> "$ENVF"
   echo "   kunci aksi server dibuat di $ENVF"
 fi
+# rahasia untuk timer tagihan otomatis (dibuat sekali)
+if ! grep -q '^CRON_SECRET=' "$ENVF"; then
+  echo "CRON_SECRET=$(openssl rand -hex 24)" >> "$ENVF"
+  echo "   CRON_SECRET dibuat di $ENVF"
+fi
 NEXT_SERVER_ACTIONS_ENCRYPTION_KEY="$(grep '^NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=' "$ENVF" | tail -n1 | cut -d= -f2-)"
 export NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
 # ID rilis untuk perlindungan beda-versi: tab lama yang bernavigasi setelah deploy dimuat ulang penuh, bukan error.
@@ -60,8 +65,11 @@ runuser -u "$APP" -- bash -c "set -a; . '$ENVF'; set +a; cd '$REL' && MIGRATIONS
 
 echo ">> unit systemd"
 install -m 0644 deploy/$APP.service /etc/systemd/system/$APP.service
+install -m 0644 deploy/$APP-invoices.service /etc/systemd/system/$APP-invoices.service
+install -m 0644 deploy/$APP-invoices.timer /etc/systemd/system/$APP-invoices.timer
 systemctl daemon-reload
 systemctl enable $APP.service >/dev/null 2>&1
+systemctl enable --now $APP-invoices.timer >/dev/null 2>&1
 
 echo ">> aktifkan rilis (atomik)"
 ln -sfn "$REL" "$BASE/current.new"

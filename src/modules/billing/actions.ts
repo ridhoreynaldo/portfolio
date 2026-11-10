@@ -103,20 +103,21 @@ const subscriptionInput = z.object({
   startDate: z.string().trim().default(""),
   endDate: z.string().trim().default(""),
   unitPrice: z.union([z.literal(""), money]).transform((v) => (v === "" ? null : v)),
+  billingCycle: z.union([z.literal(""), z.enum(billingCycle.enumValues)]).transform((v) => v || null),
   itemLabel: z.string().trim().max(32).default(""),
   itemLimit: z.union([z.literal(""), z.coerce.number().int().min(0).max(100000)]).transform((v) => (v === "" || v === 0 ? null : v)),
 });
 const readSubscription = (form: FormData) => {
   const d = subscriptionInput.parse({
     status: form.get("status"), billTo: form.get("billTo") ?? "", billToEmail: String(form.get("billToEmail") ?? "").trim(), adminNote: form.get("adminNote") ?? "", startDate: form.get("startDate") ?? "", endDate: form.get("endDate") ?? "",
-    unitPrice: String(form.get("unitPrice") ?? "").trim(), itemLabel: form.get("itemLabel") ?? "", itemLimit: String(form.get("itemLimit") ?? "").trim(),
+    unitPrice: String(form.get("unitPrice") ?? "").trim(), billingCycle: String(form.get("billingCycle") ?? ""), itemLabel: form.get("itemLabel") ?? "", itemLimit: String(form.get("itemLimit") ?? "").trim(),
   });
   if (d.startDate && !DATE.test(d.startDate)) throw new AppError("Tanggal mulai tidak valid");
   if (d.endDate && !DATE.test(d.endDate)) throw new AppError("Tanggal berakhir tidak valid");
   const items = String(form.get("items") ?? "").split(/[\r\n,]+/).map((x) => x.trim().toLowerCase()).filter(Boolean).slice(0, 200);
   if (d.itemLimit != null && items.length > d.itemLimit) throw new AppError(`Jumlah ${d.itemLabel || "item"} (${items.length}) melebihi limit ${d.itemLimit}`);
   const breakdown = lineItems(form.get("breakdown"));
-  return { status: d.status, billTo: d.billTo, billToEmail: d.billToEmail, adminNote: d.adminNote, startDate: d.startDate || null, endDate: d.endDate || null, unitPrice: d.unitPrice, itemLabel: d.itemLabel, itemLimit: d.itemLimit, items, breakdown };
+  return { status: d.status, billTo: d.billTo, billToEmail: d.billToEmail, adminNote: d.adminNote, startDate: d.startDate || null, endDate: d.endDate || null, unitPrice: d.unitPrice, billingCycle: d.billingCycle, itemLabel: d.itemLabel, itemLimit: d.itemLimit, items, breakdown };
 };
 
 export const updateOrderAction = action(async (form: FormData) => {

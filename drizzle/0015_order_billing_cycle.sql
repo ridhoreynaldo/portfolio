@@ -1,0 +1,1 @@
+ALTER TABLE "orders" ADD COLUMN "billing_cycle" "billing_cycle";

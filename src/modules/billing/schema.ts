@@ -70,6 +70,8 @@ export const orders = pgTable(
     /** Email tujuan tagihan; diisi = invoice memakai email ini (bukan email/telepon/alamat akun). */
     billToEmail: varchar("bill_to_email", { length: 160 }).default("").notNull(),
     adminNote: text("admin_note").default("").notNull(),
+    /** Siklus tagih khusus layanan ini; null = ikut paket (tanpa paket = sekali bayar). */
+    billingCycle: billingCycle("billing_cycle"),
     status: orderStatus("status").default("pending").notNull(),
     startDate: date("start_date", { mode: "string" }),
     /** Akhir masa berlaku / sudah dibayar sampai (sewa tahunan, kontrak). */

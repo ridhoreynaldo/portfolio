@@ -14,7 +14,7 @@ import { findUserByEmail, getUser, saveUser } from "@/modules/users/repository";
 import { IMAGE_MIMES, readUpload } from "./files";
 import { PACKAGE_CATEGORIES, billingDayOf } from "./labels";
 import {
-  customerRoleId, deleteInvoice, deleteOrder, deleteOrphanFile, deletePackage, getInvoice, getOrder, getPackage, getPaymentSettings, insertFile, insertInvoice,
+  customerRoleId, listPackages, deleteInvoice, deleteOrder, deleteOrphanFile, deletePackage, getInvoice, getOrder, getPackage, getPaymentSettings, insertFile, insertInvoice,
   insertOrder, insertPackage, invoiceLinesFor, monthlyOrdersWithoutInvoice, nextNumber, orderTotal, uniquePackageSlug, updateInvoice, updateOrder, updatePackage, upsertCustomerProfile, upsertPaymentSettings,
 } from "./repository";
 import { billingCycle, invoiceStatus, orderStatus } from "./schema";
@@ -137,17 +137,18 @@ export const updateOrderAction = action(async (form: FormData) => {
 export const createOrderAction = action(async (form: FormData) => {
   await requirePermission("order.create");
   const d = z
-    .object({ userId: uuid, packageId: uuid, quantity: z.coerce.number().int().min(1).max(100).default(1) })
-    .parse({ userId: form.get("userId"), packageId: form.get("packageId"), quantity: form.get("quantity") || 1 });
+    .object({ userId: uuid, packageName: z.string().trim().min(2, "Nama layanan minimal 2 huruf").max(128), quantity: z.coerce.number().int().min(1).max(100).default(1) })
+    .parse({ userId: form.get("userId"), packageName: form.get("packageName"), quantity: form.get("quantity") || 1 });
   const v = readSubscription(form);
-  const [cust, pkg] = await Promise.all([getUser(d.userId), getPackage(d.packageId)]);
+  const [cust, pkgs] = await Promise.all([getUser(d.userId), listPackages()]);
+  // nama diketik bebas; bila sama dengan paket yang ada, otomatis tertaut ke paket itu (harga/siklus ikut)
+  const pkg = pkgs.find((p) => p.name.toLowerCase() === d.packageName.toLowerCase());
   if (!cust) throw new AppError("Pelanggan tidak ditemukan");
-  if (!pkg) throw new AppError("Paket tidak ditemukan");
   let number = "";
   for (let i = 0; i < 3; i++) {
     number = await nextNumber("ORD");
     try {
-      await insertOrder({ number, userId: d.userId, packageId: pkg.id, packageName: pkg.name, quantity: d.quantity, notes: "", ...v });
+      await insertOrder({ number, userId: d.userId, packageId: pkg?.id ?? null, packageName: pkg?.name ?? d.packageName, quantity: d.quantity, notes: "", ...v });
       break;
     } catch (e) {
       if (i === 2 || !String(e).includes("orders_number_unique")) throw e;

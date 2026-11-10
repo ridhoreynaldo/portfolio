@@ -136,11 +136,10 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                 </select>
               </div>
               <div>
-                <label className="label">Paket *</label>
-                <select name="packageId" required className="input-dark" defaultValue="">
-                  <option value="" disabled>pilih paket</option>
-                  {packages.map((p) => <option key={p.id} value={p.id}>{p.name} · {p.price > 0 ? fmtIDR(p.price) : "harga kesepakatan"} {CYCLE[p.billingCycle]}{p.unit ? ` / ${p.unit}` : ""}</option>)}
-                </select>
+                <label className="label">Nama layanan / paket *</label>
+                <input name="packageName" required minLength={2} maxLength={128} list="pkg-list" autoComplete="off" placeholder="ketik bebas, mis. Sewa Server + Maintenance" className="input-dark" />
+                <datalist id="pkg-list">{packages.map((p) => <option key={p.id} value={p.name}>{p.price > 0 ? `${fmtIDR(p.price)} ${CYCLE[p.billingCycle]}` : "harga kesepakatan"}</option>)}</datalist>
+                <p className="mt-1 text-xs text-[var(--ink-3)]">Boleh diketik sendiri. Bila sama dengan nama paket, harganya ikut paket; isi “Harga kesepakatan” untuk harga sendiri.</p>
               </div>
               <div><label className="label">Jumlah</label><input name="quantity" type="number" min={1} max={100} defaultValue={1} className="input-dark" /></div>
               <SubscriptionFields />

@@ -160,7 +160,18 @@ export function ServiceItem({ o, invoices, no, variant, ctx }: { o: OrderRow; in
 
 /** Daftar layanan pelanggan untuk modal admin: yang berjalan tampil ringkas, sisanya dilipat. */
 export function CustomerServices({ orders, invoices, ctx }: { orders: OrderRow[]; invoices: InvoiceRow[]; ctx?: AdminCtx }) {
-  const running = orders.filter((o) => o.status === "active" || o.status === "pending");
+  // urut: sisa hari paling sedikit dulu (yang terlambat paling atas); sekali bayar paling bawah
+  const rank = (o: OrderRow) => {
+    const s = serviceState(o, invoices);
+    if (s.cycle === "once") return { once: 1, due: "" };
+    return { once: 0, due: s.next?.dueDate ?? s.paidUntil ?? "9999-12-31" };
+  };
+  const running = orders
+    .filter((o) => o.status === "active" || o.status === "pending")
+    .sort((a, b) => {
+      const x = rank(a), y = rank(b);
+      return x.once - y.once || x.due.localeCompare(y.due) || a.number.localeCompare(b.number);
+    });
   const ended = orders.filter((o) => o.status !== "active" && o.status !== "pending");
   const manual = invoices.filter((i) => !i.orderId || !orders.some((o) => o.id === i.orderId)).sort((a, b) => b.dueDate.localeCompare(a.dueDate));
   const manualOpen = manual.filter((i) => i.status === "unpaid" || i.status === "pending_verification");
